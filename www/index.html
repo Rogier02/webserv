@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webserv - Welcome</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .feature {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+        }
+        a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        code {
+            background-color: #eee;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Webserv!</h1>
+        <p>Your HTTP server is up and running successfully.</p>
+        
+        <div class="feature">
+            <h3>Features</h3>
+            <ul>
+                <li>HTTP/1.1 compliant</li>
+                <li>GET, POST, DELETE methods</li>
+                <li>Static file serving</li>
+                <li>CGI support (Python, Shell, Perl)</li>
+                <li>Directory listing</li>
+                <li>Configurable via config file</li>
+            </ul>
+        </div>
+        
+        <div class="feature">
+            <h3>Test Pages</h3>
+            <ul>
+                <li><a href="/test.html">Test Page</a></li>
+                <li><a href="/cgi/hello.py">Python CGI Script</a></li>
+                <li><a href="/upload.html">File Upload Test</a></li>
+            </ul>
+        </div>
+        
+        <div class="feature">
+            <h3>Quick Test</h3>
+            <p>Try making requests:</p>
+            <code>curl http://localhost:8080/</code><br>
+            <code>curl http://localhost:8080/test.html</code><br>
+            <code>curl -X POST -d "test data" http://localhost:8080/cgi/hello.py</code>
+        </div>
+    </div>
+</body>
+</html>
