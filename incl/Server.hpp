@@ -23,6 +23,7 @@ class	Server
 
 	private:
 		int		_socket;
+		int		_port;
 		Epoll	_epoll;
 
 		static std::atomic<bool>	_running;

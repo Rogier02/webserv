@@ -4,6 +4,7 @@ std::atomic<bool> Server::_running(false);
 
 Server::Server()
 	:	_socket(socket(AF_INET, SOCK_STREAM, 0))
+	,	_port(8080)
 	,	_epoll(_socket)
 {
 	if (_socket == -1)
@@ -15,7 +16,7 @@ Server::Server()
 
 	sockaddr_in	serverAddress{};
 	serverAddress.sin_family = AF_INET;
-	serverAddress.sin_port = htons(8080);
+	serverAddress.sin_port = htons(_port);
 	serverAddress.sin_addr.s_addr = INADDR_ANY;
 
 	if (bind(_socket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1)
@@ -23,6 +24,9 @@ Server::Server()
 
 	if (listen(_socket, 5) == -1)
 		throw std::runtime_error("listen()");
+
+	signal(SIGINT, shutdown);
+	signal(SIGTERM, shutdown);
 }
 
 Server::~Server()
@@ -34,10 +38,7 @@ void
 Server::run()
 {
 	_running = true;
-	std::cout << "Server listening on port 8080...\n";
-	signal(SIGINT, shutdown);
-	signal(SIGTERM, shutdown);
-
+	std::cout << "Server running... (listening on port " << _port << ")\n";
 	while (_running)
 	{
 		epoll_event events[EventBatchSize];
@@ -83,10 +84,11 @@ Server::run()
 			}
 		}
 	}
+	std::cout << "Server shutting down...\n";
 }
 
 void
 Server::shutdown(int) {
 	_running = false;
-	std::cout << "\nShutting down server...\n";
+	std::cerr << std::endl;
 }

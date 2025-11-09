@@ -13,8 +13,6 @@
 
 #include "Server.hpp"
 
-std::atomic<bool>	_running(true);
-
 int main()
 {
 	try {
