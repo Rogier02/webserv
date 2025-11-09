@@ -22,7 +22,9 @@ HTTP_FILES		=	HttpRequest.cpp \
 					HttpResponse.cpp
 
 SERVER_DIR		:=	$(SRC_DIR)/Server
-SERVER_FILES	=	Server.cpp
+SERVER_FILES	=	Epoll.cpp \
+					Server.cpp \
+					Socket.cpp
 
 SRC				=	$(addprefix $(SRC_DIR)/, $(SRC_FILES)) \
 					$(addprefix $(CONFIG_DIR)/, $(CONFIG_FILES)) \
