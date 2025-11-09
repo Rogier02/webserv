@@ -1,41 +1,26 @@
-#include <cstring>
-#include <iostream>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <unistd.h>
+#include "Server.hpp"
 
-using namespace std;
-
-int main()
+Server::Server()
+	:	_socket(socket(AF_INET, SOCK_STREAM, 0))
+	,	_epoll(_socket)
 {
-    // creating socket
-    int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (_socket == -1)
+		perror("socket()");
 
-    // specifying the address
-    sockaddr_in serverAddress;
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(8080);
-    serverAddress.sin_addr.s_addr = INADDR_ANY;
+	sockaddr_in	serverAddress{};
+	serverAddress.sin_family = AF_INET;
+	serverAddress.sin_port = htons(8080);
+	serverAddress.sin_addr.s_addr = INADDR_ANY;
 
-    // binding socket.
-    bind(serverSocket, (struct sockaddr*)&serverAddress,
-         sizeof(serverAddress));
+	if (bind(_socket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1)
+		perror("bind()");
 
-    // listening to the assigned socket
-    listen(serverSocket, 1);
+	if (listen(_socket, 5) == -1)
+		perror("listen()");
 
-    // accepting connection request
-    int clientSocket
-        = accept(serverSocket, nullptr, nullptr);
-	
-    // recieving data
-    char buffer[1024] = { 0 };
-    recv(clientSocket, buffer, sizeof(buffer), 0);
-    cout << "Message from client: " << buffer
-              << endl;
+}
 
-    // closing the socket.
-    close(serverSocket);
-
-    return 0;
+Server::~Server()
+{
+	close(_socket);
 }
