@@ -7,12 +7,15 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/epoll.h>
+#include <stdexcept>
 
 class	Epoll
 {
 	public:
 		Epoll(int socket);
 		~Epoll();
+
+		int	fd() const;
 
 	private:
 		int	_fd;

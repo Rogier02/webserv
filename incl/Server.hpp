@@ -5,6 +5,10 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <signal.h>
+#include <stdexcept>
+
+#include <atomic>
 
 #include "Epoll.hpp"
 
@@ -14,12 +18,15 @@ class	Server
 		Server();
 		~Server();
 
-		void	run();
+		void		run();
+		static void	shutdown(int);
 
 	private:
 		int		_socket;
 		Epoll	_epoll;
 
+		static std::atomic<bool>	_running;
+		static constexpr int		EventBatchSize = 64;
 };
 
 #endif
