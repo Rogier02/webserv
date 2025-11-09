@@ -1,33 +1,43 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
-#include <iostream>
-#include <unistd.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <signal.h>
-#include <stdexcept>
+// C
+# include <iostream>
+# include <netinet/in.h>
+# include <signal.h>
+// C++
+# include <stdexcept>
+# include <atomic>
 
-#include <atomic>
-
-#include "Epoll.hpp"
+# include "Socket.hpp"
+# include "Epoll.hpp"
 
 class	Server
 {
 	public:
 		Server();
-		~Server();
+		Server(Server const &other) = delete;
+		Server &operator=(Server const &other) = delete;
+		~Server() = default;
 
-		void		run();
+		void		run() const;
 		static void	shutdown(int);
 
 	private:
-		int		_socket;
-		int		_port;
-		Epoll	_epoll;
+		static constexpr int		EventBatchSize = 64;
+		static constexpr int		DefaultPort = 8080;
 
 		static std::atomic<bool>	_running;
-		static constexpr int		EventBatchSize = 64;
+
+		// class-wide variables
+		Socket	_socket;
+		Epoll	_epoll;
+		int		_port = DefaultPort;
+
+		// epoll_event handlers
+		void	newClient() const;
+		void	existingClient(int fd) const;
+		void	zombieClient(int fd) const;
 };
 
 #endif

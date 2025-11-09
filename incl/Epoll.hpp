@@ -1,12 +1,14 @@
 #ifndef EPOLL_HPP
 # define EPOLL_HPP
+
 # ifdef VERBOSE
 #  include <iostream>
 # endif
 
-#include <stdio.h>
+// C
 #include <unistd.h>
 #include <sys/epoll.h>
+// C++
 #include <stdexcept>
 
 class	Epoll
@@ -15,7 +17,7 @@ class	Epoll
 		Epoll(int socket);
 		~Epoll();
 
-		int	fd() const;
+		operator int() const;
 
 	private:
 		int	_fd;
