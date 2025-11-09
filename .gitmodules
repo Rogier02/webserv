@@ -1,0 +1,3 @@
+[submodule "CPP_TestFramework"]
+	path = CPP_TestFramework
+	url = git@github.com:SimonvH03/CPP_TestFramework.git

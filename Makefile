@@ -1,48 +1,65 @@
-NAME		:=	webserv
+NAME			=	webserv
 
-CC			:=	c++
-FLAGS		:=	-Wall -Wextra -Werror -std=c++11 -g -fsanitize=address
+MAKEFLAGS		=	-r -R
 
-INCL		:=	incl
-INCLUDES	:=	-I $(INCL)
+CXX				=	c++
+CXXFLAGS		=	-MMD -MP -std=c++11
+CXXFLAGS		+=	-Wall -Wextra -Werror
+# CXXFLAGS		+=	-fsanitize=address
+# CXXFLAGS		+=	-g
 
-SRC_DIR		:=	src
-SRC_FILES	:=	
+INCLUDE_DIRS	=	incl
+INCLUDE_FLAGS	=	$(addprefix -I , $(INCLUDE_DIRS))
 
-SRC			:=	$(addprefix $(SRC_DIR)/, $(SRC_FILES))
+SRC_DIR			=	src
+SRC_FILES		=	main.cpp
 
-OBJ_DIR		:=	obj
-OBJ_FILES	:=	$(SRC_FILES:.cpp=.o)
-OBJ			:=	$(addprefix $(OBJ_DIR)/, $(OBJ_FILES))
+CONFIG_DIR		:=	$(SRC_DIR)/Config
+CONFIG_FILES	=	Config.cpp
+
+HTTP_DIR		:=	$(SRC_DIR)/Http
+HTTP_FILES		=	HttpRequest.cpp \
+					HttpResponse.cpp
+
+SERVER_DIR		:=	$(SRC_DIR)/Server
+SERVER_FILES	=	Server.cpp
+
+SRC				=	$(addprefix $(SRC_DIR)/, $(SRC_FILES)) \
+					$(addprefix $(CONFIG_DIR)/, $(CONFIG_FILES)) \
+					$(addprefix $(HTTP_DIR)/, $(HTTP_FILES)) \
+					$(addprefix $(SERVER_DIR)/, $(SERVER_FILES))
+
+OBJ_DIR			=	obj
+OBJ				:=	$(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+DEP				:=	$(OBJ:%.o=%.d)
 
 all : $(NAME)
 
 $(NAME) : $(OBJ)
 	@ echo "${BLUE}$(NAME) compiling...${RESET}"
-	 $(CC) $^ $(FLAGS) $(INCLUDES) -o $(NAME)
+	$(CXX) $^ $(CXXFLAGS) $(INCLUDE_FLAGS) -o $(NAME)
 	@ echo "${GREEN}$(NAME) made!${RESET}"
 
-$(OBJ_DIR):
-	@ echo "${PURPLE}Making object directories${RESET}"
-	mkdir -p $(OBJ_DIR)
-	mkdir -p $(OBJ_DIR)/$(SRC_TEST)
-	@ echo "${GREEN}Completed${RESET}"
+$(OBJ_DIR)/%.o:$(SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(INCLUDE_FLAGS) -c $< -o $@
 
-$(OBJ_DIR)/%.o:$(SRC_DIR)/%.cpp | $(OBJ_DIR)
-	 $(CC) $(FLAGS) $(INCLUDES) -c $< -o $@
+-include $(DEP)
 
 clean :
-	@ rm -rf $(OBJ)
-	@ echo "${CYAN}Objects removed.${RESET}"
+	@if [ -n "$(OBJ_DIR)" ] && [ "$(OBJ_DIR)" != "/" ]; \
+	then \
+		rm -rf $(OBJ_DIR); echo 'rm -rf $(OBJ_DIR)'; \
+	else \
+		echo "Warning: OBJ_DIR is undefined"; \
+	fi
+	@ echo "${BLUE}Object folder removed.${RESET}"
 
 fclean : clean
-	@ rmdir $(OBJ_DIR)/$(SRC_TEST)
-	@ rmdir $(OBJ_DIR)
-	@ echo "${BLUE}Object folder removed.${RESET}"
-	@ rm -f $(NAME)
+	rm -f $(NAME)
 	@ echo "${YELLOW}$(NAME) fcleaned!${RESET}"
 
-re : fclean all
+re : clean all
 
 .PHONY: all clean fclean re
 
