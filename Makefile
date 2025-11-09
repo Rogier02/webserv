@@ -5,16 +5,10 @@ MAKEFLAGS		=	-r -R
 CXX				=	c++
 CXXFLAGS		=	-MMD -MP -std=c++11
 CXXFLAGS		+=	-Wall -Wextra -Werror
-CXXFLAGS		+=	-fsanitize=address
-CXXFLAGS		+=	-g
-# CXXFLAGS		+=	-D VERBOSE
+# CXXFLAGS		+=	-fsanitize=address
+# CXXFLAGS		+=	-g
 
-LIB_TF_DIR		=	TestFramework
-LIB_TF_BIN		:=	$(LIB_TF_DIR)/libTestRunner.a
-LIB_TF_INC		:=	$(LIB_TF_DIR)/include
-
-INCLUDE_DIRS	=	incl \
-					$(LIB_TF_INC)
+INCLUDE_DIRS	=	incl
 INCLUDE_FLAGS	=	$(addprefix -I , $(INCLUDE_DIRS))
 
 SRC_DIR			=	src
@@ -24,7 +18,8 @@ CONFIG_DIR		:=	$(SRC_DIR)/Config
 CONFIG_FILES	=	Config.cpp
 
 HTTP_DIR		:=	$(SRC_DIR)/Http
-HTTP_FILES		=	Http.cpp
+HTTP_FILES		=	HttpRequest.cpp \
+					HttpResponse.cpp
 
 SERVER_DIR		:=	$(SRC_DIR)/Server
 SERVER_FILES	=	Server.cpp
@@ -32,7 +27,7 @@ SERVER_FILES	=	Server.cpp
 SRC				=	$(addprefix $(SRC_DIR)/, $(SRC_FILES)) \
 					$(addprefix $(CONFIG_DIR)/, $(CONFIG_FILES)) \
 					$(addprefix $(HTTP_DIR)/, $(HTTP_FILES)) \
-					$(addprefix $(SERVER_DIR)/, $(SRC_FILES))
+					$(addprefix $(SERVER_DIR)/, $(SERVER_FILES))
 
 OBJ_DIR			=	obj
 OBJ				:=	$(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
@@ -40,28 +35,31 @@ DEP				:=	$(OBJ:%.o=%.d)
 
 all : $(NAME)
 
-$(NAME) : $(OBJ) $(LIB_TF_BIN)
+$(NAME) : $(OBJ)
 	@ echo "${BLUE}$(NAME) compiling...${RESET}"
-	$(CXX) $^ $(CXXFLAGS) $(LIB_TF_BIN) $(INCLUDE_FLAGS) -o $(NAME)
+	$(CXX) $^ $(CXXFLAGS) $(INCLUDE_FLAGS) -o $(NAME)
 	@ echo "${GREEN}$(NAME) made!${RESET}"
 
 $(OBJ_DIR)/%.o:$(SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(INCLUDE_FLAGS) -c $< -o $@
 
+-include $(DEP)
+
 clean :
-	@ rm -f $(OBJ)
-	@ rm $(OBJ_DIR)
-	@ echo "${CYAN}Objects removed.${RESET}"
+	@if [ -n "$(OBJ_DIR)" ] && [ "$(OBJ_DIR)" != "/" ]; \
+	then \
+		rm -rf $(OBJ_DIR); echo 'rm -rf $(OBJ_DIR)'; \
+	else \
+		echo "Warning: OBJ_DIR is undefined"; \
+	fi
+	@ echo "${BLUE}Object folder removed.${RESET}"
 
 fclean : clean
-	@ rmdir $(OBJ_DIR)/$(SRC_TEST)
-	@ rmdir $(OBJ_DIR)
-	@ echo "${BLUE}Object folder removed.${RESET}"
-	@ rm -f $(NAME)
+	rm -f $(NAME)
 	@ echo "${YELLOW}$(NAME) fcleaned!${RESET}"
 
-re : fclean all
+re : clean all
 
 .PHONY: all clean fclean re
 
