@@ -12,8 +12,7 @@ int main(int argc, char **argv)
 {
 	if (argc == 2)
 	{
-		const char *fileName = argv[1];
-		ReadConfigFile(fileName);
+
 	}
 	try {
 		Server	server;
