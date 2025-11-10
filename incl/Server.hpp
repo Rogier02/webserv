@@ -15,8 +15,11 @@
 
 class	Server
 {
-	static constexpr int		EventBatchSize = 64;
-	static constexpr int		DefaultPort = 8080;
+	private:
+		static constexpr int		_EventBatchSize = 64;
+		static constexpr int		_DefaultPort = 8080;
+
+		static std::atomic<bool>	_running;
 
 	public:
 		Server(std::vector<Config::Server> const &config);
@@ -24,22 +27,21 @@ class	Server
 		Server &operator=(Server const &other) = delete;
 		~Server() = default;
 
+	private:
+		std::vector<Config::Server> const &_config;
+		Socket	_socket;
+		Epoll	_epoll;
+		int		_port = _DefaultPort;
+	
+	public:
 		void		run() const;
 		static void	shutdown(int);
 
 	private:
-		static std::atomic<bool>	_running;
-
-		// class-wide variables
-		std::vector<Config::Server> const &_config;
-		Socket	_socket;
-		Epoll	_epoll;
-		int		_port = DefaultPort;
-
-		// epoll_event handlers
 		void	newClient() const;
 		void	existingClient(int fd) const;
 		void	zombieClient(int fd) const;
+
 };
 
 #endif
