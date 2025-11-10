@@ -9,13 +9,17 @@
 # include <stdexcept>
 # include <atomic>
 
+# include "Config.hpp"
 # include "Socket.hpp"
 # include "Epoll.hpp"
 
 class	Server
 {
+	static constexpr int		EventBatchSize = 64;
+	static constexpr int		DefaultPort = 8080;
+
 	public:
-		Server();
+		Server(std::vector<Config::Server> const &config);
 		Server(Server const &other) = delete;
 		Server &operator=(Server const &other) = delete;
 		~Server() = default;
@@ -24,12 +28,10 @@ class	Server
 		static void	shutdown(int);
 
 	private:
-		static constexpr int		EventBatchSize = 64;
-		static constexpr int		DefaultPort = 8080;
-
 		static std::atomic<bool>	_running;
 
 		// class-wide variables
+		std::vector<Config::Server> const &_config;
 		Socket	_socket;
 		Epoll	_epoll;
 		int		_port = DefaultPort;
