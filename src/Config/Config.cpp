@@ -1,13 +1,16 @@
 #include "Config.hpp"
+#include <string>
+#include <iostream>
+#include <ifstream>
 
 Config::Config()
 {
 
 }
 
-Config::Config(std::string file)
+Config::Config(std::string fileName)
 {
-	(void)file;
+
 }
 
 Config &
