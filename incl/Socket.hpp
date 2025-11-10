@@ -20,7 +20,7 @@ class	Socket
 		operator int() const;
 
 	private:
-		int		_fd;
+		int	_fd;
 };
 
 #endif

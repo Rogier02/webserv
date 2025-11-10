@@ -1,7 +1,7 @@
 // C++ program to illustrate the client application in the
 // socket programming
 
-#include "Config.hpp"
+#include <errno.h>
 #include <stdio.h>
 #include <exception>
 #include <iostream>
@@ -15,7 +15,7 @@ int main(int argc, char **argv)
 
 	}
 	try {
-		Server	server;
+		Server	server(config._servers);
 		server.run();
 	} catch (std::exception &exception) {
 		perror(exception.what());

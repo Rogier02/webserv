@@ -3,10 +3,13 @@
 std::atomic<bool> Server::_running(false);
 
 // note: _socket() default constructor is implicit, call can be removed from initialiser list
-Server::Server()
-	:	_socket()
+Server::Server(std::vector<Config::Server> const &config)
+	:	_config(config)
+	,	_socket()
 	,	_epoll(_socket)
 {
+	(void)_config;
+
 	sockaddr_in	serverAddress{};
 	serverAddress.sin_family		= AF_INET;
 	serverAddress.sin_port			= htons(_port);
@@ -24,8 +27,7 @@ Server::Server()
 
 void
 Server::run()
-const
-{
+const {
 	_running = true;
 	std::cout << "Server running... (listening on port " << _port << ")\n";
 	while (_running)
@@ -63,8 +65,7 @@ Server::shutdown(int)
 
 void
 Server::newClient()
-const
-{
+const {
 	int clientSocket = accept(_socket, nullptr, nullptr);
 	if (clientSocket == -1) {
 		perror("accept");
@@ -81,8 +82,7 @@ const
 
 void
 Server::existingClient(int fd)
-const
-{
+const {
 	char buffer[1024];
 	ssize_t nBytes = recv(fd, buffer, sizeof(buffer) - 1, 0);
 	if (nBytes <= 0) {
@@ -97,8 +97,7 @@ const
 
 void
 Server::zombieClient(int fd)
-const
-{
+const {
 	close(fd);
 	epoll_ctl(_epoll, EPOLL_CTL_DEL, fd, nullptr);
 }
