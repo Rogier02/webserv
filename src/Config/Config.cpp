@@ -1,7 +1,7 @@
 #include "Config.hpp"
 #include <string>
 #include <iostream>
-#include <ifstream>
+#include <fstream>
 
 Config::Config()
 {
