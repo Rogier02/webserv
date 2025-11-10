@@ -1,34 +1,34 @@
-#include "Config.hpp"
-#include <string>
-#include <iostream>
-#include <ifstream>
+// #include "Config.hpp"
+// #include <string>
+// #include <iostream>
+// #include <fstream>
 
-Config::Config()
-{
+// Config::Config()
+// {
 
-}
+// }
 
-Config::Config(std::string fileName)
-{
+// Config::Config(std::string fileName)
+// {
 
-}
+// }
 
-Config &
-Config::operator=(Config &&other)
-{
-	if (this != &other)
-	{
+// Config &
+// Config::operator=(Config &&other)
+// {
+// 	if (this != &other)
+// 	{
 
-	}
-	return (*this);
-}
+// 	}
+// 	return (*this);
+// }
 
-Config::Error::Error(std::string const &message)
-	:	_message(message)
-{}
+// Config::Error::Error(std::string const &message)
+// 	:	_message(message)
+// {}
 
-const char *
-Config::Error::what()
-const throw() {
-	return (_message.c_str());
-}
+// const char *
+// Config::Error::what()
+// const throw() {
+// 	return (_message.c_str());
+// }

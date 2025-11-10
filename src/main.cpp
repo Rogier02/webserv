@@ -1,13 +1,10 @@
-// C++ program to illustrate the client application in the
-// socket programming
-
 #include <errno.h>
 #include <stdio.h>
-#include <exception>
+#include <stdexcept>
 
 #include "Server.hpp"
 #include "Config.hpp"
-#include <stdexcept>
+#include "HttpRequest.hpp"
 
 int	main(int argc, char **argv)
 {
@@ -16,12 +13,12 @@ int	main(int argc, char **argv)
 		return (EINVAL);
 	}
 
-	Config config;
-	if (argc == 2)
-		config = Config(argv[2]);
+	// Config config;
+	// if (argc == 2)
+	// 	config = Config(argv[2]);
 
 	try {
-		Server	server(config._servers);
+		Server	server;
 		server.run();
 	} catch (std::exception &exception) {
 		perror(exception.what());

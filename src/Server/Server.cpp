@@ -3,7 +3,26 @@
 std::atomic<bool> Server::_running(false);
 
 // note: _socket() default constructor is implicit, call can be removed from initialiser list
-Server::Server(std::vector<Config::Server> const &config)
+Server::Server()
+	:	_socket()
+	,	_epoll(_socket)
+{
+	sockaddr_in	serverAddress{};
+	serverAddress.sin_family		= AF_INET;
+	serverAddress.sin_port			= htons(_port);
+	serverAddress.sin_addr.s_addr	= INADDR_ANY;
+
+	if (bind(_socket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1)
+		throw std::runtime_error("bind()");
+
+	if (listen(_socket, 5) == -1)
+		throw std::runtime_error("listen()");
+
+	signal(SIGINT, shutdown);
+	signal(SIGTERM, shutdown);
+}
+
+/* Server::Server(std::vector<Config::Server> const &config)
 	:	_config(config)
 	,	_socket()
 	,	_epoll(_socket)
@@ -23,7 +42,7 @@ Server::Server(std::vector<Config::Server> const &config)
 
 	signal(SIGINT, shutdown);
 	signal(SIGTERM, shutdown);
-}
+} */
 
 void
 Server::run()

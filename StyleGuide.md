@@ -29,6 +29,7 @@ Conditional preprocessor statements are indented with a single compounding space
 
 ## Class Declaration
 A class may consist of the following categories, defined in the specified order from top to bottom:
+0. type definitions
 1. const value definitions
 2. static member variables
 3. Constructors, Destructors, Assignment Operators
@@ -36,6 +37,7 @@ A class may consist of the following categories, defined in the specified order 
 5. member functions
 6. set-getters
 7. operator overloads
+8. exceptions
 
 A category can consist of three subcategories
 1. public

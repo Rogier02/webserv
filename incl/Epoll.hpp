@@ -6,10 +6,10 @@
 # endif
 
 // C
-#include <unistd.h>
-#include <sys/epoll.h>
+# include <unistd.h>
+# include <sys/epoll.h>
 // C++
-#include <stdexcept>
+# include <stdexcept>
 
 class	Epoll
 {

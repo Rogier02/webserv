@@ -22,13 +22,14 @@ class	Server
 		static std::atomic<bool>	_running;
 
 	public:
-		Server(std::vector<Config::Server> const &config);
+		Server();
+		// Server(std::vector<Config::Server> const &config);
 		Server(Server const &other) = delete;
 		Server &operator=(Server const &other) = delete;
 		~Server() = default;
 
 	private:
-		std::vector<Config::Server> const &_config;
+		// std::vector<Config::Server> const &_config;
 		Socket	_socket;
 		Epoll	_epoll;
 		int		_port = _DefaultPort;
