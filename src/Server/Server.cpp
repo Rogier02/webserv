@@ -32,9 +32,9 @@ const {
 	std::cout << "Server running... (listening on port " << _port << ")\n";
 	while (_running)
 	{
-		epoll_event buffer[EventBatchSize];
+		epoll_event buffer[_EventBatchSize];
 
-		int nEvents = epoll_wait(_epoll, buffer, EventBatchSize, 1000);
+		int nEvents = epoll_wait(_epoll, buffer, _EventBatchSize, 1000);
 		if (nEvents == -1) {
 			perror("epoll_wait");
 			continue;
