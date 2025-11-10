@@ -3,7 +3,7 @@
 #include <ifstream>
 
 
-const char *ReadConfigFile(std::string fileName){
+const std::string ReadConfigFile(std::string fileName){
 	std::ifstream file = fileName;
 	if (!file.isopen)
 		return -1;
