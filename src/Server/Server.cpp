@@ -43,14 +43,14 @@ const {
 			for (Epoll::Event &event : _epoll.wait())
 			{
 				if (event.isWeird())
-					zombieClient(event.fd);
-				else if (event.fd == _socket)
+					zombieClient(event.data.fd);
+				else if (event.data.fd == _socket)
 					newClient();
 				else
-					existingClient(event.fd);// this should absolutely pass a Socket... but how do I make Event::Fd a Socket???
+					existingClient(event.data.fd);// this should absolutely pass a Socket... but how do I make Event::Fd a Socket???
 			}
 		} catch	(std::runtime_error &restartRequired) {
-			// log restart
+			Logger::log(restartRequired.what());
 			std::cerr << restartRequired.what() << std::endl;
 		} catch (std::exception &unknownException) {
 			// log unknown and throw to main? or just don't catch and let Logger class catch somehow?

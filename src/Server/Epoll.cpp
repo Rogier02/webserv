@@ -8,7 +8,7 @@ Epoll::Epoll(ListenSocket const &listenSocket)
 	:	_fd(create())
 {
 	Event	event(listenSocket);
-	ctl(Ctl::Add, event.fd, &event);
+	ctl(Ctl::Add, event.data.fd, &event);
 }
 
 Epoll::~Epoll() {
@@ -37,14 +37,14 @@ int	Epoll::ctl(Epoll::Ctl operation, int fd, Event *event) const {
 }
 
 int	Epoll::ctl(Epoll::Ctl operation, Event &event) const {
-	return (ctl(operation, event.fd, &event));
+	return (ctl(operation, event.data.fd, &event));
 }
 
 // EVENT
 Epoll::Event::Event(int socket)
 {
 	events = _defaultEvents;
-	fd = socket;
+	data.fd = socket;
 }
 
 bool	Epoll::Event::isWeird() const {
@@ -52,6 +52,6 @@ bool	Epoll::Event::isWeird() const {
 }
 
 Epoll::Event::operator int() const {
-	return (fd);
+	return (data.fd);
 }
 // EVENT

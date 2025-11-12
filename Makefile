@@ -4,7 +4,7 @@ MAKEFLAGS		=	-r -R
 
 CXX				=	c++
 CXXFLAGS		=	-MMD -MP -std=c++11
-CXXFLAGS		+=	-Wall -Wextra -Werror
+# CXXFLAGS		+=	-Wall -Wextra -Werror
 # CXXFLAGS		+=	-fsanitize=address
 # CXXFLAGS		+=	-g
 
@@ -13,7 +13,8 @@ INCLUDE_DIRS	=	incl \
 INCLUDE_FLAGS	=	$(addprefix -I , $(INCLUDE_DIRS))
 
 SRC_DIR			=	src
-SRC_FILES		=	main.cpp
+SRC_FILES		=	main.cpp \
+					Logger.cpp
 
 CONFIG_DIR		:=	$(SRC_DIR)/Config
 CONFIG_FILES	=	Config.cpp

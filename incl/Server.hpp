@@ -11,6 +11,7 @@
 # include "Config.hpp"
 # include "ListenSocket.hpp"
 # include "Epoll.hpp"
+# include "Logger.hpp"
 
 class	Server
 {

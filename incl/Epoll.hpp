@@ -22,7 +22,7 @@ class	Epoll
 		// if Event somehow holds a Socket, it needs it's own files, for now it's just part of Epoll
 		class	Event : public epoll_event {
 			public:
-				using	Fd		= int;
+				// using	Fd		= int;
 
 			public:
 				Event() = default;
@@ -38,7 +38,7 @@ class	Epoll
 				bool	isWeird() const;
 
 			public:
-				Fd	&fd	= epoll_event::data.fd;
+				// Fd	&fd	= epoll_event::data.fd;
 		};
 
 	private:
