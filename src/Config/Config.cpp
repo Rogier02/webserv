@@ -15,15 +15,18 @@ const std::string ReadConfigFile(std::string fileName){
 	}
 	
 #include "Config.hpp"
+#include <string>
+#include <iostream>
+#include <fstream>
 
 Config::Config()
 {
 
 }
 
-Config::Config(std::string file)
+Config::Config(std::string fileName)
 {
-	(void)file;
+
 }
 
 Config &
