@@ -16,9 +16,9 @@
 class	Server
 {
 	private:
-		static constexpr int		_EventBatchSize = 64;
 		static constexpr int		_DefaultPort = 8080;
 
+	private:
 		static std::atomic<bool>	_running;
 
 	public:
@@ -33,7 +33,7 @@ class	Server
 		Socket	_socket;
 		Epoll	_epoll;
 		int		_port = _DefaultPort;
-	
+
 	public:
 		void		run() const;
 		static void	shutdown(int);

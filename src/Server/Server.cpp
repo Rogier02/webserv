@@ -51,19 +51,9 @@ const {
 	std::cout << "Server running... (listening on port " << _port << ")\n";
 	while (_running)
 	{
-		epoll_event buffer[_EventBatchSize];
-
-		int nEvents = epoll_wait(_epoll, buffer, _EventBatchSize, 1000);
-		if (nEvents == -1) {
-			perror("epoll_wait");
-			continue;
-		}
-
-		for (int i = 0; i < nEvents; ++i)
+		for (epoll_event &event : _epoll.wait())
 		{
-			epoll_event	&event = buffer[i];
-
-			if (event.events & (EPOLLERR | EPOLLHUP))
+			if (event.events & (Epoll::Event::Err | Epoll::Event::Hup))
 				zombieClient(event.data.fd);
 			else
 			if (event.data.fd == _socket)
@@ -93,10 +83,11 @@ const {
 
 	std::cout << "New client connected.\n";
 
-	epoll_event clientEv{};
-	clientEv.events = EPOLLIN;
-	clientEv.data.fd = clientSocket;
-	epoll_ctl(_epoll, EPOLL_CTL_ADD, clientSocket, &clientEv);
+	epoll_event clientEvent{};
+	clientEvent.events = Epoll::Event::In;
+	clientEvent.data.fd = clientSocket;
+	// epoll_ctl(_epoll, EPOLL_CTL_ADD, clientSocket, &clientEvent);
+	_epoll.ctl(Epoll::Ctl::Add, clientSocket, &clientEvent);
 }
 
 void
@@ -107,7 +98,8 @@ const {
 	if (nBytes <= 0) {
 		std::cout << "Client disconnected.\n";
 		close(fd);
-		epoll_ctl(_epoll, EPOLL_CTL_DEL, fd, nullptr);
+		// epoll_ctl(_epoll, EPOLL_CTL_DEL, fd, nullptr);
+		_epoll.ctl(Epoll::Ctl::Del, fd);
 	} else {
 		buffer[nBytes] = '\0';
 		std::cout << "Message from client: " << buffer << std::endl;
@@ -118,5 +110,6 @@ void
 Server::zombieClient(int fd)
 const {
 	close(fd);
-	epoll_ctl(_epoll, EPOLL_CTL_DEL, fd, nullptr);
+	// epoll_ctl(_epoll, EPOLL_CTL_DEL, fd, nullptr);
+	_epoll.ctl(Epoll::Ctl::Del, fd);
 }

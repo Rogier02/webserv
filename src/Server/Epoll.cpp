@@ -10,7 +10,7 @@ Epoll::Epoll(int socket)
 	ev.events	= EPOLLIN;
 	ev.data.fd	= socket;
 
-	if (epoll_ctl(_fd, EPOLL_CTL_ADD, ev.data.fd, &ev) == -1)
+	if (epoll_ctl(_fd, Ctl::Add, ev.data.fd, &ev) == -1)
 		throw std::runtime_error("epoll_ctl()");
 }
 
@@ -20,4 +20,24 @@ Epoll::~Epoll() {
 
 Epoll::operator int() const {
 	return (_fd);
+}
+
+std::vector<epoll_event> &
+Epoll::wait()
+{
+	epoll_event buffer[_EventBatchSize];
+
+	int nEvents = epoll_wait(_fd, buffer, _EventBatchSize, _waitTimeout);
+	if (nEvents == -1) {
+		perror("epoll_wait");
+	} else for (int i = 0; i < nEvents; ++i) {
+		_events.push_back(std::move(buffer[i]));
+	}
+	return (_events);
+}
+
+int
+Epoll::ctl(Epoll::Ctl operation, int fd, epoll_event *event)
+const {
+	return (epoll_ctl(_fd, operation, fd, event));
 }
