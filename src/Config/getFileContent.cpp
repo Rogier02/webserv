@@ -61,11 +61,11 @@ Config::Server	parseServer(TokenStream &ts){
 	Config::Server server;
 	ts.next();
 	if (ts.current().text == "error_page")
-		parseErrorPage(ts);
+		config.errorPages.push_back(parseErrorPage(ts));
 	if (ts.current().text == "location")
-		parseLocation(ts);
+		config.locations.push_back(parseLocation(ts));
 	else {
-		logConfigError(ts.current(), "Unknown directive");
+		LOG("[Config Error] Line " << ts.current().text << ": \"" << ts.current().text << "\" -> Unknown directive");
 	}
 	if (ts.current().text == "}")
 		return (server);
@@ -88,8 +88,10 @@ Config::Server::ErrorPage	parseErrorPage(TokenStream &ts){
 Config::Server::Location	parseLocation(TokenStream &ts){
 	Config::Server::Location location;
 	ts.next();
-
-	return(location);
+	location.path = ts.current().text;
+	
+	if (ts.current().text == "}")
+		return(location);
 }
 
 int	main()
