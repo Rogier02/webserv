@@ -7,11 +7,7 @@
 # include <vector>
 # include <stdexcept>
 
-struct	Token
-{
-	std::string	text;
-	int			lineNbr;
-};
+
 
 struct	Config
 {
@@ -59,7 +55,6 @@ struct	Config
 	Config();
 	Config(std::string file);
 	Config &operator=(Config &&other);
-	
 };
 
 #endif

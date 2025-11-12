@@ -1,4 +1,4 @@
-#include "../../incl/Config.hpp"
+#include "../../incl/TokenStream.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -9,6 +9,10 @@ void	printTokens(std::vector<Token> tokens){
 	for (size_t i = 0; i < tokens.size(); i++){
 		std::cout << i << "\t- line: " << tokens[i].lineNbr << "\t- Text: " << tokens[i].text << "\n";
 	}
+}
+
+void	logConfigError(const Token &token, const std::string &message){
+	std::cerr << "[Config Error] Line " << token.text << ": \"" << token.text << "\" -> " << message << std::endl;
 }
 
 void	getFileContent(std::string fileName){
@@ -35,31 +39,49 @@ void	getFileContent(std::string fileName){
 		}
 	}
 	printTokens(tokens);
+	TokenStream ts(tokens);
 	// now i have a lot of tokens.
 	// Next: do something with them/
 	Config config();
-	config.loadFromFile(tokens);
+	config.loadFromFile(&ts);
 }
 
-void	loadFromFile(std::vector<Token> tokens){
-	for (size_t i = 0; i < tokens.size(); i++){
-		if (tokens[i].text == "Server")
-			serverConfig(tokens, i);
-		if (tokens[i].text == "}")
+void	loadFromFile(TokenStream &ts){
+	while (!ts.atEnd()){
+		if (ts.current().text == "Server")
+			serverConfig(ts.next());
+		if (ts.current().text == "}")
 			return ;
+
 	}
 }
 
-void	serverConfig(std::vector<Token> tokens, size_t start){
-	for (size_t i = start; i < tokens.size(); i++){
-		if (tokens[i].text == "error_page")
-			errorPagesConfig(tokens, i);
-		if (tokens[i].text == "}")
+void	serverConfig(TokenStream &ts){
+		if (ts.current().text == "error_page")
+			errorPageConfig(ts.next());
+		if (ts.current().text == "location")
+			locationConfig(ts.next());
+		if (ts.current().text == "}")
 			return ;
 		else {
-			std::cout << 
+			logConfigError(ts.current(), "Unknown directive");
 		}
+		if (ts.current().text == "}")
+			return ;
+}
+
+void	errorPageConfig(TokenStream &ts){
+
+ 	if (tokens[start + 1].text.back() != ';') {
+		std::cerr << "[Config Error] Line " << tokens[start + 1].lineNbr << ": missing semicolon at the end of directive \"" << tokens[start + 1].text << "\"\n";
+		return (-1); // or throw an exception
 	}
+	tokens[start + 1].text.pop_back();
+	config.errorPages.push_back({tokens[start], tokens[start + 1]});
+}
+
+void	locationConfig(TokenStream &ts){
+
 }
 
 int	main()
