@@ -1,4 +1,6 @@
-#include "../../incl/TokenStream.hpp"
+#include "TokenStream.hpp"
+#include "Config.hpp"
+#include "log.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -49,39 +51,45 @@ void	getFileContent(std::string fileName){
 void	loadFromFile(TokenStream &ts){
 	while (!ts.atEnd()){
 		if (ts.current().text == "Server")
-			serverConfig(ts.next());
+			config.servers.push_back(parseServer(ts));
 		if (ts.current().text == "}")
 			return ;
-
 	}
 }
 
-void	serverConfig(TokenStream &ts){
-		if (ts.current().text == "error_page")
-			errorPageConfig(ts.next());
-		if (ts.current().text == "location")
-			locationConfig(ts.next());
-		if (ts.current().text == "}")
-			return ;
-		else {
-			logConfigError(ts.current(), "Unknown directive");
-		}
-		if (ts.current().text == "}")
-			return ;
-}
-
-void	errorPageConfig(TokenStream &ts){
-
- 	if (tokens[start + 1].text.back() != ';') {
-		std::cerr << "[Config Error] Line " << tokens[start + 1].lineNbr << ": missing semicolon at the end of directive \"" << tokens[start + 1].text << "\"\n";
-		return (-1); // or throw an exception
+Config::Server	parseServer(TokenStream &ts){
+	Config::Server server;
+	ts.next();
+	if (ts.current().text == "error_page")
+		parseErrorPage(ts);
+	if (ts.current().text == "location")
+		parseLocation(ts);
+	else {
+		logConfigError(ts.current(), "Unknown directive");
 	}
-	tokens[start + 1].text.pop_back();
-	config.errorPages.push_back({tokens[start], tokens[start + 1]});
+	if (ts.current().text == "}")
+		return (server);
 }
 
-void	locationConfig(TokenStream &ts){
+Config::Server::ErrorPage	parseErrorPage(TokenStream &ts){
+	Config::Server::ErrorPage errorPage;
+	ts.next();
+	errorPage.code = std::stoi(ts.current().text);
+	ts.next();
+	errorPage.path = ts.current().text;
+	if (errorPage.path.back() != ';') {
+		LOG("[Config Error] Line " << ts.current().lineNbr << ": missing semicolon at the end of directive \"" << errorPage.path << "\"\n");
+	}
+	else
+		errorPage.path.pop_back();
+	return (errorPage);
+}
 
+Config::Server::Location	parseLocation(TokenStream &ts){
+	Config::Server::Location location;
+	ts.next();
+
+	return(location);
 }
 
 int	main()

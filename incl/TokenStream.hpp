@@ -13,12 +13,12 @@ struct	Token
 class	TokenStream
 {
 private:
-	const std::vector<Token>	&tokens;
-	size_t						index;
+size_t						index;
 public:
-	TokenStream(const std::vector<Token> &t);
-	~TokenStream();
+TokenStream(const std::vector<Token> &t);
+~TokenStream();
 
+	const std::vector<Token>	&tokens;
 	const Token &current() const;
 	void next();
 	bool atEnd() const;

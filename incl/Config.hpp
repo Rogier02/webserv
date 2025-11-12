@@ -42,7 +42,7 @@ struct	Config
 		std::vector<ErrorPage>	errorPages;
 	};
 
-	std::vector<Server>	_servers;
+	std::vector<Server>	servers;
 
 	class Error: public std::exception {
 		public:
