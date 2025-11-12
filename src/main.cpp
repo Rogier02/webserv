@@ -21,7 +21,7 @@ int	main(int argc, char **argv)
 		Server	server;
 		server.run();
 	} catch (std::exception &exception) {
-		perror(exception.what());
+		std::cerr << exception.what() << std::endl;
 	}
 	return (0);
 }

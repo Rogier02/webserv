@@ -2,21 +2,20 @@
 # define SERVER_HPP
 
 // C
-# include <iostream>
-# include <netinet/in.h>
 # include <signal.h>
 // C++
+# include <iostream>
 # include <stdexcept>
 # include <atomic>
-
+// webserv
 # include "Config.hpp"
-# include "Socket.hpp"
+# include "ListenSocket.hpp"
 # include "Epoll.hpp"
 
 class	Server
 {
 	private:
-		static constexpr int		_DefaultPort = 8080;
+		static constexpr int	_DefaultPort = 8080;
 
 	private:
 		static std::atomic<bool>	_running;
@@ -30,9 +29,9 @@ class	Server
 
 	private:
 		// std::vector<Config::Server> const &_config;
-		Socket	_socket;
-		Epoll	_epoll;
-		int		_port = _DefaultPort;
+		int				_port = _DefaultPort;
+		ListenSocket	_socket;
+		Epoll			_epoll;
 
 	public:
 		void		run() const;

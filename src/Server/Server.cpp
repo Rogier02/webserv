@@ -2,24 +2,12 @@
 
 std::atomic<bool> Server::_running(false);
 
-// note: _socket() default constructor is implicit, call can be removed from initialiser list
 Server::Server()
-	:	_socket()
+	:	_socket(_port)
 	,	_epoll(_socket)
 {
-	sockaddr_in	serverAddress{};
-	serverAddress.sin_family		= AF_INET;
-	serverAddress.sin_port			= htons(_port);
-	serverAddress.sin_addr.s_addr	= INADDR_ANY;
-
-	if (bind(_socket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1)
-		throw std::runtime_error("bind()");
-
-	if (listen(_socket, 5) == -1)
-		throw std::runtime_error("listen()");
-
 	signal(SIGINT, shutdown);
-	signal(SIGTERM, shutdown);
+	signal(SIGTERM, shutdown); // should this happen in main() or ::run() instead? static _running doesn't work for multiple servers anyway
 }
 
 /* Server::Server(std::vector<Config::Server> const &config)
@@ -51,15 +39,22 @@ const {
 	std::cout << "Server running... (listening on port " << _port << ")\n";
 	while (_running)
 	{
-		for (epoll_event &event : _epoll.wait())
-		{
-			if (event.events & (Epoll::Event::Err | Epoll::Event::Hup))
-				zombieClient(event.data.fd);
-			else
-			if (event.data.fd == _socket)
-				newClient();
-			else
-				existingClient(event.data.fd);
+		try {
+			for (Epoll::Event &event : _epoll.wait())
+			{
+				if (event.isWeird())
+					zombieClient(event.fd);
+				else if (event.fd == _socket)
+					newClient();
+				else
+					existingClient(event.fd);// this should absolutely pass a Socket... but how do I make Event::Fd a Socket???
+			}
+		} catch	(std::runtime_error &restartRequired) {
+			// log restart
+			std::cerr << restartRequired.what() << std::endl;
+		} catch (std::exception &unknownException) {
+			// log unknown and throw to main? or just don't catch and let Logger class catch somehow?
+			throw unknownException;
 		}
 	}
 	std::cout << "Server shutting down...\n";
@@ -75,34 +70,22 @@ Server::shutdown(int)
 void
 Server::newClient()
 const {
-	int clientSocket = accept(_socket, nullptr, nullptr);
-	if (clientSocket == -1) {
-		perror("accept");
-		return;
-	}
+	Epoll::Event	event(_socket.accept());
 
+	_epoll.ctl(Epoll::Ctl::Add, event);
 	std::cout << "New client connected.\n";
-
-	epoll_event clientEvent{};
-	clientEvent.events = Epoll::Event::In;
-	clientEvent.data.fd = clientSocket;
-	// epoll_ctl(_epoll, EPOLL_CTL_ADD, clientSocket, &clientEvent);
-	_epoll.ctl(Epoll::Ctl::Add, clientSocket, &clientEvent);
 }
 
 void
 Server::existingClient(int fd)
 const {
-	char buffer[1024];
-	ssize_t nBytes = recv(fd, buffer, sizeof(buffer) - 1, 0);
-	if (nBytes <= 0) {
+	std::string	request = Socket::recv(fd);
+	if (request.empty()) {
 		std::cout << "Client disconnected.\n";
-		close(fd);
-		// epoll_ctl(_epoll, EPOLL_CTL_DEL, fd, nullptr);
 		_epoll.ctl(Epoll::Ctl::Del, fd);
+		close(fd);
 	} else {
-		buffer[nBytes] = '\0';
-		std::cout << "Message from client: " << buffer << std::endl;
+		std::cout << "Client Request:\n" << request << std::endl;
 	}
 }
 
@@ -110,6 +93,5 @@ void
 Server::zombieClient(int fd)
 const {
 	close(fd);
-	// epoll_ctl(_epoll, EPOLL_CTL_DEL, fd, nullptr);
 	_epoll.ctl(Epoll::Ctl::Del, fd);
 }

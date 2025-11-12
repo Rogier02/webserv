@@ -1,25 +1,31 @@
 #ifndef SOCKET_HPP
 # define SOCKET_HPP
 
-# ifdef VERBOSE
-#  include <iostream>
-# endif
-
 // C
 # include <unistd.h>
 # include <sys/socket.h>
+# include <netinet/in.h>
 // C++
 # include <stdexcept>
+// webserv
+# include "EasyThrow.hpp"
 
 class	Socket
 {
 	public:
 		Socket();
-		~Socket();
+		virtual ~Socket();
 
+	public:
 		operator int() const;
 
-	private:
+	public:
+		int			accept() const;
+
+		static int			accept(int fd);
+		static std::string	recv(int fd);
+
+	protected:
 		int	_fd;
 };
 

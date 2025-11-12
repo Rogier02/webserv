@@ -1,17 +1,14 @@
 #include "Epoll.hpp"
 
-Epoll::Epoll(int socket)
-	:	_fd(epoll_create(1))
+Epoll::Epoll()
+	:	_fd(create())
+{}
+
+Epoll::Epoll(ListenSocket const &listenSocket)
+	:	_fd(create())
 {
-	if (_fd == -1)
-		throw std::runtime_error("epoll_create()");
-
-	epoll_event	ev{};
-	ev.events	= EPOLLIN;
-	ev.data.fd	= socket;
-
-	if (epoll_ctl(_fd, Ctl::Add, ev.data.fd, &ev) == -1)
-		throw std::runtime_error("epoll_ctl()");
+	Event	event(listenSocket);
+	ctl(Ctl::Add, event.fd, &event);
 }
 
 Epoll::~Epoll() {
@@ -22,22 +19,39 @@ Epoll::operator int() const {
 	return (_fd);
 }
 
-std::vector<epoll_event> &
+int	Epoll::create() const {
+	return (EasyThrow(epoll_create(1)));
+}
+
+std::vector<Epoll::Event>
 Epoll::wait()
-{
-	epoll_event buffer[_EventBatchSize];
-
-	int nEvents = epoll_wait(_fd, buffer, _EventBatchSize, _waitTimeout);
-	if (nEvents == -1) {
-		perror("epoll_wait");
-	} else for (int i = 0; i < nEvents; ++i) {
-		_events.push_back(std::move(buffer[i]));
-	}
-	return (_events);
-}
-
-int
-Epoll::ctl(Epoll::Ctl operation, int fd, epoll_event *event)
 const {
-	return (epoll_ctl(_fd, operation, fd, event));
+	Event	buffer[_EventBatchSize];
+
+	int nEvents = EasyThrow(epoll_wait(_fd, buffer, _EventBatchSize, _waitTimeout));
+	return (std::vector<Event>(buffer, (Event *)(buffer + nEvents)));
 }
+
+int	Epoll::ctl(Epoll::Ctl operation, int fd, Event *event) const {
+	return (EasyThrow(epoll_ctl(_fd, operation, fd, event)));
+}
+
+int	Epoll::ctl(Epoll::Ctl operation, Event &event) const {
+	return (ctl(operation, event.fd, &event));
+}
+
+// EVENT
+Epoll::Event::Event(int socket)
+{
+	events = _defaultEvents;
+	fd = socket;
+}
+
+bool	Epoll::Event::isWeird() const {
+	return (events & (Epoll::Events::Err | Epoll::Events::Hup));
+}
+
+Epoll::Event::operator int() const {
+	return (fd);
+}
+// EVENT
