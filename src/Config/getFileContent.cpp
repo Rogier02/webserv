@@ -1,8 +1,14 @@
 #include "Config.hpp"
 
+void	printTokens(std::vector<Token> tokens){
+	for (int i = 0; i < tokens.size(); i++){
+		std::cout << i << " - Text: " << tokens[i].text << " - line: " << tokens[i].lineNbr << "\n";
+	}
+}
 
-void	getFileContent(){
-	if (filename.size() >= 5 && filename.rfind(".conf") != filename.size() - 5;)
+
+void	getFileContent(std::string fileName){
+	if (fileName.size() >= 5 && fileName.rfind(".conf") != fileName.size() - 5;)
 		std::cout << "Error: incorrect file extension\n"; //return, error, exit?
 	std::ifstream file(fileName);
 	if (!file.isopen)
@@ -18,11 +24,15 @@ void	getFileContent(){
 
 		while (ss >> word){
 			if (line.empty() || word[0] == '#')
-				break;
+				continue;
 			tokens.push_back({word, lineNbr});
 		}
 	}
 	// now i have a lot of tokens.
 	// Next: do something with them/
 
+}
+
+int	main(){
+	
 }

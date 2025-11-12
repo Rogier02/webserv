@@ -18,7 +18,7 @@ int	main(int argc, char **argv)
 
 	Config config;
 	if (argc == 2)
-		config = Config(argv[2]);
+		config.loadFromFile(argv[2]);
 
 	try {
 		Server	server(config._servers);
