@@ -4,6 +4,7 @@
 // C
 # include <signal.h>
 // C++
+# include <stdbool.h>
 # include <iostream>
 # include <stdexcept>
 # include <atomic>
