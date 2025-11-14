@@ -27,8 +27,8 @@ class	Event : public epoll_event
 
 	public:
 		void	handle();
-		bool	isClosed() const;
-	
+		bool	isWeird() const;
+
 	private:
 		virtual void	_in();
 		virtual void	_out();

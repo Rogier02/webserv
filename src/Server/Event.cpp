@@ -6,7 +6,7 @@ Event::Event(Events eventTypes, int fd)
 	data.fd = fd;
 }
 
-bool	Event::isClosed() const {
+bool	Event::isWeird() const {
 	return (events & (Events::Err | Events::Hup));
 }
 
@@ -26,8 +26,7 @@ void	Event::_in()
 {
 	std::string	request = Socket::recv(data.fd);
 	if (request.empty()) {
-		std::cout << "Client disconnected.\n";
-		close(data.fd);
+		throw data.fd;
 	} else {
 		std::cout << "Client Request:\n" << request << std::endl;
 	}

@@ -1,18 +1,14 @@
 #include "Server.hpp"
 
-std::atomic<bool> Server::_running(false);
-
 Server::Server()
 	:	_socket(_port)
 	,	_epoll(_socket)
 {
-	signal(SIGINT, shutdown);
-	signal(SIGTERM, shutdown);
 }
 
 void
 Server::run()
-const {
+{
 	_running = true;
 	std::cout << "Server running... (listening on port " << _port << ")\n";
 	while (_running)
@@ -20,12 +16,15 @@ const {
 		try {
 			for (Event &event : _epoll.wait())
 			{
-				if (event.isClosed())
-					_epoll.ctl(Epoll::Ctl::Del, event.data.fd);
-				else if (event.data.fd == _socket)
-					newClient();
-				else
+				if (event.isWeird())
+					delClient(event);
+				else if (event == _socket)
+					addClient();
+				else try {
 					event.handle();
+				} catch (int closing) {
+					delClient(closing);
+				}
 			}
 		} catch	(std::runtime_error &restartRequired) {
 			Logger::log(restartRequired.what());
@@ -39,17 +38,18 @@ const {
 }
 
 void
-Server::shutdown(int)
+Server::addClient()
 {
-	_running = false;
-	std::cerr << std::endl;
-}
-
-void
-Server::newClient()
-const {
 	Event	event(Event::Events::In, _socket.accept());
 
 	_epoll.ctl(Epoll::Ctl::Add, event);
 	std::cout << "New client connected.\n";
+}
+
+void
+Server::delClient(int fd)
+{
+	_epoll.ctl(Epoll::Ctl::Del, fd);
+	close(fd);
+	std::cout << "Client " << fd << " disconnected.\n";
 }

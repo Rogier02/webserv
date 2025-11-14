@@ -6,12 +6,23 @@
 #include "Config.hpp"
 #include "HttpRequest.hpp"
 
+std::atomic<bool>	_running(false);
+
+void	shutdown(int)
+{
+	_running = false;
+	std::cerr << std::endl;
+}
+
 int	main(int argc, char **argv)
 {
 	if (argc > 2) {
 		std::cout << "Usage: " << argv[0] << " [configuration file]\n";
 		return (EINVAL);
 	}
+
+	signal(SIGINT, shutdown);
+	signal(SIGTERM, shutdown);
 
 	// Config config;
 	// if (argc == 2)
@@ -21,7 +32,7 @@ int	main(int argc, char **argv)
 		Server	server;
 		server.run();
 	} catch (std::exception &exception) {
-		std::cerr << exception.what() << std::endl;
+		std::cerr << "Fatal Error: " << exception.what() << std::endl;
 	}
 	return (0);
 }

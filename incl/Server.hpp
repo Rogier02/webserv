@@ -13,13 +13,12 @@
 # include "Epoll.hpp"
 # include "Logger.hpp"
 
+extern	std::atomic<bool>	_running;
+
 class	Server
 {
 	private:
 		static constexpr int	_DefaultPort = 8080;
-
-	private:
-		static std::atomic<bool>	_running;
 
 	public:
 		Server();
@@ -35,11 +34,11 @@ class	Server
 		Epoll			_epoll;
 
 	public:
-		void		run() const;
-		static void	shutdown(int);
+		void	run();
 
 	private:
-		void	newClient() const;
+		void	addClient();
+		void	delClient(int fd);
 };
 
 #endif
