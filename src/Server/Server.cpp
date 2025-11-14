@@ -7,30 +7,8 @@ Server::Server()
 	,	_epoll(_socket)
 {
 	signal(SIGINT, shutdown);
-	signal(SIGTERM, shutdown); // should this happen in main() or ::run() instead? static _running doesn't work for multiple servers anyway
-}
-
-/* Server::Server(std::vector<Config::Server> const &config)
-	:	_config(config)
-	,	_socket()
-	,	_epoll(_socket)
-{
-	(void)_config;
-
-	sockaddr_in	serverAddress{};
-	serverAddress.sin_family		= AF_INET;
-	serverAddress.sin_port			= htons(_port);
-	serverAddress.sin_addr.s_addr	= INADDR_ANY;
-
-	if (bind(_socket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1)
-		throw std::runtime_error("bind()");
-
-	if (listen(_socket, 5) == -1)
-		throw std::runtime_error("listen()");
-
-	signal(SIGINT, shutdown);
 	signal(SIGTERM, shutdown);
-} */
+}
 
 void
 Server::run()
@@ -40,14 +18,14 @@ const {
 	while (_running)
 	{
 		try {
-			for (Epoll::Event &event : _epoll.wait())
+			for (Event &event : _epoll.wait())
 			{
-				if (event.isWeird())
-					zombieClient(event.data.fd);
+				if (event.isClosed())
+					_epoll.ctl(Epoll::Ctl::Del, event.data.fd);
 				else if (event.data.fd == _socket)
 					newClient();
 				else
-					existingClient(event.data.fd);// this should absolutely pass a Socket... but how do I make Event::Fd a Socket???
+					event.handle();
 			}
 		} catch	(std::runtime_error &restartRequired) {
 			Logger::log(restartRequired.what());
@@ -70,28 +48,8 @@ Server::shutdown(int)
 void
 Server::newClient()
 const {
-	Epoll::Event	event(_socket.accept());
+	Event	event(Event::Events::In, _socket.accept());
 
 	_epoll.ctl(Epoll::Ctl::Add, event);
 	std::cout << "New client connected.\n";
-}
-
-void
-Server::existingClient(int fd)
-const {
-	std::string	request = Socket::recv(fd);
-	if (request.empty()) {
-		std::cout << "Client disconnected.\n";
-		_epoll.ctl(Epoll::Ctl::Del, fd);
-		close(fd);
-	} else {
-		std::cout << "Client Request:\n" << request << std::endl;
-	}
-}
-
-void
-Server::zombieClient(int fd)
-const {
-	close(fd);
-	_epoll.ctl(Epoll::Ctl::Del, fd);
 }

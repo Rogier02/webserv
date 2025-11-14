@@ -7,7 +7,7 @@ Epoll::Epoll()
 Epoll::Epoll(ListenSocket const &listenSocket)
 	:	_fd(create())
 {
-	Event	event(listenSocket);
+	Event	event(Event::Events::In, listenSocket);
 	ctl(Ctl::Add, event.data.fd, &event);
 }
 
@@ -23,7 +23,7 @@ int	Epoll::create() const {
 	return (EasyThrow(epoll_create(1)));
 }
 
-std::vector<Epoll::Event>
+std::vector<Event>
 Epoll::wait()
 const {
 	Event	buffer[_EventBatchSize];
@@ -39,19 +39,3 @@ int	Epoll::ctl(Epoll::Ctl operation, int fd, Event *event) const {
 int	Epoll::ctl(Epoll::Ctl operation, Event &event) const {
 	return (ctl(operation, event.data.fd, &event));
 }
-
-// EVENT
-Epoll::Event::Event(int socket)
-{
-	events = _defaultEvents;
-	data.fd = socket;
-}
-
-bool	Epoll::Event::isWeird() const {
-	return (events & (Epoll::Events::Err | Epoll::Events::Hup));
-}
-
-Epoll::Event::operator int() const {
-	return (data.fd);
-}
-// EVENT

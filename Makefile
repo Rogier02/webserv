@@ -25,6 +25,7 @@ HTTP_FILES		=	HttpRequest.cpp \
 
 SERVER_DIR		:=	$(SRC_DIR)/Server
 SERVER_FILES	=	Epoll.cpp \
+					Event.cpp \
 					Server.cpp
 
 SOCKETS_DIR		:=	$(SRC_DIR)/Sockets

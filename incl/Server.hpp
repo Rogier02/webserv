@@ -40,8 +40,6 @@ class	Server
 
 	private:
 		void	newClient() const;
-		void	existingClient(int fd) const;
-		void	zombieClient(int fd) const;
 };
 
 #endif
