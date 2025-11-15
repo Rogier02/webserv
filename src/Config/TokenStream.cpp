@@ -26,3 +26,10 @@ size_t
 TokenStream::position() const{
 	return index; 
 }
+
+void
+TokenStream::printTokens(std::vector<Token> tokens){
+	for (size_t i = 0; i < tokens.size(); i++){
+		std::cout << i << "\t- line: " << tokens[i].lineNbr << "\t- Text: " << tokens[i].text << "\n";
+	}
+}

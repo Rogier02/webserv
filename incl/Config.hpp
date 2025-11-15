@@ -55,6 +55,7 @@ struct	Config
 	Config();
 	Config(std::string file);
 	Config &operator=(Config &&other);
+	void	loadFromFile(TokenStream &ts);
 };
 
 #endif

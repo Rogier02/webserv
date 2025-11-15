@@ -7,15 +7,7 @@
 #include <string>
 #include <vector>
 
-void	printTokens(std::vector<Token> tokens){
-	for (size_t i = 0; i < tokens.size(); i++){
-		std::cout << i << "\t- line: " << tokens[i].lineNbr << "\t- Text: " << tokens[i].text << "\n";
-	}
-}
 
-void	logConfigError(const Token &token, const std::string &message){
-	std::cerr << "[Config Error] Line " << token.text << ": \"" << token.text << "\" -> " << message << std::endl;
-}
 
 void	getFileContent(std::string fileName){
 	if (fileName.size() >= 5 && fileName.rfind(".conf") != fileName.size() - 5)
@@ -42,13 +34,13 @@ void	getFileContent(std::string fileName){
 	}
 	printTokens(tokens);
 	TokenStream ts(tokens);
-	// now i have a lot of tokens.
-	// Next: do something with them/
-	Config config();
-	config.loadFromFile(&ts);
+	Config config; // moet misschien anders
+	config.loadFromFile(ts);
 }
 
 void	loadFromFile(TokenStream &ts){
+	Config config; // moet misschien anders
+
 	while (!ts.atEnd()){
 		if (ts.current().text == "Server")
 			config.servers.push_back(parseServer(ts));
@@ -61,9 +53,9 @@ Config::Server	parseServer(TokenStream &ts){
 	Config::Server server;
 	ts.next();
 	if (ts.current().text == "error_page")
-		config.errorPages.push_back(parseErrorPage(ts));
+		server.errorPages.push_back(parseErrorPage(ts));
 	if (ts.current().text == "location")
-		config.locations.push_back(parseLocation(ts));
+		server.locations.push_back(parseLocation(ts));
 	else {
 		LOG("[Config Error] Line " << ts.current().text << ": \"" << ts.current().text << "\" -> Unknown directive");
 	}
@@ -81,18 +73,11 @@ Config::Server::ErrorPage	parseErrorPage(TokenStream &ts){
 		LOG("[Config Error] Line " << ts.current().lineNbr << ": missing semicolon at the end of directive \"" << errorPage.path << "\"\n");
 	}
 	else
-		errorPage.path.pop_back();
-	return (errorPage);
+		errorPage.path.pop_back(); //werkt niet zoals ik dacht. 
+	if (ts.current().text == "\n")
+		return (errorPage);
 }
 
-Config::Server::Location	parseLocation(TokenStream &ts){
-	Config::Server::Location location;
-	ts.next();
-	location.path = ts.current().text;
-	
-	if (ts.current().text == "}")
-		return(location);
-}
 
 int	main()
 {
