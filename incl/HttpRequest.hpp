@@ -5,34 +5,34 @@
 # include <unordered_map>
 # include <string>
 
-class HttpRequest
-{
+// class HttpRequest
+// {
 
-	public:
-		enum	RequestType: uint8_t {
-			GET,
-			POST,
-			DELETE,
-		};
+// 	public:
+// 		enum	RequestType: uint8_t {
+// 			GET,
+// 			POST,
+// 			DELETE,
+// 		};
 
-	private:
-		static const std::unordered_map<std::string, RequestType>	Methods = {
-			{"GET", RequestType::GET},
-			{"POST", RequestType::POST},
-			{"DELETE", RequestType::DELETE},
-		};
+// 	private:
+// 		static const std::unordered_map<std::string, RequestType>	Methods = {
+// 			{"GET", RequestType::GET},
+// 			{"POST", RequestType::POST},
+// 			{"DELETE", RequestType::DELETE},
+// 		};
 
-	public:
-		void	execGet();
-		void	execPost();
-		void	execDelete();
+// 	public:
+// 		void	execGet();
+// 		void	execPost();
+// 		void	execDelete();
 
-	public:
-		//method
+// 	public:
+// 		//method
 	
-	private:
-		RequestType	_type;
+// 	private:
+// 		RequestType	_type;
 
-};
+// };
 
 #endif
