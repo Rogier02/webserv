@@ -7,8 +7,6 @@
 #include <string>
 #include <vector>
 
-
-
 void	getFileContent(std::string fileName){
 	if (fileName.size() >= 5 && fileName.rfind(".conf") != fileName.size() - 5)
 		std::cout << "Error: incorrect file extension\n"; //return, error, exit?
@@ -27,9 +25,16 @@ void	getFileContent(std::string fileName){
 		std::string word;
 
 		while (ss >> word){
-			if (line.empty() || word[0] == '#')
+			if (word[0] == '#')
 				break;
-			tokens.push_back({word, lineNbr});
+			if (!word.empty() && word.back() == ';') {
+				word.pop_back();
+				if (!word.empty()) 
+					tokens.push_back({word, lineNbr});
+				tokens.push_back({";", lineNbr});
+			}
+			else
+				tokens.push_back({word, lineNbr});
 		}
 	}
 	printTokens(tokens);
@@ -57,7 +62,7 @@ Config::Server	parseServer(TokenStream &ts){
 	if (ts.current().text == "location")
 		server.locations.push_back(parseLocation(ts));
 	else {
-		LOG("[Config Error] Line " << ts.current().text << ": \"" << ts.current().text << "\" -> Unknown directive");
+		LOG("[Config Error] Line " << ts.current().lineNbr << ": \"" << ts.current().text << "\" -> Unknown directive");
 	}
 	if (ts.current().text == "}")
 		return (server);

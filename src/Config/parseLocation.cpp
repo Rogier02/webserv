@@ -14,73 +14,67 @@ Config::Server::Location	parseLocation(TokenStream &ts){
 	while (!ts.atEnd() && ts.current().text != "}"){
 		if (ts.current().text == "{")
 			ts.next();
-		if (ts.current().text == "root"){
+		if (ts.current().text == "root")
 			location.root = parseRoot(ts);
-			continue;
-		}
-		if (ts.current().text == "client_max_body_size"){
+		if (ts.current().text == "client_max_body_size")
 			location.clientMaxBodySize = parseClientMaxBodySize(ts);
-			continue;
-		}
-		if (ts.current().text == "return"){
+		if (ts.current().text == "return")
 			location.returnURL = parseReturnURL(ts);
-			continue;
-		}
-		if (ts.current().text == "redirectStatus"){
+		if (ts.current().text == "redirectStatus")
 			location.redirectStatus = parseRedirectStatus(ts);
-			continue;
-		}
-		if (ts.current().text == "autoindex"){
+		if (ts.current().text == "autoindex")
 			location.autoindex = parseAutoIndex(ts);
-			continue;
-		}
-		if (ts.current().text == "upload_dir"){
+		if (ts.current().text == "upload_dir")
 			location.uploadDir = parseUploadDIR(ts);
-			continue;
-		}
-		if (ts.current().text == "index"){
+		if (ts.current().text == "index")
 			location.index = parseIndex(ts);
-			continue;
-		}
-		if (ts.current().text == "cgi_ext"){
+		if (ts.current().text == "cgi_ext")
 			location.cgiEXT = parseCgiEXT(ts);
-			continue;
-		}
-		if (ts.current().text == "cgi_path"){
+		if (ts.current().text == "cgi_path")
 			location.cgiPath = parseCgiPath(ts);
-			continue;
-		}
-		if (ts.current().text == "allowed_methods"){
+		if (ts.current().text == "allowed_methods")
 			location.allowedMethods.push_back(parseAllowedMethods(ts));
-			continue;
-		}
-		if (ts.current().text == "index_files"){
+		if (ts.current().text == "index_files")
 			location.indexFiles.push_back(parseIndexFiles(ts));
-			continue;
-		}
 	}
 	return(location);
 }
 
 std::string	parsePath(TokenStream &ts){
 	ts.next();
-
+	std::string path = ts.current().text;
 	ts.next();
-	return ();
+	return (path);
 }
 
 std::string	parseRoot(TokenStream &ts){
 	ts.next();
-
+	std::string root = ts.current().text;
 	ts.next();
-	return ();
+	return (root);
 }
 
 size_t	parseClientMaxBodySize(TokenStream &ts){
 	ts.next();
+	size_t size = 0;
+	char unit = ts.current().text.back();
+	std::string number = ts.current().text;
+		
+	if (unit == 'k' || unit == 'm' || unit == 'g') {
+		number = number.substr(0, number.size() - 1);
+	} else {
+		unit = 0;
+	}
 
+	size = std::stoul(number);
+
+	switch(unit) {
+		case 'k': size *= 1024; break;
+		case 'm': size *= 1024 * 1024; break;
+		case 'g': size *= 1024 * 1024 * 1024; break;
+	}
 	ts.next();
-	return ();
+	return (size);
 }
 
 std::string	parseReturnURL(TokenStream &ts){
@@ -100,9 +94,16 @@ int	parseRedirectStatus(TokenStream &ts){
 
 bool	parseAutoIndex(TokenStream &ts){
 	ts.next();
-
+	bool autoindex = false;
+	if (ts.current().text == "off")
+		autoindex = false;
+	else if (ts.current().text == "on")
+		autoindex = true;
+	else {
+		LOG("[Config Error] Line " << ts.current().lineNbr << ": \"" << ts.current().text << "\" -> Unknown option");
+	}
 	ts.next();
-	return ();
+	return (autoindex);
 }
 
 
