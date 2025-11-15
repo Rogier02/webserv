@@ -4,13 +4,6 @@ Epoll::Epoll()
 	:	_fd(create())
 {}
 
-Epoll::Epoll(ListenSocket const &listenSocket)
-	:	_fd(create())
-{
-	Event	event(Event::Events::In, listenSocket);
-	ctl(Ctl::Add, event.data.fd, &event);
-}
-
 Epoll::~Epoll() {
 	close(_fd);
 }
@@ -23,19 +16,19 @@ int	Epoll::create() const {
 	return (EasyThrow(epoll_create(1)));
 }
 
-std::vector<Event>
+std::vector<epoll_event>
 Epoll::wait()
 const {
-	Event	buffer[_EventBatchSize];
+	epoll_event	buffer[_EventBatchSize];
 
 	int nEvents = EasyThrow(epoll_wait(_fd, buffer, _EventBatchSize, _waitTimeout));
-	return (std::vector<Event>(buffer, (Event *)(buffer + nEvents)));
+	return (std::vector<epoll_event>(buffer, (epoll_event *)(buffer + nEvents)));
 }
 
-int	Epoll::ctl(Epoll::Ctl operation, int fd, Event *event) const {
+int	Epoll::ctl(Epoll::Ctl operation, int fd, epoll_event *event) const {
 	return (EasyThrow(epoll_ctl(_fd, operation, fd, event)));
 }
 
-int	Epoll::ctl(Epoll::Ctl operation, Event &event) const {
+int	Epoll::ctl(Epoll::Ctl operation, epoll_event &event) const {
 	return (ctl(operation, event.data.fd, &event));
 }

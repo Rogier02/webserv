@@ -1,16 +1,17 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdexcept>
+#include <signal.h>
 
 #include "Server.hpp"
 #include "Config.hpp"
 #include "HttpRequest.hpp"
 
-std::atomic<bool>	_running(false);
+std::atomic<bool>	_pleaseShutDown(false);
 
-void	shutdown(int)
+void	stopAllServerLoops(int)
 {
-	_running = false;
+	_pleaseShutDown = true;
 	std::cerr << std::endl;
 }
 
@@ -21,8 +22,8 @@ int	main(int argc, char **argv)
 		return (EINVAL);
 	}
 
-	signal(SIGINT, shutdown);
-	signal(SIGTERM, shutdown);
+	signal(SIGINT, stopAllServerLoops);
+	signal(SIGTERM, stopAllServerLoops);
 
 	// Config config;
 	// if (argc == 2)

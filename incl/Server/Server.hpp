@@ -2,21 +2,30 @@
 # define SERVER_HPP
 
 // C
-# include <signal.h>
 // C++
 # include <iostream>
 # include <stdexcept>
 # include <atomic>
+# include <memory>
+# include <vector>
+# include <map>
 // webserv
 # include "Config.hpp"
 # include "ListenSocket.hpp"
 # include "Epoll.hpp"
+# include "EventTypes.hpp"
 # include "Logger.hpp"
+# include "ClientEvent.hpp"
+// wrappers
+# include "WrapEpoll.hpp"
 
-extern	std::atomic<bool>	_running;
+extern	std::atomic<bool>	_pleaseShutDown;
 
 class	Server
 {
+	public:
+		using	EpollEvents	= enum WrapEpoll::Events;
+
 	private:
 		static constexpr int	_DefaultPort = 8080;
 
@@ -30,15 +39,15 @@ class	Server
 	private:
 		// std::vector<Config::Server> const &_config;
 		int				_port = _DefaultPort;
-		ListenSocket	_socket;
+		ListenSocket	_listenSocket;
 		Epoll			_epoll;
 
 	public:
 		void	run();
 
 	private:
-		void	addClient();
-		void	delClient(int fd);
+		void	_addEvent();
+		void	_delEvent(int fd);
 };
 
 #endif

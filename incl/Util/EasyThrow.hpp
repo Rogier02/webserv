@@ -5,7 +5,8 @@
 # include <stdexcept>
 # include <cstring>
 
-namespace detail {
+namespace detail
+{
 	inline int	easyThrow(
 		std::string const &call,
 		int result,

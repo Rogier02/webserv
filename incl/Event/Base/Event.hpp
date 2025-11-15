@@ -13,25 +13,24 @@
 class	Event : public epoll_event
 {
 	public:
-		using	Events	= enum WrapEpoll::Events;
+		using	EpollEvents	= enum WrapEpoll::Events;
 
 	public:
 		Event() = default;
-		Event(Events eventTypes, int fd);
+		Event(EpollEvents eventTypes, int fd);
 		Event(Event const &other) = default;
 		Event(Event &&other) = default;
-		~Event() = default;
+		virtual ~Event() = default;
 
 	public:
 		operator int() const;
 
 	public:
 		void	handle();
-		bool	isWeird() const;
 
 	private:
-		virtual void	_in();
-		virtual void	_out();
+		virtual void	_in() const;
+		virtual void	_out() const;
 };
 
 #endif
