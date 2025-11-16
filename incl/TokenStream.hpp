@@ -24,10 +24,13 @@ public:
 	void		next();
 	bool		atEnd() const;
 	size_t		position() const;
+	size_t		firstTokenOnLine() const;
+	size_t		lastTokenOnLine() const;
+	std::string	getLine() const;
 	void		printTokens(std::vector<Token> tokens);
+	void		checkSemicolon(TokenStream &ts);
 };
 
-void	checkSemicolons(TokenStream &ts);
 
 
 #endif
