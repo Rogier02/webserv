@@ -26,9 +26,12 @@ public:
 	size_t		position() const;
 	size_t		firstTokenOnLine() const;
 	size_t		lastTokenOnLine() const;
+	bool		isLastTokenOnLine() const ;
 	std::string	getLine() const;
 	void		printTokens(std::vector<Token> tokens);
-	void		checkSemicolon(TokenStream &ts);
+	void		checkSemicolon();
+	void		setIndex(size_t newIndex);
+	void		expect(std::string expected);
 };
 
 

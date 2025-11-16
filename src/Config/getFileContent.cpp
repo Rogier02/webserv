@@ -56,25 +56,27 @@ void	loadFromFile(TokenStream &ts){
 
 Config::Server	parseServer(TokenStream &ts){
 	Config::Server server;
-	ts.next();
-	if (ts.current().text == "error_page")
-		server.errorPages.push_back(parseErrorPage(ts));
-	if (ts.current().text == "location")
-		server.locations.push_back(parseLocation(ts));
-	else {
-		LOG("[Config Error] Line " << ts.current().lineNbr << ": \"" << ts.current().text << "\" -> Unknown directive");
+	while (!ts.atEnd() && ts.current().text != "}"){
+		if (ts.current().text == "error_page")
+			server.errorPages.push_back(parseErrorPage(ts));
+		if (ts.current().text == "location")
+			server.locations.push_back(parseLocation(ts));
+		else {
+			LOG("[Config Error] Line " << ts.current().lineNbr << ": \"" << ts.getLine() << "\" -> Unknown directive");
+			ts.setIndex(ts.lastTokenOnLine() + 1); //check if this works correctly
+		}
 	}
-	if (ts.current().text == "}")
-		return (server);
+	return (server);
 }
 
 Config::Server::ErrorPage	parseErrorPage(TokenStream &ts){
 	Config::Server::ErrorPage errorPage;
-	checkSemicolons(ts);
 	ts.next();
 	errorPage.code = std::stoi(ts.current().text);
 	ts.next();
 	errorPage.path = ts.current().text;
+	ts.next();
+	ts.checkSemicolon();
 
 	return (errorPage);
 }

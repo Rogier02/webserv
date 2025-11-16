@@ -53,6 +53,11 @@ TokenStream::lastTokenOnLine() const{
 	return (last);
 }
 
+bool
+TokenStream::isLastTokenOnLine() const{
+	return (position() == lastTokenOnLine());
+}
+
 std::string
 TokenStream::getLine() const{
 	size_t first = firstTokenOnLine();
@@ -73,14 +78,30 @@ TokenStream::printTokens(std::vector<Token> tokens){
 }
 
 void
-TokenStream::checkSemicolon(TokenStream &ts){
+TokenStream::checkSemicolon(){
 	std::string	line;
-	int			lineNbr = ts.current().lineNbr;
-	size_t		i = ts.position();
-	while (lineNbr == ts.current().lineNbr){
-		line = ts.getLine();
-		ts.next();
+
+	line = getLine();
+	if (current().text != ";")
+		LOG("[Config Error] Line " << current().lineNbr << ": missing semicolon at the end of directive >> \"" << line << "\"\n");
+	else
+		next(); //this might not work. Test when ready
+}
+
+void
+TokenStream::setIndex(size_t newIndex){
+	if (newIndex < tokens.size()) {
+		index = newIndex;
 	}
-	if (ts.current().text != ";")
-		LOG("[Config Error] Line " << ts.current().lineNbr << ": missing semicolon at the end of directive >> \"" << line << "\"\n");
+	else {
+		LOG("[Set Index Error] couldn't set index.\n");
+	}
+}
+
+void
+TokenStream::expect(std::string expected){
+	if (current().text != expected)	
+		LOG("[Config Error] \"" << expected << "\" was expected, but not found.\n");
+	else
+		next(); //check if this works. Don't wanna test it now.
 }
