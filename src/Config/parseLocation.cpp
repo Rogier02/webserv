@@ -7,7 +7,8 @@
 #include <string>
 #include <vector>
 
-Config::Server::Location	parseLocation(TokenStream &ts){
+Config::Server::Location
+parseLocation(TokenStream &ts){
 	Config::Server::Location location;
 
 	location.path = parsePath(ts);
@@ -40,21 +41,27 @@ Config::Server::Location	parseLocation(TokenStream &ts){
 	return(location);
 }
 
-std::string	parsePath(TokenStream &ts){
+std::string
+parsePath(TokenStream &ts){
+	checkSemicolons(ts);
 	ts.next();
 	std::string path = ts.current().text;
 	ts.next();
 	return (path);
 }
 
-std::string	parseRoot(TokenStream &ts){
+std::string
+parseRoot(TokenStream &ts){
+	checkSemicolons(ts);
 	ts.next();
 	std::string root = ts.current().text;
 	ts.next();
 	return (root);
 }
 
-size_t	parseClientMaxBodySize(TokenStream &ts){
+size_t
+parseClientMaxBodySize(TokenStream &ts){
+	checkSemicolons(ts);
 	ts.next();
 	size_t size = 0;
 	char unit = ts.current().text.back();
@@ -77,14 +84,18 @@ size_t	parseClientMaxBodySize(TokenStream &ts){
 	return (size);
 }
 
-std::string	parseReturnURL(TokenStream &ts){
+std::string
+parseReturnURL(TokenStream &ts){
+	checkSemicolons(ts);
 	ts.next();
 
 	ts.next();
 	return ();
 }
 
-int	parseRedirectStatus(TokenStream &ts){
+int
+parseRedirectStatus(TokenStream &ts){
+	checkSemicolons(ts);
 	ts.next();
 
 	ts.next();
@@ -92,7 +103,9 @@ int	parseRedirectStatus(TokenStream &ts){
 }
 
 
-bool	parseAutoIndex(TokenStream &ts){
+bool
+parseAutoIndex(TokenStream &ts){
+	checkSemicolons(ts);
 	ts.next();
 	bool autoindex = false;
 	if (ts.current().text == "off")
@@ -107,7 +120,9 @@ bool	parseAutoIndex(TokenStream &ts){
 }
 
 
-std::string	parseUploadDIR(TokenStream &ts){
+std::string
+parseUploadDIR(TokenStream &ts){
+	checkSemicolons(ts);
 	ts.next();
 
 	ts.next();
@@ -115,7 +130,9 @@ std::string	parseUploadDIR(TokenStream &ts){
 }
 
 
-std::string	parseIndex(TokenStream &ts){
+std::string
+parseIndex(TokenStream &ts){
+	checkSemicolons(ts);
 	ts.next();
 
 	ts.next();
@@ -123,21 +140,27 @@ std::string	parseIndex(TokenStream &ts){
 }
 
 
-std::string	parseCgiEXT(TokenStream &ts){
+std::string
+parseCgiEXT(TokenStream &ts){
+	checkSemicolons(ts);
 	ts.next();
 
 	ts.next();
 	return ();
 }
 
-std::string	parseCgiPath(TokenStream &ts){
+std::string
+parseCgiPath(TokenStream &ts){
+	checkSemicolons(ts);
 	ts.next();
 
 	ts.next();
 	return ();
 }
 
-std::string	parseAllowedMethods(TokenStream &ts){
+std::string
+parseAllowedMethods(TokenStream &ts){
+	checkSemicolons(ts);
 	ts.next();
 
 	ts.next();
@@ -145,7 +168,9 @@ std::string	parseAllowedMethods(TokenStream &ts){
 }
 
 
-std::string	parseIndexFiles(TokenStream &ts){
+std::string
+parseIndexFiles(TokenStream &ts){
+	checkSemicolons(ts);
 	ts.next();
 
 	ts.next();

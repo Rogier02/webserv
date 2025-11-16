@@ -5,28 +5,35 @@
 #include <iostream>
 #include <fstream>
 
-Config::Config()
-{
+// Config::Config()
+// {
 
-}
+// }
 
+<<<<<<< HEAD
+=======
+// Config::Config(std::string fileName)
+// {
 
-Config &
-Config::operator=(Config &&other)
-{
-	if (this != &other)
-	{
+// }
+>>>>>>> origin/rogier
 
-	}
-	return (*this);
-}
+// Config &
+// Config::operator=(Config &&other)
+// {
+// 	if (this != &other)
+// 	{
 
-Config::Error::Error(std::string const &message)
-	:	_message(message)
-{}
+// 	}
+// 	return (*this);
+// }
 
-const char *
-Config::Error::what()
-const throw() {
-	return (_message.c_str());
-}
+// Config::Error::Error(std::string const &message)
+// 	:	_message(message)
+// {}
+
+// const char *
+// Config::Error::what()
+// const throw() {
+// 	return (_message.c_str());
+// }

@@ -2,41 +2,44 @@
 # define SERVER_HPP
 
 // C
-# include <iostream>
-# include <netinet/in.h>
 # include <signal.h>
 // C++
+# include <stdbool.h>
+# include <iostream>
 # include <stdexcept>
 # include <atomic>
-
+// webserv
 # include "Config.hpp"
-# include "Socket.hpp"
+# include "ListenSocket.hpp"
 # include "Epoll.hpp"
+# include "Logger.hpp"
 
 class	Server
 {
-	static constexpr int		EventBatchSize = 64;
-	static constexpr int		DefaultPort = 8080;
-
-	public:
-		Server(std::vector<Config::Server> const &config);
-		Server(Server const &other) = delete;
-		Server &operator=(Server const &other) = delete;
-		~Server() = default;
-
-		void		run() const;
-		static void	shutdown(int);
+	private:
+		static constexpr int	_DefaultPort = 8080;
 
 	private:
 		static std::atomic<bool>	_running;
 
-		// class-wide variables
-		std::vector<Config::Server> const &_config;
-		Socket	_socket;
-		Epoll	_epoll;
-		int		_port = DefaultPort;
+	public:
+		Server();
+		// Server(std::vector<Config::Server> const &config);
+		Server(Server const &other) = delete;
+		Server &operator=(Server const &other) = delete;
+		~Server() = default;
 
-		// epoll_event handlers
+	private:
+		// std::vector<Config::Server> const &_config;
+		int				_port = _DefaultPort;
+		ListenSocket	_socket;
+		Epoll			_epoll;
+
+	public:
+		void		run() const;
+		static void	shutdown(int);
+
+	private:
 		void	newClient() const;
 		void	existingClient(int fd) const;
 		void	zombieClient(int fd) const;

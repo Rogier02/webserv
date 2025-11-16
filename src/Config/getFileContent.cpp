@@ -70,17 +70,13 @@ Config::Server	parseServer(TokenStream &ts){
 
 Config::Server::ErrorPage	parseErrorPage(TokenStream &ts){
 	Config::Server::ErrorPage errorPage;
+	checkSemicolons(ts);
 	ts.next();
 	errorPage.code = std::stoi(ts.current().text);
 	ts.next();
 	errorPage.path = ts.current().text;
-	if (errorPage.path.back() != ';') {
-		LOG("[Config Error] Line " << ts.current().lineNbr << ": missing semicolon at the end of directive \"" << errorPage.path << "\"\n");
-	}
-	else
-		errorPage.path.pop_back(); //werkt niet zoals ik dacht. 
-	if (ts.current().text == "\n")
-		return (errorPage);
+
+	return (errorPage);
 }
 
 

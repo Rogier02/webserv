@@ -1,7 +1,6 @@
 #ifndef CONFIG_HPP
 # define CONFIG_HPP
 
-// C
 // C++
 # include <string>
 # include <vector>

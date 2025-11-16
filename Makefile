@@ -4,15 +4,17 @@ MAKEFLAGS		=	-r -R
 
 CXX				=	c++
 CXXFLAGS		=	-MMD -MP -std=c++11
-CXXFLAGS		+=	-Wall -Wextra -Werror
+# CXXFLAGS		+=	-Wall -Wextra -Werror
 # CXXFLAGS		+=	-fsanitize=address
 # CXXFLAGS		+=	-g
 
-INCLUDE_DIRS	=	incl
+INCLUDE_DIRS	=	incl \
+					incl/Wrappers
 INCLUDE_FLAGS	=	$(addprefix -I , $(INCLUDE_DIRS))
 
 SRC_DIR			=	src
-SRC_FILES		=	main.cpp
+SRC_FILES		=	main.cpp \
+					Logger.cpp
 
 CONFIG_DIR		:=	$(SRC_DIR)/Config
 CONFIG_FILES	=	Config.cpp
@@ -23,13 +25,17 @@ HTTP_FILES		=	HttpRequest.cpp \
 
 SERVER_DIR		:=	$(SRC_DIR)/Server
 SERVER_FILES	=	Epoll.cpp \
-					Server.cpp \
+					Server.cpp
+
+SOCKETS_DIR		:=	$(SRC_DIR)/Sockets
+SOCKETS_FILES	=	ListenSocket.cpp \
 					Socket.cpp
 
 SRC				=	$(addprefix $(SRC_DIR)/, $(SRC_FILES)) \
 					$(addprefix $(CONFIG_DIR)/, $(CONFIG_FILES)) \
 					$(addprefix $(HTTP_DIR)/, $(HTTP_FILES)) \
-					$(addprefix $(SERVER_DIR)/, $(SERVER_FILES))
+					$(addprefix $(SERVER_DIR)/, $(SERVER_FILES)) \
+					$(addprefix $(SOCKETS_DIR)/, $(SOCKETS_FILES))
 
 OBJ_DIR			=	obj
 OBJ				:=	$(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)

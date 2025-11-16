@@ -27,7 +27,7 @@ public:
 	void		printTokens(std::vector<Token> tokens);
 };
 
-
+void	checkSemicolons(TokenStream &ts);
 
 
 #endif
