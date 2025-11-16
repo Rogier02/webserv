@@ -30,7 +30,8 @@ HttpResponse::HttpResponse(int statusCode) : _statusCode(statusCode)
 	_headers["Date"] = std::string(dateBuffer);
 }
 
-void HttpResponse::setStatus(int code)
+void 
+HttpResponse::setStatus(int code)
 {
 	_statusCode = code;
 	switch (code) {
@@ -47,6 +48,46 @@ void HttpResponse::setStatus(int code)
 			_reasonPhrase = "Unknown";
 			break;
 	}
+}
 
-	
+std::string 
+HttpResponse::toString() 
+const 
+{
+	std::stringstream response;
+
+	//Status line 
+	response << "HTTP/1.1 " << _statusCode << " " << _reasonPhrase << "\r\n";
+
+	// Headers
+	for (std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it) {
+		response << it->first << ": " << it->second << "\r\n";
+	}
+
+	// Seperate body from headers
+	response << "\r\n";
+
+	// Body
+	response << _body;
+
+	return response.str();
+}
+
+void 
+HttpResponse::setHeader(const std::string& key, const std::string& value)
+{
+	_headers[key] = value;
+}
+
+void 
+HttpResponse::setBody(const std::string& body)
+{
+	_body = body;
+	_headers["Content-Length"] = std::to_string(body.length());
+}
+
+void 
+HttpResponse::setContentType(const std::string& type)
+{
+	_headers["Content-Type"] = type;
 }
