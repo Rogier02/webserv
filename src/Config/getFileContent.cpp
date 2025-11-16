@@ -72,10 +72,8 @@ Config::Server	parseServer(TokenStream &ts){
 Config::Server::ErrorPage	parseErrorPage(TokenStream &ts){
 	Config::Server::ErrorPage errorPage;
 	ts.next();
-	errorPage.code = std::stoi(ts.current().text);
-	ts.next();
-	errorPage.path = ts.current().text;
-	ts.next();
+	errorPage.code = std::stoi(ts.takeToken());
+	errorPage.path = ts.takeToken();
 	ts.checkSemicolon();
 
 	return (errorPage);

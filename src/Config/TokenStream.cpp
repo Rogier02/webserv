@@ -19,6 +19,14 @@ TokenStream::next(){
 		index++; 
 }
 
+std::string
+TokenStream::takeToken() const{
+	std::string text = current().text;
+	next();
+	return (text);
+}
+
+
 bool
 TokenStream::atEnd() const{
 	return index >= tokens.size(); 

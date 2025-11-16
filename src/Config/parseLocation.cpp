@@ -15,27 +15,27 @@ parseLocation(TokenStream &ts){
 	while (!ts.atEnd() && ts.current().text != "}"){
 		if (ts.current().text == "{")
 			ts.next();
-		if (ts.current().text == "root")
+		if (ts.takeToken() == "root")
 			location.root = parseRoot(ts);
-		if (ts.current().text == "client_max_body_size")
+		if (ts.takeToken() == "client_max_body_size")
 			location.clientMaxBodySize = parseClientMaxBodySize(ts);
-		if (ts.current().text == "return")
+		if (ts.takeToken() == "return")
 			location.returnURL = parseReturnURL(ts);
-		if (ts.current().text == "redirectStatus")
+		if (ts.takeToken() == "redirectStatus")
 			location.redirectStatus = parseRedirectStatus(ts);
-		if (ts.current().text == "autoindex")
+		if (ts.takeToken() == "autoindex")
 			location.autoindex = parseAutoIndex(ts);
-		if (ts.current().text == "upload_dir")
+		if (ts.takeToken() == "upload_dir")
 			location.uploadDir = parseUploadDIR(ts);
-		if (ts.current().text == "index")
+		if (ts.takeToken() == "index")
 			location.index = parseIndex(ts);
-		if (ts.current().text == "cgi_ext")
+		if (ts.takeToken() == "cgi_ext")
 			location.cgiEXT = parseCgiEXT(ts);
-		if (ts.current().text == "cgi_path")
+		if (ts.takeToken() == "cgi_path")
 			location.cgiPath = parseCgiPath(ts);
-		if (ts.current().text == "allowed_methods")
+		if (ts.takeToken() == "allowed_methods")
 			location.allowedMethods.push_back(parseAllowedMethods(ts));
-		if (ts.current().text == "index_files")
+		if (ts.takeToken() == "index_files")
 			location.indexFiles.push_back(parseIndexFiles(ts));
 	}
 	return(location);
@@ -43,29 +43,25 @@ parseLocation(TokenStream &ts){
 
 std::string
 parsePath(TokenStream &ts){
-	checkSemicolons(ts);
-	ts.next();
-	std::string path = ts.current().text;
-	ts.next();
+	std::string path = ts.takeToken();
+	ts.checkSemicolon();
+
 	return (path);
 }
 
 std::string
 parseRoot(TokenStream &ts){
-	checkSemicolons(ts);
-	ts.next();
-	std::string root = ts.current().text;
-	ts.next();
+	std::string root = ts.takeToken();
+	ts.checkSemicolon();
+
 	return (root);
 }
 
 size_t
 parseClientMaxBodySize(TokenStream &ts){
-	checkSemicolons(ts);
-	ts.next();
 	size_t size = 0;
 	char unit = ts.current().text.back();
-	std::string number = ts.current().text;
+	std::string number = ts.takeToken();
 		
 	if (unit == 'k' || unit == 'm' || unit == 'g') {
 		number = number.substr(0, number.size() - 1);
@@ -80,35 +76,34 @@ parseClientMaxBodySize(TokenStream &ts){
 		case 'm': size *= 1024 * 1024; break;
 		case 'g': size *= 1024 * 1024 * 1024; break;
 	}
-	ts.next();
+	ts.checkSemicolon();
 	return (size);
 }
 
 std::string
 parseReturnURL(TokenStream &ts){
-	checkSemicolons(ts);
+	
 	ts.next();
-
-	ts.next();
+	ts.checkSemicolon();
 	return ();
 }
 
 int
 parseRedirectStatus(TokenStream &ts){
-	checkSemicolons(ts);
-	ts.next();
 
+	
 	ts.next();
+	ts.checkSemicolon();
 	return ();
 }
 
 
 bool
 parseAutoIndex(TokenStream &ts){
-	checkSemicolons(ts);
-	ts.next();
+
 	bool autoindex = false;
 	if (ts.current().text == "off")
+	ts.checkSemicolon();
 		autoindex = false;
 	else if (ts.current().text == "on")
 		autoindex = true;
@@ -122,57 +117,57 @@ parseAutoIndex(TokenStream &ts){
 
 std::string
 parseUploadDIR(TokenStream &ts){
-	checkSemicolons(ts);
-	ts.next();
 
+	
 	ts.next();
+	ts.checkSemicolon();
 	return ();
 }
 
 
 std::string
 parseIndex(TokenStream &ts){
-	checkSemicolons(ts);
-	ts.next();
 
+	
 	ts.next();
+	ts.checkSemicolon();
 	return ();
 }
 
 
 std::string
 parseCgiEXT(TokenStream &ts){
-	checkSemicolons(ts);
-	ts.next();
 
+	
 	ts.next();
+	ts.checkSemicolon();
 	return ();
 }
 
 std::string
 parseCgiPath(TokenStream &ts){
-	checkSemicolons(ts);
-	ts.next();
 
+	
 	ts.next();
+	ts.checkSemicolon();
 	return ();
 }
 
 std::string
 parseAllowedMethods(TokenStream &ts){
-	checkSemicolons(ts);
-	ts.next();
 
+	
 	ts.next();
+	ts.checkSemicolon();
 	return ();
 }
 
 
 std::string
 parseIndexFiles(TokenStream &ts){
-	checkSemicolons(ts);
-	ts.next();
 
+	
 	ts.next();
+	ts.checkSemicolon();
 	return ();
 }
