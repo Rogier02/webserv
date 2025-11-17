@@ -6,6 +6,7 @@
 #include "Server.hpp"
 #include "Config.hpp"
 #include "HttpRequest.hpp"
+#include "Parsing.hpp"
 
 std::atomic<bool>	_pleaseShutDown(false);
 
@@ -27,7 +28,10 @@ int	main(int argc, char **argv)
 
 	Config config;
 	if (argc == 2)
-		config = getFileContent(argv[2]);
+		config.getFileContent(argv[2]);
+	else
+		config.getFileContent("default.conf");
+
 
 	try {
 		Server	server;

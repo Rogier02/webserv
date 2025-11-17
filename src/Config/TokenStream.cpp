@@ -108,8 +108,11 @@ TokenStream::setIndex(size_t newIndex){
 
 void
 TokenStream::expect(std::string expected){
-	if (current().text != expected)	
+	if (current().text != expected){
 		LOG("[Config Error] at line: " << current().lineNbr << " \"" << expected << "\" was expected, but not found.\n");
+		if (!atEnd())
+			setIndex(isLastTokenOnLine() + 1);
+	}
 	else
 		next(); //check if this works. Don't wanna test it now.
 }

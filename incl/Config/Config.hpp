@@ -52,17 +52,16 @@ struct	Config
 	};
 
 	Config();
-	Config(std::string file);
+	// Config(std::string file);
 	Config &operator=(Config &&other);
 
-	void	printConfig();
-std::ostream& operator<<(std::ostream& os, const Config::Server::Location& loc) {
-std::ostream& operator<<(std::ostream& os, const Config::Server::ErrorPage& err) {
-std::ostream& operator<<(std::ostream& os, const Config::Server& s) {
-std::ostream& operator<<(std::ostream& os, const Config& c) {
-
+	void	getFileContent(std::string fileName);
+	void	loadFromFile(TokenStream &ts);
+	Config::Server	parseServer(TokenStream &ts);
+	Config::Server::ErrorPage	parseErrorPage(TokenStream &ts);
+	
 };
 
-Config	loadFromFile(TokenStream &ts);
+
 
 #endif

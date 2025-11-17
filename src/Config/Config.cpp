@@ -8,15 +8,15 @@
 Config::Config(){}
 
 
-// Config &
-// Config::operator=(Config &&other)
-// {
-// 	if (this != &other)
-// 	{
-
-// 	}
-// 	return (*this);
-// }
+Config &
+Config::operator=(Config &&other)
+{
+	if (this != &other)
+	{
+		this = other;
+	}
+	return (*this);
+}
 
 // Config::Error::Error(std::string const &message)
 // 	:	_message(message)
@@ -28,67 +28,74 @@ Config::Config(){}
 // 	return (_message.c_str());
 // }
 
+void
+Config::getFileContent(std::string fileName){
+	if (fileName.size() >= 5 && fileName.rfind(".conf") != fileName.size() - 5)
+		std::cout << "Error: incorrect file extension\n"; //return, error, exit?
+	std::ifstream file(fileName);
+	if (!file.is_open()){
+		std::cout << "Error: couldn't open file\n"; //return, error, exit?
+	}
+	std::string line = "";
+	std::vector<Token> tokens;
+	int lineNbr = 0;
+	while (std::getline(file, line)){
+		lineNbr++;
 
+		std::stringstream ss(line);
+		std::string word;
 
-std::ostream& operator<<(std::ostream& os, const Config::Server::Location& loc) {
-	os << "\tLocation {\n"
-	   << "\t  path: " << loc.path << "\n"
-	   << "\t  root: " << loc.root << "\n"
-	   << "\t  clientMaxBodySize: " << loc.clientMaxBodySize << "\n"
-	   << "\t  returnURL: " << loc.returnURL << "\n"
-	   << "\t  redirectStatus: " << loc.redirectStatus << "\n"
-	   << "\t  autoindex: " << (loc.autoindex ? "true" : "false") << "\n"
-	   << "\t  uploadDir: " << loc.uploadDir << "\n"
-	   << "\t  index: " << loc.index << "\n"
-	   << "\t  cgiEXT: " << loc.cgiEXT << "\n"
-	   << "\t  cgiPath: " << loc.cgiPath << "\n";
-
-	os << "\t  allowedMethods: [";
-	for (size_t i = 0; i < loc.allowedMethods.size(); i++)
-		os << loc.allowedMethods[i] << (i + 1 < loc.allowedMethods.size() ? ", " : "");
-	os << "]\n";
-
-	os << "\t  indexFiles: [";
-	for (size_t i = 0; i < loc.indexFiles.size(); i++)
-		os << loc.indexFiles[i] << (i + 1 < loc.indexFiles.size() ? ", " : "");
-	os << "]\n";
-
-	return os << "\t}\n";
-}
-
-std::ostream& operator<<(std::ostream& os, const Config::Server::ErrorPage& err) {
-	return os << "\tErrorPage { code: " << err.code
-	          << ", path: " << err.path << " }\n";
-}
-
-std::ostream& operator<<(std::ostream& os, const Config::Server& s) {
-	os << "Server {\n"
-	   << "  name: " << s.name << "\n"
-	   << "  host: " << s.host << "\n"
-	   << "  root: " << s.root << "\n"
-	   << "  port: " << s.port << "\n"
-	   << "  clientMaxBodySize: " << s.clientMaxBodySize << "\n";
-
-	os << "  Locations:\n";
-	for (size_t i = 0; i < s.locations.size(); i++)
-		os << s.locations[i];
-
-	os << "  ErrorPages:\n";
-	for (size_t i = 0; i < s.errorPages.size(); i++)
-		os << s.errorPages[i];
-
-	return os << "}\n";
-}
-
-std::ostream& operator<<(std::ostream& os, const Config& c) {
-	os << "Config:\n";
-	for (size_t i = 0; i < c.servers.size(); i++)
-		os << c.servers[i] << "\n";
-	return os;
+		while (ss >> word){
+			if (word[0] == '#')
+				break;
+			if (!word.empty() && word.back() == ';') {
+				word.pop_back();
+				if (!word.empty()) 
+					tokens.push_back({word, lineNbr});
+				tokens.push_back({";", lineNbr});
+			}
+			else
+				tokens.push_back({word, lineNbr});
+		}
+	}
+	printTokens(tokens);
+	TokenStream ts(tokens);
+	loadFromFile(ts);
+	printConfig();
 }
 
 void
-Config::printConfig(){
-	std::cout << *this << std::endl;
+Config::loadFromFile(TokenStream &ts){
+	while (!ts.atEnd() && ts.current().text != "}"){
+		if (ts.current().text == "Server")
+			servers.push_back(parseServer(ts));
+	}
+	expect("}");
 }
 
+Config::Server
+Config::parseServer(TokenStream &ts){
+	Config::Server server;
+	while (!ts.atEnd() && ts.current().text != "}"){
+		if (ts.current().text == "error_page")
+			server.errorPages.push_back(parseErrorPage(ts));
+		if (ts.current().text == "location")
+			server.locations.push_back(parseLocation(ts));
+		else {
+			LOG("[Config Error] Line " << ts.current().lineNbr << ": \"" << ts.getLine() << "\" -> Unknown directive");
+			ts.setIndex(ts.lastTokenOnLine() + 1); //check if this works correctly
+		}
+	}
+	expect("}");
+	return (server);
+}
+
+Config::Server::ErrorPage
+Config::parseErrorPage(TokenStream &ts){
+	Config::Server::ErrorPage errorPage;
+	ts.next();
+	errorPage.code = std::stoi(ts.takeToken());
+	errorPage.path = ts.takeToken();
+	ts.checkSemicolon();
+	return (errorPage);
+}

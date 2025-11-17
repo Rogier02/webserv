@@ -1,5 +1,6 @@
 #include "TokenStream.hpp"
 #include "Config.hpp"
+#include "Parsing.hpp"
 #include "log.hpp"
 #include <iostream>
 #include <fstream>

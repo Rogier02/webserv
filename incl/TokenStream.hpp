@@ -35,6 +35,7 @@ public:
 	void		expect(std::string expected);
 };
 
+void	printTokens(std::vector<Token> tokens);
 
 
 #endif
