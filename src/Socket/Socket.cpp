@@ -27,3 +27,10 @@ Socket::recv(int fd)
 int	Socket::accept() const {
 	return (accept(_fd));
 }
+
+// Rogiers additions Nov 16 - start
+int 
+Socket::send(int fd, const std::string& data)
+{
+	return(EasyThrow(::send(fd, data.c_str(), data.length(), 0)));
+}

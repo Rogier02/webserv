@@ -24,6 +24,10 @@ class	Socket
 
 		static int			accept(int fd);
 		static std::string	recv(int fd);
+	
+	// Rogier's additions Nov 16 - start
+		static int			send(int fd, const std::string& data);
+	// End
 
 	protected:
 		int	_fd;

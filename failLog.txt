@@ -1,6 +1,6 @@
 Webserv Log
-time: 1763181728
+time: 1763303215
 
-(src/Server/Epoll.cpp:24) epoll_wait(_fd, buffer, _EventBatchSize, _waitTimeout): Interrupted system call
-Controller Server Shutdown
-
+(src/Server/Epoll.cpp:36) epoll_ctl(_fd, operation, fd, event): Bad file descriptor
+(src/Server/Epoll.cpp:36) epoll_ctl(_fd, operation, fd, event): Bad file descriptor
+(src/Server/Epoll.cpp:31) epoll_wait(_fd, buffer, _EventBatchSize, _waitTimeout): Interrupted system call

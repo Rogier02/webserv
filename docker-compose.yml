@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  webserv:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: /bin/bash -c "make re && ./webserv"
+    stdin_open: true
+    tty: true
+    init: true

@@ -3,6 +3,7 @@
 
 // C
 // C++
+# include <stdbool.h>
 # include <iostream>
 # include <stdexcept>
 # include <atomic>
