@@ -41,7 +41,8 @@ Config	getFileContent(std::string fileName){
 	TokenStream ts(tokens);
 	Config config; // moet misschien anders
 	config = loadFromFile(ts);
-	return 
+	config.printConfig();
+	return (config);
 }
 
 Config	loadFromFile(TokenStream &ts){
@@ -81,12 +82,4 @@ Config::Server::ErrorPage	parseErrorPage(TokenStream &ts){
 	ts.checkSemicolon();
 
 	return (errorPage);
-}
-
-
-int	main()
-{
-	getFileContent("default.conf");
-
-	return (0);
 }
