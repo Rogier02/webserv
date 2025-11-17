@@ -16,31 +16,35 @@ parseLocation(TokenStream &ts){
 	while (!ts.atEnd() && ts.current().text != "}"){
 		if (ts.takeToken() == "root")
 			location.root = parseRoot(ts);
-		if (ts.takeToken() == "client_max_body_size")
+		else if (ts.takeToken() == "client_max_body_size")
 			location.clientMaxBodySize = parseClientMaxBodySize(ts);
-		if (ts.takeToken() == "return")
+		else if (ts.takeToken() == "return")
 			location.returnURL = parseReturnURL(ts);
-		if (ts.takeToken() == "redirectStatus")
+		else if (ts.takeToken() == "redirectStatus")
 			location.redirectStatus = parseRedirectStatus(ts);
-		if (ts.takeToken() == "autoindex")
+		else if (ts.takeToken() == "autoindex")
 			location.autoindex = parseAutoIndex(ts);
-		if (ts.takeToken() == "upload_dir")
+		else if (ts.takeToken() == "upload_dir")
 			location.uploadDir = parseUploadDIR(ts);
-		if (ts.takeToken() == "index")
+		else if (ts.takeToken() == "index")
 			location.index = parseIndex(ts);
-		if (ts.takeToken() == "cgi_ext")
+		else if (ts.takeToken() == "cgi_ext")
 			location.cgiEXT = parseCgiEXT(ts);
-		if (ts.takeToken() == "cgi_path")
+		else if (ts.takeToken() == "cgi_path")
 			location.cgiPath = parseCgiPath(ts);
-		if (ts.takeToken() == "allowed_methods"){
+		else if (ts.takeToken() == "allowed_methods"){
 			while (!ts.isLastTokenOnLine())
 				location.allowedMethods.push_back(parseAllowedMethod(ts));
 			ts.checkSemicolon();
 		}
-		if (ts.takeToken() == "index_files"){
+		else if (ts.takeToken() == "index_files"){
 			while (!ts.isLastTokenOnLine())
 				location.indexFiles.push_back(parseIndexFile(ts));
 			ts.checkSemicolon();
+		}
+		else{
+			LOG("[Config Error] Line " << ts.current().lineNbr << ": \"" << ts.getLine() << "\" -> Unknown directive");
+			ts.setIndex(ts.lastTokenOnLine() + 1);
 		}
 	}
 	ts.expect("}");
@@ -100,7 +104,6 @@ parseRedirectStatus(TokenStream &ts){
 	return (redirectStatus);
 }
 
-
 bool
 parseAutoIndex(TokenStream &ts){
 	bool autoindex = false;
@@ -116,7 +119,6 @@ parseAutoIndex(TokenStream &ts){
 	return (autoindex);
 }
 
-
 std::string
 parseUploadDIR(TokenStream &ts){
 	std::string uploadDIR = ts.takeToken();
@@ -124,14 +126,12 @@ parseUploadDIR(TokenStream &ts){
 	return (uploadDIR);
 }
 
-
 std::string
 parseIndex(TokenStream &ts){
 	std::string index = ts.takeToken();
 	ts.checkSemicolon();
 	return (index);
 }
-
 
 std::string
 parseCgiEXT(TokenStream &ts){
@@ -153,7 +153,6 @@ parseAllowedMethod(TokenStream &ts){
 	ts.checkSemicolon();
 	return (allowedMethod);
 }
-
 
 std::string
 parseIndexFile(TokenStream &ts){
