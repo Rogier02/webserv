@@ -1,3 +1,5 @@
+#include <string>
+#include <iostream>
 #include "Config.hpp"
 #include <string>
 #include <iostream>
@@ -8,10 +10,13 @@
 
 // }
 
+<<<<<<< HEAD
+=======
 // Config::Config(std::string fileName)
 // {
 
 // }
+>>>>>>> origin/rogier
 
 // Config &
 // Config::operator=(Config &&other)

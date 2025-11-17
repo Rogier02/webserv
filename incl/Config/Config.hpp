@@ -6,11 +6,7 @@
 # include <vector>
 # include <stdexcept>
 
-struct	Token
-{
-	std::string	text;
-	int			lineNbr;
-};
+
 
 struct	Config
 {
@@ -45,7 +41,7 @@ struct	Config
 		std::vector<ErrorPage>	errorPages;
 	};
 
-	std::vector<Server>	_servers;
+	std::vector<Server>	servers;
 
 	class Error: public std::exception {
 		public:
@@ -58,6 +54,7 @@ struct	Config
 	Config();
 	Config(std::string file);
 	Config &operator=(Config &&other);
+	void	loadFromFile(TokenStream &ts);
 };
 
 #endif
