@@ -47,8 +47,8 @@ class	Server
 		void	run();
 
 	private:
-		void	_addEvent();
-		void	_delEvent(int fd);
+		void	_addClient();
+		void	_delClient(int fd);
 };
 
 #endif

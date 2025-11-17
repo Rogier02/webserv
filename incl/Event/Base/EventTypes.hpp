@@ -28,8 +28,12 @@ class	EventTypes
 
 	public:
 		static void		add(std::unique_ptr<Event> prototype);
-		static void		specify(std::unique_ptr<Event> event);
 		static Event	*get(int fd);
+
+		template <typename Type>
+		static void		specify(Event const &event);
 };
+
+# include "EventTypes.tpp"
 
 #endif

@@ -10,18 +10,13 @@
 class Type##Event : public Event								\
 {																\
 	public:														\
-		explicit Type##Event(Event const &base);				\
+		Type##Event() = default;								\
+		Type##Event(Event const &base) : Event(base) {};		\
 	public:														\
 		void	_in() const override;							\
 		void	_out() const override;							\
 };																\
 \
-static EventRegistrar<Type##Event>	Type##Registration();		\
-\
-inline	Type##Event::Type##Event(Event const &base)				\
-	:	Event(base)												\
-{																\
-	EventTypes::specify(std::make_unique<Type##Event>(base));	\
-}
+static EventRegistrar<Type##Event>	Type##Registration;			\
 
 #endif

@@ -4,9 +4,9 @@ MAKEFLAGS		=	-r -R
 
 CXX				=	c++
 CXXFLAGS		=	-MMD -MP -std=c++14
-# CXXFLAGS		+=	-Wall -Wextra -Werror
+CXXFLAGS		+=	-Wall -Wextra -Werror
 # CXXFLAGS		+=	-fsanitize=address
-# CXXFLAGS		+=	-g
+CXXFLAGS		+=	-g
 
 SRC_DIR			=	src
 INC_DIR			=	incl

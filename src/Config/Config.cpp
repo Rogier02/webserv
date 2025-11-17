@@ -10,13 +10,6 @@
 
 // }
 
-<<<<<<< HEAD
-=======
-// Config::Config(std::string fileName)
-// {
-
-// }
->>>>>>> origin/rogier
 
 // Config &
 // Config::operator=(Config &&other)

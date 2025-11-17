@@ -19,14 +19,14 @@ Server::run()
 			for (epoll_event &unknown : _epoll.wait())
 			{
 				if (unknown.data.fd == _listenSocket)
-					_addEvent();
+					_addClient();
 				else if (unknown.events & (EpollEvents::Err | EpollEvents::Hup))
-					_delEvent(unknown.data.fd);
+					_delClient(unknown.data.fd);
 				else try {
 					Event	*event = EventTypes::get(unknown.data.fd);
 					event->handle();
 				} catch (int closing) {
-					_delEvent(closing);
+					_delClient(closing);
 				}
 			}
 		}
@@ -42,31 +42,39 @@ Server::run()
 		catch (std::exception &exception) {
 			Logger::log(exception.what());
 			std::cerr << "Something unexpected excepted: " << exception.what() << std::endl;
-			throw exception;
+			throw exception; // throw to main for quick debug, in production the loop should not be broken
 		}
 	}
-	Logger::log("Controller Server Shutdown\n");
+	Logger::log("Controlled Server Shutdown\n");
 	std::cout << "Server shutting down...\n";
 }
 
 void
-Server::_addEvent()
+Server::_addClient()
 {
-	Event	event(EpollEvents::In, _listenSocket.accept());
+	Event	client(EpollEvents::In, _listenSocket.accept());
 
-	_epoll.ctl(Epoll::Ctl::Add, event);
-	std::cout << "Client " << event.data.fd << " connected.\n";
+	EventTypes::specify<ClientEvent>(client);
+
+	_epoll.ctl(Epoll::Ctl::Add, client);
+	std::cout << "Client " << client.data.fd << " connected.\n";
 }
 
 void
-Server::_delEvent(int fd)
+Server::_delClient(int fd)
 {
 	_epoll.ctl(Epoll::Ctl::Del, fd);
 	EasyThrow(close(fd));
 	std::cout << "Client " << fd << " disconnected.\n";
 }
 
+/*
 // Rogier's additions Nov 16 - start
+//	Simon's additions Nov 17 - start
+//	kaolo lange functie maat
+// 	P.S. this function logic was moved to ClientEvent._in();
+// 	End
+void
 Server::existingClient(int fd)
 const {
 	std::string	request;
@@ -119,12 +127,12 @@ const {
 		response.setContentType("text/html");
 		response.setBody(
 			"<html>\n"
-            	"<head><title>Webserv</title></head>\n"
-            	"<body>\n"
-            		"<h1>Hello from Webserv!</h1>\n"
-            		"<p>Your request was received successfully.</p>\n"
-            	"</body>\n"
-            "</html>\n"
+				"<head><title>Webserv</title></head>\n"
+				"<body>\n"
+					"<h1>Hello from Webserv!</h1>\n"
+					"<p>Your request was received successfully.</p>\n"
+				"</body>\n"
+			"</html>\n"
 		);
 
 		// Send response
@@ -136,3 +144,4 @@ const {
 		_epoll.ctl(Epoll::Ctl::Del, fd);
 }
 // End
+*/
