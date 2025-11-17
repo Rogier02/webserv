@@ -1,5 +1,7 @@
 .vscode/
 obj/
-.o*
+*.o
+
 webserv
 a.out
+failLog.txt
