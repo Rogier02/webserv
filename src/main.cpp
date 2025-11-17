@@ -25,9 +25,9 @@ int	main(int argc, char **argv)
 	signal(SIGINT, stopAllServerLoops);
 	signal(SIGTERM, stopAllServerLoops);
 
-	// Config config;
-	// if (argc == 2)
-	// 	config = Config(argv[2]);
+	Config config;
+	if (argc == 2)
+		config = getFileContent(argv[2]);
 
 	try {
 		Server	server;

@@ -15,7 +15,10 @@ OBJ_DIR			=	obj
 MAIN_FILES		=	main.cpp
 
 CONFIG_MODULE	=	Config
-CONFIG_FILES	=	Config.cpp
+CONFIG_FILES	=	Config.cpp			\
+					getFileContent.cpp	\
+					parseLocation.cpp	\
+					TokenStream.cpp		\
 
 EVENTBASE_MODULE=	Event/Base
 EVENTBASE_FILES	=	Event.cpp			\

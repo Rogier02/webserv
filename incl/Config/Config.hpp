@@ -54,7 +54,15 @@ struct	Config
 	Config();
 	Config(std::string file);
 	Config &operator=(Config &&other);
-	void	loadFromFile(TokenStream &ts);
+
+	void	printConfig();
+std::ostream& operator<<(std::ostream& os, const Config::Server::Location& loc) {
+std::ostream& operator<<(std::ostream& os, const Config::Server::ErrorPage& err) {
+std::ostream& operator<<(std::ostream& os, const Config::Server& s) {
+std::ostream& operator<<(std::ostream& os, const Config& c) {
+
 };
+
+Config	loadFromFile(TokenStream &ts);
 
 #endif

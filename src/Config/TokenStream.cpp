@@ -20,7 +20,7 @@ TokenStream::next(){
 }
 
 std::string
-TokenStream::takeToken() const{
+TokenStream::takeToken(){
 	std::string text = current().text;
 	next();
 	return (text);
@@ -91,7 +91,7 @@ TokenStream::checkSemicolon(){
 
 	line = getLine();
 	if (current().text != ";")
-		LOG("[Config Error] Line " << current().lineNbr << ": missing semicolon at the end of directive >> \"" << line << "\"\n");
+		LOG("[Config Error] at line: " << current().lineNbr << ": missing semicolon at the end of directive >> \"" << line << "\"\n");
 	else
 		next(); //this might not work. Test when ready
 }
@@ -109,7 +109,7 @@ TokenStream::setIndex(size_t newIndex){
 void
 TokenStream::expect(std::string expected){
 	if (current().text != expected)	
-		LOG("[Config Error] \"" << expected << "\" was expected, but not found.\n");
+		LOG("[Config Error] at line: " << current().lineNbr << " \"" << expected << "\" was expected, but not found.\n");
 	else
 		next(); //check if this works. Don't wanna test it now.
 }

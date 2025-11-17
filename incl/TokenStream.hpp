@@ -22,7 +22,7 @@ public:
 
 	const Token	&current() const;
 	void		next();
-	std::string	takeToken() const;
+	std::string	takeToken();
 	bool		atEnd() const;
 	size_t		position() const;
 	size_t		firstTokenOnLine() const;

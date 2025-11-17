@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-void	getFileContent(std::string fileName){
+Config	getFileContent(std::string fileName){
 	if (fileName.size() >= 5 && fileName.rfind(".conf") != fileName.size() - 5)
 		std::cout << "Error: incorrect file extension\n"; //return, error, exit?
 	std::ifstream file(fileName);
@@ -40,10 +40,11 @@ void	getFileContent(std::string fileName){
 	printTokens(tokens);
 	TokenStream ts(tokens);
 	Config config; // moet misschien anders
-	config.loadFromFile(ts);
+	config = loadFromFile(ts);
+	return 
 }
 
-void	loadFromFile(TokenStream &ts){
+Config	loadFromFile(TokenStream &ts){
 	Config config; // moet misschien anders
 
 	while (!ts.atEnd()){
@@ -52,6 +53,7 @@ void	loadFromFile(TokenStream &ts){
 		if (ts.current().text == "}")
 			return ;
 	}
+	return (config);
 }
 
 Config::Server	parseServer(TokenStream &ts){
@@ -66,11 +68,13 @@ Config::Server	parseServer(TokenStream &ts){
 			ts.setIndex(ts.lastTokenOnLine() + 1); //check if this works correctly
 		}
 	}
+
 	return (server);
 }
 
 Config::Server::ErrorPage	parseErrorPage(TokenStream &ts){
 	Config::Server::ErrorPage errorPage;
+
 	ts.next();
 	errorPage.code = std::stoi(ts.takeToken());
 	errorPage.path = ts.takeToken();
