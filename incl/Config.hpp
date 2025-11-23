@@ -58,6 +58,7 @@ struct	Config
 	Config();
 	Config(std::string file);
 	Config &operator=(Config &&other);
+	
 };
 
 #endif
