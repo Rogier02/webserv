@@ -32,6 +32,7 @@ int	main(int argc, char **argv)
 	else
 		config.getFileContent("default.conf");
 
+		config.loadFromFile(argv[2]);
 
 	try {
 		Server	server;
