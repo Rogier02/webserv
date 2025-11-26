@@ -16,7 +16,6 @@ MAIN_FILES		=	main.cpp
 
 CONFIG_MODULE	=	Config
 CONFIG_FILES	=	Config.cpp			\
-					getFileContent.cpp	\
 					parseLocation.cpp	\
 					TokenStream.cpp		\
 

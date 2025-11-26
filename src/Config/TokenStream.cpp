@@ -1,26 +1,57 @@
 #include "TokenStream.hpp"
 #include "log.hpp"
-#include <iostream>
 
-TokenStream::TokenStream(const std::vector<Token> &t)
-	:	tokens(t)
-	,	index(0) {}
+TokenStream::TokenStream(std::string const &fileName)
+	:	_index(0)
+{
+	if (fileName.rfind(".conf") == std::string::npos)
+		LOG("Config::getFileContent(): incorrect file extension\n");
 
-TokenStream::~TokenStream() {}
+	std::ifstream	file(fileName);
+	if (!file.is_open())
+		LOG("Config::getFileContent(): couldn't open file\n");
+
+	std::string	line;
+	int			lineNbr = 1;
+	while (std::getline(file, line))
+	{
+		std::stringstream	stream(line);
+		std::string			word;
+
+		while (stream >> word)
+		{
+			if (word[0] == '#')
+				break;
+			if (!word.empty() && word.back() == ';')
+			{
+				word.pop_back();
+				if (!word.empty())
+					_tokens.push_back(Token{word, lineNbr});
+				_tokens.push_back(Token{";", lineNbr});
+			}
+			else
+				_tokens.push_back(Token{word, lineNbr});
+		}
+		++lineNbr;
+	}
+}
 
 const Token &
-TokenStream::current() const{
-	return tokens[index]; 
+TokenStream::current()
+const {
+	return _tokens[_index];
 }
 
 void
-TokenStream::next(){
-	if (index < tokens.size())
-		index++; 
+TokenStream::next()
+{
+	if (_index < _tokens.size())
+		_index++;
 }
 
 std::string
-TokenStream::takeToken(){
+TokenStream::takeToken()
+{
 	std::string text = current().text;
 	next();
 	return (text);
@@ -28,21 +59,24 @@ TokenStream::takeToken(){
 
 
 bool
-TokenStream::atEnd() const{
-	return index >= tokens.size(); 
+TokenStream::atEnd()
+const {
+	return _index >= _tokens.size();
 }
 
 size_t
-TokenStream::position() const{
-	return index; 
+TokenStream::position()
+const {
+	return _index;
 }
 
 size_t
-TokenStream::firstTokenOnLine() const{
+TokenStream::firstTokenOnLine()
+const {
 	int lineNbr = current().lineNbr;
-	size_t first = index;
+	size_t first = _index;
 
-	while (first > 0 && tokens[first - 1].lineNbr == lineNbr) {
+	while (first > 0 && _tokens[first - 1].lineNbr == lineNbr) {
 		first--;
 	}
 
@@ -50,11 +84,12 @@ TokenStream::firstTokenOnLine() const{
 }
 
 size_t
-TokenStream::lastTokenOnLine() const{
+TokenStream::lastTokenOnLine()
+const {
 	int lineNbr = current().lineNbr;
-	size_t last = index;
+	size_t last = _index;
 
-	while (last + 1 < tokens.size() && tokens[last + 1].lineNbr == lineNbr) {
+	while (last + 1 < _tokens.size() && _tokens[last + 1].lineNbr == lineNbr) {
 		last++;
 	}
 
@@ -62,31 +97,35 @@ TokenStream::lastTokenOnLine() const{
 }
 
 bool
-TokenStream::isLastTokenOnLine() const{
+TokenStream::isLastTokenOnLine()
+const {
 	return (position() == lastTokenOnLine());
 }
 
 std::string
-TokenStream::getLine() const{
+TokenStream::getLine()
+const {
 	size_t first = firstTokenOnLine();
 	size_t last = lastTokenOnLine();
 	std::string line;
 
 	for (size_t i = first; i <= last; ++i)
-        line += tokens[i].text;
+        line += _tokens[i].text;
 
 	return (line);
 }
 
 void
-TokenStream::printTokens(std::vector<Token> tokens){
-	for (size_t i = 0; i < tokens.size(); i++){
-		std::cout << i << "\t- line: " << tokens[i].lineNbr << "\t- Text: " << tokens[i].text << "\n";
+TokenStream::printTokens(std::vector<Token> _tokens)
+{
+	for (size_t i = 0; i < _tokens.size(); i++){
+		std::cout << i << "\t- line: " << _tokens[i].lineNbr << "\t- Text: " << _tokens[i].text << "\n";
 	}
 }
 
 void
-TokenStream::checkSemicolon(){
+TokenStream::checkSemicolon()
+{
 	std::string	line;
 
 	line = getLine();
@@ -97,17 +136,19 @@ TokenStream::checkSemicolon(){
 }
 
 void
-TokenStream::setIndex(size_t newIndex){
-	if (newIndex < tokens.size()) {
-		index = newIndex;
+TokenStream::setIndex(size_t newIndex)
+{
+	if (newIndex < _tokens.size()) {
+		_index = newIndex;
 	}
 	else {
-		LOG("[Set Index Error] couldn't set index.\n");
+		LOG("[Set Index Error] couldn't set _index.\n");
 	}
 }
 
 void
-TokenStream::expect(std::string expected){
+TokenStream::expect(std::string expected)
+{
 	if (current().text != expected){
 		LOG("[Config Error] at line: " << current().lineNbr << " \"" << expected << "\" was expected, but not found.\n");
 		if (!atEnd())
