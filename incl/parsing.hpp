@@ -5,9 +5,12 @@
 #include "TokenStream.hpp"
 
 
-
-void	parseLocation(TokenStream &ts);
+Config::Server				parseServer(TokenStream &ts);
+Config::Server::ErrorPage	parseErrorPage(TokenStream &ts);
+Config::Server::Location	parseLocation(TokenStream &ts);
 std::string					parsePath(TokenStream &ts);
+std::string					parseHost(std::string hostPort, size_t colonPos);
+int							parsePort(std::string hostPort, size_t colonPos);
 std::string					parseRoot(TokenStream &ts);
 size_t						parseClientMaxBodySize(TokenStream &ts);
 std::string					parseReturnURL(TokenStream &ts);

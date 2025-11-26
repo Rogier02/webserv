@@ -5,3 +5,4 @@ obj/
 webserv
 a.out
 failLog.txt
+.nfs*

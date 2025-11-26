@@ -1,22 +1,24 @@
-#include <string>
-#include <iostream>
 #include "Config.hpp"
+#include "log.hpp"
+#include "TokenStream.hpp"
+#include "parsing.hpp"
 #include <string>
 #include <iostream>
+#include <string>
 #include <fstream>
+#include <sstream>
 
 Config::Config(){}
 
-
-Config &
-Config::operator=(Config &&other)
-{
-	if (this != &other)
-	{
-		this = other;
-	}
-	return (*this);
-}
+// Config &
+// Config::operator=(Config &&other)
+// {
+// 	if (this != &other)
+// 	{
+// 		this = other;
+// 	}
+// 	return (*this);
+// }
 
 // Config::Error::Error(std::string const &message)
 // 	:	_message(message)
@@ -39,6 +41,7 @@ Config::getFileContent(std::string fileName){
 	std::string line = "";
 	std::vector<Token> tokens;
 	int lineNbr = 0;
+	std::cout << "\n----starting getline----\n";
 	while (std::getline(file, line)){
 		lineNbr++;
 
@@ -58,44 +61,82 @@ Config::getFileContent(std::string fileName){
 				tokens.push_back({word, lineNbr});
 		}
 	}
-	printTokens(tokens);
+	file.close();
+	std::cout <<"\n----getline completed----\n";
 	TokenStream ts(tokens);
+	ts.printTokens();
+	std::cout << "\n----printed tokens----\n";
 	loadFromFile(ts);
-	printConfig();
+	std::cout << "\n----loaded from file----\n";
+	printConfig(*this);
+	std::cout << "\n----printed config----\n";
 }
 
 void
 Config::loadFromFile(TokenStream &ts){
 	while (!ts.atEnd() && ts.current().text != "}"){
-		if (ts.current().text == "Server")
+		if (ts.takeToken() == "Server")
 			servers.push_back(parseServer(ts));
 	}
-	expect("}");
+	ts.expect("}");
 }
 
-Config::Server
-Config::parseServer(TokenStream &ts){
-	Config::Server server;
-	while (!ts.atEnd() && ts.current().text != "}"){
-		if (ts.current().text == "error_page")
-			server.errorPages.push_back(parseErrorPage(ts));
-		if (ts.current().text == "location")
-			server.locations.push_back(parseLocation(ts));
-		else {
-			LOG("[Config Error] Line " << ts.current().lineNbr << ": \"" << ts.getLine() << "\" -> Unknown directive");
-			ts.setIndex(ts.lastTokenOnLine() + 1); //check if this works correctly
-		}
-	}
-	expect("}");
-	return (server);
-}
 
-Config::Server::ErrorPage
-Config::parseErrorPage(TokenStream &ts){
-	Config::Server::ErrorPage errorPage;
-	ts.next();
-	errorPage.code = std::stoi(ts.takeToken());
-	errorPage.path = ts.takeToken();
-	ts.checkSemicolon();
-	return (errorPage);
+//printConfig van chatGPT
+void
+Config::printConfig(const Config& cfg)
+{
+    std::cout << "==== CONFIG ====\n";
+
+    for (size_t i = 0; i < cfg.servers.size(); ++i)
+    {
+        const Config::Server& srv = cfg.servers[i];
+        std::cout << "\n--- Server " << i << " ---\n";
+        std::cout << "name: " << srv.name << "\n";
+        std::cout << "host: " << srv.host << "\n";
+        std::cout << "root: " << srv.root << "\n";
+        std::cout << "port: " << srv.port << "\n";
+        std::cout << "clientMaxBodySize: " << srv.clientMaxBodySize << "\n";
+
+        // Error pages
+        std::cout << "Error Pages:\n";
+        for (size_t e = 0; e < srv.errorPages.size(); ++e)
+        {
+            const auto& ep = srv.errorPages[e];
+            std::cout << "  [" << e << "] "
+                      << ep.code << " -> " << ep.path << "\n";
+        }
+
+        // Locations
+        std::cout << "Locations:\n";
+        for (size_t l = 0; l < srv.locations.size(); ++l)
+        {
+            const Config::Server::Location& loc = srv.locations[l];
+            std::cout << "  --- Location " << l << " ---\n";
+            std::cout << "  path: " << loc.path << "\n";
+            std::cout << "  root: " << loc.root << "\n";
+            std::cout << "  clientMaxBodySize: " << loc.clientMaxBodySize << "\n";
+            std::cout << "  returnURL: " << loc.returnURL << "\n";
+            std::cout << "  redirectStatus: " << loc.redirectStatus << "\n";
+            std::cout << "  autoindex: " << (loc.autoindex ? "true" : "false") << "\n";
+            std::cout << "  uploadDir: " << loc.uploadDir << "\n";
+            std::cout << "  index: " << loc.index << "\n";
+            std::cout << "  cgiEXT: " << loc.cgiEXT << "\n";
+            std::cout << "  cgiPath: " << loc.cgiPath << "\n";
+
+            std::cout << "  allowedMethods: ";
+            for (const auto& m : loc.allowedMethods)
+                std::cout << m << " ";
+            std::cout << "\n";
+
+            std::cout << "  indexFiles: ";
+            for (const auto& f : loc.indexFiles)
+                std::cout << f << " ";
+            std::cout << "\n";
+        }
+
+        std::cout << "\n";
+    }
+
+    std::cout << "==== END CONFIG ====\n";
 }

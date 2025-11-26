@@ -1,6 +1,6 @@
-#include "TokenStream.hpp"
 #include "Config.hpp"
-#include "Parsing.hpp"
+#include "TokenStream.hpp"
+#include "parsing.hpp"
 #include "log.hpp"
 #include <iostream>
 #include <fstream>
@@ -15,36 +15,37 @@ parseLocation(TokenStream &ts){
 	location.path = parsePath(ts);
 	ts.expect("{");
 	while (!ts.atEnd() && ts.current().text != "}"){
-		if (ts.takeToken() == "root")
+		std::string current = ts.takeToken();
+		if (current == "root")
 			location.root = parseRoot(ts);
-		else if (ts.takeToken() == "client_max_body_size")
+		else if (current == "client_max_body_size")
 			location.clientMaxBodySize = parseClientMaxBodySize(ts);
-		else if (ts.takeToken() == "return")
+		else if (current == "return")
 			location.returnURL = parseReturnURL(ts);
-		else if (ts.takeToken() == "redirectStatus")
+		else if (current == "redirectStatus")
 			location.redirectStatus = parseRedirectStatus(ts);
-		else if (ts.takeToken() == "autoindex")
+		else if (current == "autoindex")
 			location.autoindex = parseAutoIndex(ts);
-		else if (ts.takeToken() == "upload_dir")
+		else if (current == "upload_dir")
 			location.uploadDir = parseUploadDIR(ts);
-		else if (ts.takeToken() == "index")
+		else if (current == "index")
 			location.index = parseIndex(ts);
-		else if (ts.takeToken() == "cgi_ext")
+		else if (current == "cgi_ext")
 			location.cgiEXT = parseCgiEXT(ts);
-		else if (ts.takeToken() == "cgi_path")
+		else if (current == "cgi_path")
 			location.cgiPath = parseCgiPath(ts);
-		else if (ts.takeToken() == "allowed_methods"){
+		else if (current == "allowed_methods"){
 			while (!ts.isLastTokenOnLine())
 				location.allowedMethods.push_back(parseAllowedMethod(ts));
 			ts.checkSemicolon();
 		}
-		else if (ts.takeToken() == "index_files"){
+		else if (current == "index_files"){
 			while (!ts.isLastTokenOnLine())
 				location.indexFiles.push_back(parseIndexFile(ts));
 			ts.checkSemicolon();
 		}
 		else{
-			LOG("[Config Error] Line " << ts.current().lineNbr << ": \"" << ts.getLine() << "\" -> Unknown directive");
+			LOG("[Config Error] \t\"" << ts.current().text << "\" -> Unknown directive on line " << ts.current().lineNbr << ": " << ts.getLine());
 			ts.setIndex(ts.lastTokenOnLine() + 1);
 		}
 	}
@@ -55,13 +56,13 @@ parseLocation(TokenStream &ts){
 std::string
 parsePath(TokenStream &ts){
 	std::string path = ts.takeToken();
-	ts.checkSemicolon();
 
 	return (path);
 }
 
 std::string
 parseRoot(TokenStream &ts){
+	std::cout << "ROOT PATH = " << ts.current().text << "\n";
 	std::string root = ts.takeToken();
 	ts.checkSemicolon();
 
@@ -151,13 +152,11 @@ parseCgiPath(TokenStream &ts){
 std::string
 parseAllowedMethod(TokenStream &ts){
 	std::string allowedMethod = ts.takeToken();
-	ts.checkSemicolon();
 	return (allowedMethod);
 }
 
 std::string
 parseIndexFile(TokenStream &ts){
 	std::string indexFile = ts.takeToken();
-	ts.checkSemicolon();
 	return (indexFile);
 }

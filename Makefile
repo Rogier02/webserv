@@ -16,9 +16,9 @@ MAIN_FILES		=	main.cpp
 
 CONFIG_MODULE	=	Config
 CONFIG_FILES	=	Config.cpp			\
-					getFileContent.cpp	\
-					parseLocation.cpp	\
 					TokenStream.cpp		\
+					parsing.cpp			\
+					parseLocation.cpp	\
 
 EVENTBASE_MODULE=	Event/Base
 EVENTBASE_FILES	=	Event.cpp			\

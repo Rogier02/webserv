@@ -3,8 +3,8 @@
 #include <iostream>
 
 TokenStream::TokenStream(const std::vector<Token> &t)
-	:	tokens(t)
-	,	index(0) {}
+	:	index(0)
+	,	tokens(t) {}
 
 TokenStream::~TokenStream() {}
 
@@ -72,14 +72,17 @@ TokenStream::getLine() const{
 	size_t last = lastTokenOnLine();
 	std::string line;
 
-	for (size_t i = first; i <= last; ++i)
+	for (size_t i = first; i <= last; ++i){
         line += tokens[i].text;
+		if (i != last)
+			line += " ";
+	}
 
 	return (line);
 }
 
 void
-TokenStream::printTokens(std::vector<Token> tokens){
+TokenStream::printTokens(){
 	for (size_t i = 0; i < tokens.size(); i++){
 		std::cout << i << "\t- line: " << tokens[i].lineNbr << "\t- Text: " << tokens[i].text << "\n";
 	}

@@ -45,20 +45,20 @@ struct	Config
 
 	class Error: public std::exception {
 		public:
-			Error(std::string const &message = "No apparent reason...");
-			const char	*what() const throw();
+			// Error(std::string const &message = "No apparent reason...");
+			// const char	*what() const throw();
 		private:
 			std::string	_message;
 	};
 
 	Config();
 	// Config(std::string file);
-	Config &operator=(Config &&other);
+	// Config &operator=(Config &&other);
 
 	void	getFileContent(std::string fileName);
 	void	loadFromFile(TokenStream &ts);
-	Config::Server	parseServer(TokenStream &ts);
-	Config::Server::ErrorPage	parseErrorPage(TokenStream &ts);
+
+	void	printConfig(const Config& cfg);
 	
 };
 
