@@ -41,7 +41,6 @@ Config::getFileContent(std::string fileName){
 	std::string line = "";
 	std::vector<Token> tokens;
 	int lineNbr = 0;
-	std::cout << "\n----starting getline----\n";
 	while (std::getline(file, line)){
 		lineNbr++;
 
@@ -62,14 +61,10 @@ Config::getFileContent(std::string fileName){
 		}
 	}
 	file.close();
-	std::cout <<"\n----getline completed----\n";
 	TokenStream ts(tokens);
-	ts.printTokens();
-	std::cout << "\n----printed tokens----\n";
+	// ts.printTokens();
 	loadFromFile(ts);
-	std::cout << "\n----loaded from file----\n";
-	printConfig(*this);
-	std::cout << "\n----printed config----\n";
+	// printConfig(*this);
 }
 
 void
@@ -78,9 +73,7 @@ Config::loadFromFile(TokenStream &ts){
 		if (ts.takeToken() == "Server")
 			servers.push_back(parseServer(ts));
 	}
-	ts.expect("}");
 }
-
 
 //printConfig van chatGPT
 void
@@ -116,7 +109,7 @@ Config::printConfig(const Config& cfg)
             std::cout << "  path: " << loc.path << "\n";
             std::cout << "  root: " << loc.root << "\n";
             std::cout << "  clientMaxBodySize: " << loc.clientMaxBodySize << "\n";
-            std::cout << "  returnURL: " << loc.returnURL << "\n";
+            std::cout << "  returnURL: " << loc.returnURL.path << "\n";
             std::cout << "  redirectStatus: " << loc.redirectStatus << "\n";
             std::cout << "  autoindex: " << (loc.autoindex ? "true" : "false") << "\n";
             std::cout << "  uploadDir: " << loc.uploadDir << "\n";

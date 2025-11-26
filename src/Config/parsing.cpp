@@ -14,7 +14,6 @@ parseServer(TokenStream &ts){
 	ts.expect("{");
 	while (!ts.atEnd() && ts.current().text != "}"){
 		std::string current = ts.takeToken();
-		std::cout << "\n----Current = " << current << "  ||  I am doing something with: \"" << ts.current().text << "\" on line: " << ts.current().lineNbr << "----\n\n";
 		if (current == "server_name"){
 			server.name = ts.takeToken();
 			ts.checkSemicolon();
@@ -59,11 +58,9 @@ parsePort(std::string hostPort, size_t colonPos){
 	return (port);
 }
 
-
-
-Config::Server::ErrorPage
+Config::Page
 parseErrorPage(TokenStream &ts){
-	Config::Server::ErrorPage errorPage;
+	Config::Page errorPage;
 	errorPage.code = std::stoi(ts.takeToken());
 	errorPage.path = ts.takeToken();
 	ts.checkSemicolon();

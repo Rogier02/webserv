@@ -10,13 +10,18 @@
 
 struct	Config
 {
+	struct Page {
+		int			code;
+		std::string	path;
+	};
+
 	struct	Server {
 		struct Location	{
 			// copied from github, I have no idea what these mean
 			std::string					path;
 			std::string					root;
 			size_t						clientMaxBodySize;
-			std::string					returnURL;
+			Page						returnURL;
 			int							redirectStatus;
 			bool						autoindex;
 			std::string					uploadDir;
@@ -27,18 +32,13 @@ struct	Config
 			std::vector<std::string>	indexFiles;
 		};
 
-		struct ErrorPage {
-			int			code;
-			std::string	path;
-		};
-
 		std::string	name;
 		std::string	host;
 		std::string	root;
 		int			port;
 		size_t		clientMaxBodySize;
 		std::vector<Location>	locations;
-		std::vector<ErrorPage>	errorPages;
+		std::vector<Page>	errorPages;
 	};
 
 	std::vector<Server>	servers;

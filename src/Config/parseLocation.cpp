@@ -62,7 +62,6 @@ parsePath(TokenStream &ts){
 
 std::string
 parseRoot(TokenStream &ts){
-	std::cout << "ROOT PATH = " << ts.current().text << "\n";
 	std::string root = ts.takeToken();
 	ts.checkSemicolon();
 
@@ -92,9 +91,11 @@ parseClientMaxBodySize(TokenStream &ts){
 	return (size);
 }
 
-std::string
+Config::Page
 parseReturnURL(TokenStream &ts){
-	std::string returnURL = ts.takeToken();
+	Config::Page returnURL;
+	returnURL.code = std::stoi(ts.takeToken());
+	returnURL.path = ts.takeToken();
 	ts.checkSemicolon();
 	return (returnURL);
 }
@@ -108,14 +109,15 @@ parseRedirectStatus(TokenStream &ts){
 
 bool
 parseAutoIndex(TokenStream &ts){
+	std::string current = ts.takeToken();
 	bool autoindex = false;
 
-	if (ts.current().text == "off")
+	if (current == "off")
 	autoindex = false;
-	else if (ts.current().text == "on")
+	else if (current == "on")
 	autoindex = true;
 	else {
-		LOG("[Config Error] Line " << ts.current().lineNbr << ": \"" << ts.current().text << "\" -> Unknown option");
+		LOG("[Config Error] Line " << ts.current().lineNbr << ": \"" << current << "\" -> Unknown option");
 	}
 	ts.checkSemicolon();
 	return (autoindex);
