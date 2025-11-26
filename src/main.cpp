@@ -13,9 +13,9 @@ int	main(int argc, char **argv)
 		return (EINVAL);
 	}
 
-	Config config;
-	if (argc == 2)
-		config.loadFromFile(argv[2]);
+	// Config config;
+	// if (argc == 2)
+	// 	config.loadFromFile(argv[2]);
 
 	try {
 		Server	server;

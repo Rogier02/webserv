@@ -125,10 +125,19 @@ const {
 
 		std::cout << "Client Request:\n" << request << std::endl;
 
+		// TODO: Implatement Raw request parser -- request(rawRequest);
+
 	
-		
+		// Temporary simple parsing ( REPLACE: )
+		std::istringstream stream(rawRequest);
+		std::string method, path, version;
+		stream >> method >> path >> version;
+
 		// Http response
 		HttpResponse response(200);
+
+		//Check if CGI request
+		if (path.find(".py") != std::string::npos)
 		response.setContentType("text/html");
 		response.setBody(
 			"<html>\n"
