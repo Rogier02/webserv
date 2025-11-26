@@ -64,7 +64,7 @@ Config::getFileContent(std::string fileName){
 	TokenStream ts(tokens);
 	// ts.printTokens();
 	loadFromFile(ts);
-	// printConfig(*this);
+	printConfig(*this);
 }
 
 void
