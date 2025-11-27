@@ -5,11 +5,11 @@ TokenStream::TokenStream(std::string const &fileName)
 	:	_index(0)
 {
 	if (fileName.rfind(".conf") == std::string::npos)
-		LOG("Config::getFileContent(): incorrect file extension\n");
+		LOG("incorrect file extension\n");
 
 	std::ifstream	file(fileName);
 	if (!file.is_open())
-		LOG("Config::getFileContent(): couldn't open file\n");
+		LOG("couldn't open file\n");
 
 	std::string	line;
 	int			lineNbr = 1;
@@ -34,6 +34,7 @@ TokenStream::TokenStream(std::string const &fileName)
 		}
 		++lineNbr;
 	}
+	file.close();
 }
 
 const Token &
@@ -131,8 +132,8 @@ TokenStream::checkSemicolon()
 	line = getLine();
 	if (current().text != ";")
 		LOG("[Config Error] at line: " << current().lineNbr << ": missing semicolon at the end of directive >> \"" << line << "\"\n");
-	else
-		next(); //this might not work. Test when ready
+	// else
+	next(); //this might not work. Test when ready
 }
 
 void
@@ -152,7 +153,7 @@ TokenStream::expect(std::string expected)
 	if (current().text != expected){
 		LOG("[Config Error] at line: " << current().lineNbr << " \"" << expected << "\" was expected, but not found.\n");
 		if (!atEnd())
-			setIndex(isLastTokenOnLine() + 1);
+			setIndex(lastTokenOnLine() + 1);
 	}
 	else
 		next(); //check if this works. Don't wanna test it now.

@@ -12,33 +12,38 @@ class	Config
 {
 	public:
 		struct	Server {
-			struct ErrorPage {
-				int							code;
-				std::string					path;
+			struct Page {
+				int			code = 0;
+				std::string	path;
+			};
+
+			struct ErrorPage : Page {
 				ErrorPage(TokenStream &tokens);
 			};
 
 			struct Location	{
-				std::string					path;
-				std::string					root;
-				size_t						clientMaxBodySize;
-				std::string					returnURL;
-				int							redirectStatus;
-				bool						autoindex;
-				std::string					uploadDir;
-				std::string					index;
-				std::string					cgiEXT;
-				std::string					cgiPath;
+				std::string	path;
+				std::string	root;
+				size_t		clientMaxBodySize = 0;
+				Page		returnURL;
+				int			redirectStatus = 0;
+				bool		autoindex = false;
+				std::string	uploadDir;
+				std::string	index;
+				std::string	cgiEXT;
+				std::string	cgiPath;
+
 				std::vector<std::string>	allowedMethods;
 				std::vector<std::string>	indexFiles;
 				// Location(TokenStream &tokens);
 			};
 
-			std::string				name;
-			std::string				host;
-			std::string				root;
-			int						port;
-			size_t					clientMaxBodySize;
+			std::string	name;
+			std::string	host;
+			std::string	root;
+			int			port;
+			size_t		clientMaxBodySize;
+
 			std::vector<ErrorPage>	errorPages;
 			std::vector<Location>	locations;
 			Server(TokenStream &tokens);
@@ -52,8 +57,7 @@ class	Config
 		~Config() = default;
 
 	private:
-		class Error: public std::exception
-		{
+		class Error: public std::exception {
 			public:
 				Error(std::string const &message = "No apparent reason...");
 				const char	*what() const throw();
@@ -66,6 +70,9 @@ class	Config
 
 	private:
 		TokenStream	_tokens;
+
+	public:
+		void	print();
 };
 
 #endif

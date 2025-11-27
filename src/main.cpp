@@ -28,9 +28,12 @@ int	main(int argc, char **argv)
 	if (argc > 2)
 		return (usage(argv[0]));
 
-	std::string configFilePath = "default.conf";
+	std::string configFilePath = "configs/default.conf";
 	if (argc == 2)
 		configFilePath = argv[1];
+
+	Config config(configFilePath);
+	config.print();
 
 	signal(SIGINT, stopAllServerLoops);
 	signal(SIGTERM, stopAllServerLoops);

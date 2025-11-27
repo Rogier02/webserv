@@ -14,38 +14,39 @@ location(TokenStream &ts)
 	ts.expect("{");
 	while (!ts.atEnd() && ts.current().text != "}")
 	{
-		if (ts.takeToken() == "root")
+		std::string current = ts.takeToken();
+		if (current == "root")
 			location.root = parseRoot(ts);
-		else if (ts.takeToken() == "client_max_body_size")
+		else if (current == "client_max_body_size")
 			location.clientMaxBodySize = parseClientMaxBodySize(ts);
-		else if (ts.takeToken() == "return")
+		else if (current == "return")
 			location.returnURL = parseReturnURL(ts);
-		else if (ts.takeToken() == "redirectStatus")
+		else if (current == "redirectStatus")
 			location.redirectStatus = parseRedirectStatus(ts);
-		else if (ts.takeToken() == "autoindex")
+		else if (current == "autoindex")
 			location.autoindex = parseAutoIndex(ts);
-		else if (ts.takeToken() == "upload_dir")
+		else if (current == "upload_dir")
 			location.uploadDir = parseUploadDIR(ts);
-		else if (ts.takeToken() == "index")
+		else if (current == "index")
 			location.index = parseIndex(ts);
-		else if (ts.takeToken() == "cgi_ext")
+		else if (current == "cgi_ext")
 			location.cgiEXT = parseCgiEXT(ts);
-		else if (ts.takeToken() == "cgi_path")
+		else if (current == "cgi_path")
 			location.cgiPath = parseCgiPath(ts);
-		else if (ts.takeToken() == "allowed_methods")
+		else if (current == "allowed_methods")
 		{
 			while (!ts.isLastTokenOnLine())
 				location.allowedMethods.push_back(parseAllowedMethod(ts));
 			ts.checkSemicolon();
 		}
-		else if (ts.takeToken() == "index_files")
+		else if (current == "index_files")
 		{
 			while (!ts.isLastTokenOnLine())
 				location.indexFiles.push_back(parseIndexFile(ts));
 			ts.checkSemicolon();
 		}
 		else{
-			LOG("[Config Error] Line " << ts.current().lineNbr << ": \"" << ts.getLine() << "\" -> Unknown directive");
+			LOG("[Config Error] \t\"" << ts.current().text << "\" -> Unknown directive on line " << ts.current().lineNbr << ": " << ts.getLine());
 			ts.setIndex(ts.lastTokenOnLine() + 1);
 		}
 	}
@@ -57,7 +58,6 @@ std::string
 parsePath(TokenStream &ts)
 {
 	std::string path = ts.takeToken();
-	ts.checkSemicolon();
 
 	return (path);
 }
@@ -95,10 +95,12 @@ parseClientMaxBodySize(TokenStream &ts)
 	return (size);
 }
 
-std::string
+Config::Server::Page
 parseReturnURL(TokenStream &ts)
 {
-	std::string returnURL = ts.takeToken();
+	Config::Server::Page returnURL;
+	returnURL.code = std::stoi(ts.takeToken());
+	returnURL.path = ts.takeToken();
 	ts.checkSemicolon();
 	return (returnURL);
 }
@@ -114,14 +116,15 @@ parseRedirectStatus(TokenStream &ts)
 bool
 parseAutoIndex(TokenStream &ts)
 {
+	std::string current = ts.takeToken();
 	bool autoindex = false;
 
-	if (ts.current().text == "off")
+	if (current == "off")
 	autoindex = false;
-	else if (ts.current().text == "on")
+	else if (current == "on")
 	autoindex = true;
 	else {
-		LOG("[Config Error] Line " << ts.current().lineNbr << ": \"" << ts.current().text << "\" -> Unknown option");
+		LOG("[Config Error] Line " << ts.current().lineNbr << ": \"" << current << "\" -> Unknown option");
 	}
 	ts.checkSemicolon();
 	return (autoindex);
@@ -163,7 +166,6 @@ std::string
 parseAllowedMethod(TokenStream &ts)
 {
 	std::string allowedMethod = ts.takeToken();
-	ts.checkSemicolon();
 	return (allowedMethod);
 }
 
@@ -171,6 +173,5 @@ std::string
 parseIndexFile(TokenStream &ts)
 {
 	std::string indexFile = ts.takeToken();
-	ts.checkSemicolon();
 	return (indexFile);
 }

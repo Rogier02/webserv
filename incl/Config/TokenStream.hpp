@@ -23,8 +23,8 @@ class	TokenStream
 		~TokenStream() = default;
 
 	private:
-		const std::vector<Token>	_tokens;
-		size_t						_index;
+		std::vector<Token>	_tokens;
+		size_t				_index;
 
 	public:
 		const Token	&current() const;
