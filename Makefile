@@ -16,7 +16,7 @@ MAIN_FILES		=	main.cpp
 
 CONFIG_MODULE	=	Config
 CONFIG_FILES	=	Config.cpp			\
-					parseLocation.cpp	\
+					Parse.cpp			\
 					TokenStream.cpp		\
 
 EVENTBASE_MODULE=	Event/Base
@@ -40,6 +40,7 @@ SOCKET_FILES	=	ListenSocket.cpp	\
 
 UTILS_MODULE	=	Util
 UTILS_FILES		=	Logger.cpp			\
+					MessageException.cpp\
 
 ALL_MODULES		:=	$(CONFIG_MODULE)	\
 					$(EVENTBASE_MODULE)	\

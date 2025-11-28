@@ -32,13 +32,12 @@ class	Server
 
 	public:
 		Server();
-		// Server(std::vector<Config::Server> const &config);
+		// Server(Config const &config);
 		Server(Server const &other) = delete;
 		Server &operator=(Server const &other) = delete;
 		~Server() = default;
 
 	private:
-		// std::vector<Config::Server> const &_config;
 		int				_port = _DefaultPort;
 		ListenSocket	_listenSocket;
 		Epoll			_epoll;

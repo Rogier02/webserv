@@ -5,6 +5,7 @@
 
 #include "Server.hpp"
 #include "Config.hpp"
+#include "Parse.hpp"
 #include "HttpRequest.hpp"
 
 std::atomic<bool>	_pleaseShutDown(false);
@@ -32,8 +33,9 @@ int	main(int argc, char **argv)
 	if (argc == 2)
 		configFilePath = argv[1];
 
-	Config config(configFilePath);
-	config.print();
+	Parse	parser(configFilePath);
+	Config	config = parser.config();
+	std::cout << config;
 
 	signal(SIGINT, stopAllServerLoops);
 	signal(SIGTERM, stopAllServerLoops);
