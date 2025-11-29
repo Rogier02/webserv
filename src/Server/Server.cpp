@@ -159,17 +159,16 @@ const {
 		// Non-CGI request (static files)
 		// Temporary: Return 404 for any path that's not / or /cgi.py
 		if (path == "/") {
-			// Serve index.html
-			response.setStatus(200);
-			response.setContentType("text/html");
-			response.setBody(
-				"<html>\n"
-				"<head><title>Webserv</title></head>\n"
-				"<body>\n"
-				"<h1>Hello from Webserv!</h1>\n"
-				"</body>\n"
-				"</html>\n"
-			);
+			std::string indexContent = readFile("./webpages/index.html");
+			if (!indexContent.empty()) {
+				response.setStatus(200);
+				response.setContentType("text/html");
+				response.setBody(indexContent);
+			} else {
+				response.setStatus(404);
+				response.setContentType("text/html");
+				response.setBody(_errorPageHandler.getErrorPage(404));
+			}
 		} else if (path == "/cgi.py") {
 			// Already handled above
 		} else {
@@ -195,4 +194,16 @@ Server::zombieClient(int fd)
 const {
 	close(fd);
 	_epoll.ctl(Epoll::Ctl::Del, fd);
+}
+
+std::string
+Server::readFile(const std::string& filePath) const
+{
+	std::ifstream file(filePath);
+	if (!file.is_open()) {
+		return ("");
+	}
+	std::stringstream buffer;
+	buffer << file.rdbuf();
+	return (buffer.str());
 }

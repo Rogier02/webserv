@@ -44,9 +44,10 @@ class	Server
 		static void	shutdown(int);
 
 	private:
-		void	newClient() const;
-		void	existingClient(int fd) const;
-		void	zombieClient(int fd) const;
+		void		newClient() const;
+		void		existingClient(int fd) const;
+		void		zombieClient(int fd) const;
+		std::string	readFile(const std::string& filePath) const;
 };
 
 #endif
