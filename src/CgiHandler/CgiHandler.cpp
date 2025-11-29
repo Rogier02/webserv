@@ -48,7 +48,7 @@ CgiHandler::~CgiHandler()
 
 
 bool
-CgiHandler::isCgiResquest(const std::string& path) const
+CgiHandler::isCgiRequest(const std::string& path) const
 {
 	// Loop through possible extensions
 	for(const auto& ext : _cgiExtensions) {
@@ -101,7 +101,7 @@ CgiHandler::execute(const std::string& path, const std::string& method,
                 "<p>Unknown CGI extension</p></body></html>");
 	}
 	
-	size_t lastSlash = path.find_last_not_of("/");
+	size_t lastSlash = path.find_last_of("/");
 	std::string scriptFilename;
 	if (lastSlash != std::string::npos)
 		scriptFilename = path.substr(lastSlash + 1);
@@ -153,7 +153,7 @@ CgiHandler::executeScript(const std::string& interpreter,
 	const std::string& scripitPath, const std::string& body) const
 {
 	// piping
-	int pipefd[0]; // {read, write};
+	int pipefd[2]; // {read, write};
 	if (pipe(pipefd) == -1) {
 		return ("<html><body><h1>500 Internal Server Error</h1>"
                 "<p>Pipe creation failed</p></body></html>");
@@ -161,11 +161,12 @@ CgiHandler::executeScript(const std::string& interpreter,
 
 	// forking
 	pid_t pid = fork();
-	if (pid == -1)
+	if (pid == -1) {
 		close(pipefd[0]);
 		close(pipefd[1]);
 		return ("<html><body><h1>500 Internal Server Error</h1>"
-                "<p>Fork failed</p></body></html>");
+				"<p>Fork failed</p></body></html>");
+	}
 
 	// ===== CHILD ===== 
 	if (pid == 0) {

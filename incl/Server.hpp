@@ -13,6 +13,8 @@
 # include "ListenSocket.hpp"
 # include "Epoll.hpp"
 # include "Logger.hpp"
+# include "CgiHandler.hpp"
+# include "ErrorPageHandler.hpp"
 
 class	Server
 {
@@ -31,9 +33,11 @@ class	Server
 
 	private:
 		// std::vector<Config::Server> const &_config;
-		int				_port = _DefaultPort;
-		ListenSocket	_socket;
-		Epoll			_epoll;
+		int					_port = _DefaultPort;
+		ListenSocket		_socket;
+		Epoll				_epoll;
+		CgiHandler			_cgiHandler;
+		ErrorPageHandler	_errorPageHandler;
 
 	public:
 		void		run() const;

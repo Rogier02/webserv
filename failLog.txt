@@ -1,5 +1,5 @@
 Webserv Log
-time: 1763303215
+time: 1764433465
 
 (src/Server/Epoll.cpp:36) epoll_ctl(_fd, operation, fd, event): Bad file descriptor
 (src/Server/Epoll.cpp:36) epoll_ctl(_fd, operation, fd, event): Bad file descriptor

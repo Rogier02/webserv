@@ -60,7 +60,7 @@ class CgiHandler
 		 * handler.isCgiRequest("/cgi.py");		<- Returns true
 		 * handler.isCgiRequest("/index.html"); <- Returns false
 		 */
-		bool			isCgiResquest(const std::string& path) const;
+		bool			isCgiRequest(const std::string& path) const;
 
 		/**
 		 * @brief Execute a CGI script and return its output
@@ -175,6 +175,6 @@ class CgiHandler
 		std::string		executeScript(const std::string& interpreter,
                         const std::string& scriptPath, const std::string& body) const;
 
-}
+};
 
 #endif

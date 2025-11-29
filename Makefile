@@ -9,7 +9,8 @@ CXXFLAGS		=	-MMD -MP -std=c++11
 # CXXFLAGS		+=	-g
 
 INCLUDE_DIRS	=	incl \
-					incl/Wrappers
+					incl/Wrappers \
+					incl/Cgi
 INCLUDE_FLAGS	=	$(addprefix -I , $(INCLUDE_DIRS))
 
 SRC_DIR			=	src
@@ -31,11 +32,16 @@ SOCKETS_DIR		:=	$(SRC_DIR)/Sockets
 SOCKETS_FILES	=	ListenSocket.cpp \
 					Socket.cpp
 
+CGI_DIR			:=	$(SRC_DIR)/CgiHandler
+CGI_FILES		=	CgiHandler.cpp \
+					ErrorPageHandler.cpp
+
 SRC				=	$(addprefix $(SRC_DIR)/, $(SRC_FILES)) \
 					$(addprefix $(CONFIG_DIR)/, $(CONFIG_FILES)) \
 					$(addprefix $(HTTP_DIR)/, $(HTTP_FILES)) \
 					$(addprefix $(SERVER_DIR)/, $(SERVER_FILES)) \
-					$(addprefix $(SOCKETS_DIR)/, $(SOCKETS_FILES))
+					$(addprefix $(SOCKETS_DIR)/, $(SOCKETS_FILES)) \
+					$(addprefix $(CGI_DIR)/, $(CGI_FILES))
 
 OBJ_DIR			=	obj
 OBJ				:=	$(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)

@@ -1,12 +1,17 @@
 #include "Server.hpp"
 #include "HttpResponse.hpp"
+#include "CgiHandler.hpp"
+#include "ErrorPageHandler.hpp"
 #include <sstream>
+#include <errno.h>
 
 std::atomic<bool> Server::_running(false);
 
 Server::Server()
 	:	_socket(_port)
 	,	_epoll(_socket)
+	,	_cgiHandler()
+	,	_errorPageHandler()
 {
 	signal(SIGINT, shutdown);
 	signal(SIGTERM, shutdown); // should this happen in main() or ::run() instead? static _running doesn't work for multiple servers anyway
@@ -85,16 +90,20 @@ const {
 	std::string	request;
 	char buffer[1024];
 
+	// Step 1: Read complete HTTP request from client
+	// Must wait for all headers (ends with \r\n\r\n)
 	while (true){
+		// Read available data (non-blocking)
 		ssize_t nBytes = recv(fd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
 
 		if (nBytes > 0) {
+			//Received data - add to request buffer
 			buffer[nBytes] = '\0';
 			request.append(buffer, nBytes);
 
 			//Check if we have a complete headers (ends with \r\n\r\n)
 			if (request.find("\r\n\r\n") != std::string::npos) {
-				break;
+				break; // Complete request received
 			}
 		} else if (nBytes == 0) {
 			// Client disconnected
@@ -119,43 +128,65 @@ const {
 
 		}
 	}
+
+	// Validate we have request data
 	if (request.empty()) {
 		return;
 	}
 
-		std::cout << "Client Request:\n" << request << std::endl;
+	// Parse request (tempcode will be repaced with HttpRequest parser)
 
-		// TODO: Implatement Raw request parser -- request(rawRequest);
+	std::cout << "Client Request:\n" << request << std::endl;
+	// TODO: Implatement Raw request parser -- request(rawRequest);
 
 	
-		// Temporary simple parsing ( REPLACE: )
-		std::istringstream stream(rawRequest);
-		std::string method, path, version;
-		stream >> method >> path >> version;
+	// Temporary simple parsing ( REPLACE: )
+	std::istringstream stream(request);
+	std::string method, path, version;
+	stream >> method >> path >> version;
 
-		// Http response
-		HttpResponse response(200);
+	// Http response object
+	HttpResponse response(200);
 
-		//Check if CGI request
-		if (path.find(".py") != std::string::npos)
+	// Check if CGI request
+	if (_cgiHandler.isCgiRequest(path)) {
+		// Execute CGI script
+		std::string cgiOutput = _cgiHandler.execute(path, method, "", "");
+		response.setStatus(200);
 		response.setContentType("text/html");
-		response.setBody(
-			"<html>\n"
-            	"<head><title>Webserv</title></head>\n"
-            	"<body>\n"
-            		"<h1>Hello from Webserv!</h1>\n"
-            		"<p>Your request was received successfully.</p>\n"
-            	"</body>\n"
-            "</html>\n"
-		);
+		response.setBody(cgiOutput);
+	} else {
+		// Non-CGI request (static files)
+		// Temporary: Return 404 for any path that's not / or /cgi.py
+		if (path == "/") {
+			// Serve index.html
+			response.setStatus(200);
+			response.setContentType("text/html");
+			response.setBody(
+				"<html>\n"
+				"<head><title>Webserv</title></head>\n"
+				"<body>\n"
+				"<h1>Hello from Webserv!</h1>\n"
+				"</body>\n"
+				"</html>\n"
+			);
+		} else if (path == "/cgi.py") {
+			// Already handled above
+		} else {
+			// Return 404 error
+			response.setStatus(404);
+			response.setContentType("text/html");
+			response.setBody(_errorPageHandler.getErrorPage(404));
+		}	
+	}
 
-		// Send response
-		std::string responseStr = response.toString();
-		send(fd, responseStr.c_str(), responseStr.length(), 0);
+	// Send response
+	std::string responseStr = response.toString();
+	send(fd, responseStr.c_str(), responseStr.length(), 0);
 
-		// Close connections (HTTP/1.0 style for now)
-		close(fd);
-		_epoll.ctl(Epoll::Ctl::Del, fd);
+	// Close connections (HTTP/1.0 style for now)
+	close(fd);
+	_epoll.ctl(Epoll::Ctl::Del, fd);
 }
 // End 
 
