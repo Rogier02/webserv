@@ -9,23 +9,19 @@
 // webserv
 # include "Config.hpp"
 # include "TokenStream.hpp"
-# include "MessageException.hpp"
+# include "Logger.hpp"
 
 class	Parse
 {
 	private:
-		class UnknownDirective : public MessageException {
-			public:
-				UnknownDirective(const std::string& directive, int lineNbr, const std::string& line);
-		};
-
-	private:
-		TokenStream	ts;
+		std::vector<std::string>	_log;
+		TokenStream					_ts;
 
 	public:
-		Parse(std::string const &filePath);
+		Parse() = delete;
 		Parse(Parse const &other) = delete;
 		Parse(Parse &&other) = delete;
+		Parse(std::string const &filePath);
 		~Parse() = default;
 
 	public:
@@ -36,18 +32,31 @@ class	Parse
 		Config::Server::Location	location();
 		Config::Server::Page		page();
 
+		// get simple value(s)
 		void	single(std::string &dest);
 		void	single(int &dest);
 		void	multiple(std::vector<std::string> &dest);
 
-		// special directives
+		// get complex directive value(s)
 		void	page(Config::Server::Page &page);
 		void	clientMaxBodySize(size_t &clientMaxBodySize);
 		void	listen(std::string &host, int &port);
 		void	autoIndex(bool &autoIndex);
 
+		// tools
+		void	expect(std::string const &expected);
+
+		// keep an error log
+		void	log(std::string const &message);
+		void	report();
+
+		// error format
+		std::string	unknownDirective(const std::string& directive);
+		std::string	unexpected(std::string const &expected, std::string const &found);
+
 	private:
-		std::map<std::string, std::function<void (Config::Server &)>>
+		using	ServerDirective = std::function<void (Config::Server &)>;
+		std::map<std::string, ServerDirective>
 		serverDirectives = {
 			{"server_name",
 				[this](Config::Server& s)
@@ -69,7 +78,8 @@ class	Parse
 				{ s.locations.push_back(location()); }},
 		};
 
-		std::map<std::string, std::function<void (Config::Server::Location &)>>
+		using	LocationDirective = std::function<void (Config::Server::Location &)>;
+		std::map<std::string, LocationDirective>
 		locationDirectives = {
 			{"root",
 				[this](Config::Server::Location& l)
@@ -105,7 +115,8 @@ class	Parse
 				[this](Config::Server::Location& l)
 				{ multiple(l.indexFiles); }},
 		};
-
+		template <typename D>
+		using	DirectiveMapIterator = typename std::map<std::string, D>::iterator;
 };
 
 #endif

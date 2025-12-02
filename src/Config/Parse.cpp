@@ -1,16 +1,25 @@
 #include "Parse.hpp"
 
 Parse::Parse(std::string const &filePath)
-	:	ts(filePath)
+	:	_ts(filePath)
 {}
 
-Config
-Parse::config()
+Config Parse::config()
 {
-	Config		config;
-	while (!ts.atEnd() && ts.current().text != "}")
-		if (ts.takeToken() == "Server")
+	Config	config;
+
+	while (!_ts.atEnd() && _ts.peek().text != "}")
+	{
+		std::string directive = _ts.consume();
+
+		if (directive == "Server")
 			config.servers.push_back(server());
+		else {
+			log(unknownDirective(directive));
+			_ts.advanceLine(); // this will be weird, we might need a advanceUntil("}") to fix that
+		}
+	}
+
 	return (config);
 }
 
@@ -19,91 +28,97 @@ Parse::server()
 {
 	Config::Server	server;
 
-	ts.expect("{");
-	while (!ts.atEnd() && ts.current().text != "}")
+	expect("{");
+	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
-		std::string directive = ts.takeToken();
+		std::string directive = _ts.consume();
 
-		auto it = serverDirectives.find(directive);
+		DirectiveMapIterator<ServerDirective> it = serverDirectives.find(directive);
 		if (it != serverDirectives.end())
 			it->second(server);
 		else {
-			throw UnknownDirective(directive, ts.current().lineNbr, ts.getLine());
-			ts.setIndex(ts.lastTokenOnLine() + 1);
+			log(unknownDirective(directive));
+			_ts.advanceLine();
 		}
 	}
-	ts.expect("}");
+	expect("}");
+
 	return (server);
 }
 
 Config::Server::Location
 Parse::location()
 {
-	Config::Server::Location location;
-	location.path = ts.takeToken();
+	Config::Server::Location	location;
 
-	ts.expect("{");
-	while (!ts.atEnd() && ts.current().text != "}")
+	location.path = _ts.consume();
+
+	expect("{");
+	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
-		std::string directive = ts.takeToken();
+		std::string	directive = _ts.consume();
 
-		auto it = locationDirectives.find(directive);
+		DirectiveMapIterator<LocationDirective> it = locationDirectives.find(directive);
 		if (it != locationDirectives.end())
 			it->second(location);
 		else {
-			throw UnknownDirective(directive, ts.current().lineNbr, ts.getLine());
-			ts.setIndex(ts.lastTokenOnLine() + 1);
+			log(unknownDirective(directive));
+			_ts.advanceLine();
 		}
 	}
-	ts.expect("}");
-	return location;
+	expect("}");
+
+	return (location);
 }
 
 void
-Parse::single(std::string &dest)
+Parse::single(std::string& dest)
 {
-	dest = ts.takeToken();
-	ts.checkSemicolon();
+	dest = _ts.consume();
+	expect(";");
 }
 
 void
-Parse::single(int &dest)
+Parse::single(int& dest)
 {
-	dest = std::stoi(ts.takeToken());
-	ts.checkSemicolon();
+	dest = std::stoi(_ts.consume());
+	expect(";");
 }
 
 void
-Parse::multiple(std::vector<std::string> &dest)
+Parse::multiple(std::vector<std::string>& dest)
 {
-	while (!ts.isLastTokenOnLine())
-		dest.push_back(ts.takeToken());
-	ts.checkSemicolon();
-}
+	TokenStream::Iterator	lineEnd = _ts.lineEnd();
 
-Config::Server::Page
-Parse::page()
-{
-	Config::Server::Page	page;
-	page.code = std::stoi(ts.takeToken());
-	page.path = ts.takeToken();
-	ts.checkSemicolon();
-	return (page);
+	while (_ts.current() != lineEnd && _ts.peek().text != ";")
+		dest.push_back(_ts.consume());
+
+	expect(";");
 }
 
 void
 Parse::page(Config::Server::Page &page)
 {
-	page.code = std::stoi(ts.takeToken());
-	page.path = ts.takeToken();
-	ts.checkSemicolon();
+	page.code	= std::stoi(_ts.consume());
+	page.path	= _ts.consume();
+	expect(";");
+}
+
+Config::Server::Page
+Parse::page()
+{
+	Config::Server::Page	object;
+
+	page(object);
+	return (object);
 }
 
 void
 Parse::clientMaxBodySize(size_t &clientMaxBodySize)
 {
-	char		unit = ts.current().text.back();
-	std::string	number = ts.takeToken();
+	std::string	token	= _ts.peek().text;
+	char		unit	= token.back();
+	std::string	number	= _ts.consume();
 
 	if (unit == 'k' || unit == 'm' || unit == 'g')
 		number = number.substr(0, number.size() - 1);
@@ -113,49 +128,76 @@ Parse::clientMaxBodySize(size_t &clientMaxBodySize)
 	clientMaxBodySize = std::stoul(number);
 
 	switch(unit) {
-		case 'k': clientMaxBodySize *= 1024;
-			break;
-		case 'm': clientMaxBodySize *= 1024 * 1024;
-			break;
-		case 'g': clientMaxBodySize *= 1024 * 1024 * 1024;
-			break;
+		case 'k': clientMaxBodySize *= 1024;				break;
+		case 'm': clientMaxBodySize *= 1024 * 1024;			break;
+		case 'g': clientMaxBodySize *= 1024 * 1024 * 1024;	break;
 	}
-	ts.checkSemicolon();
+
+	expect(";");
 }
 
 void
-Parse::listen(std::string &host, int &port)
+Parse::listen(std::string& host, int& port)
 {
-	std::string	hostPort = ts.takeToken();
-	size_t		colonPos = hostPort.find(':');
+	std::string	hostPort	= _ts.consume();
+	size_t		colonPos	= hostPort.find(':');
 
 	if (colonPos == std::string::npos)
-		throw UnknownDirective("<missing colon>", ts.current().lineNbr, ts.getLine());
+		log("listen directive requires host:port format");
 
-	host = hostPort.substr(0, colonPos);
-	port = std::stoi(hostPort.substr(colonPos + 1));
-	ts.checkSemicolon();
+	host	= hostPort.substr(0, colonPos);
+	port	= std::stoi(hostPort.substr(colonPos + 1));
+	expect(";");
+}
+
+void Parse::autoIndex(bool& autoIndex)
+{
+	std::string	value = _ts.consume();
+
+	if (value == "off")
+		autoIndex = false;
+	else if (value == "on")
+		autoIndex = true;
+	else
+		log("autoindex must be 'on' or 'off', got: " + value);
+
+	expect(";");
 }
 
 void
-Parse::autoIndex(bool &autoIndex)
+Parse::expect(std::string const &expected)
 {
-	std::string current = ts.takeToken();
+	if (_ts.atEnd())
+		log(unexpected(expected, "EOF"));
 
-	if (current == "off")
-		autoIndex = false;
-	else if (current == "on")
-		autoIndex = true;
-	else
-		throw UnknownDirective(current, ts.current().lineNbr, ts.getLine());
-	ts.checkSemicolon();
+	std::string	token = _ts.peek().text;
+	if (token != expected)
+		log(unexpected(expected, token));
+	_ts.advance();
 }
 
-Parse::UnknownDirective::UnknownDirective(
-	const std::string& directive,
-	int lineNbr,
-	const std::string& line)
-	:	MessageException(
-		"[Config Error] Unknown directive: \"" + directive + "\"" +
-		" on line " + std::to_string(lineNbr) + ": " + line)
-{}
+void Parse::log(std::string const &message) {
+	_log.push_back(message);
+}
+
+void Parse::report()
+{
+	LOGGER(startBlock("Config File Errors"));
+	for (std::string message : _log)
+		LOGGER(log(message));
+	LOGGER(endBlock());
+}
+
+std::string
+Parse::unknownDirective(const std::string& directive)
+{
+	return("Unknown directive: \"" + directive + "\"" +
+		" on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
+}
+
+std::string
+Parse::unexpected(std::string const &expected, std::string const &found)
+{
+	return("Unexpected token: \"" + found + "\"" + " (expected: " + expected + ")" +
+		" on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
+}

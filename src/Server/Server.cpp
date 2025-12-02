@@ -31,21 +31,21 @@ Server::run()
 			}
 		}
 		catch	(std::runtime_error &exception) {
-			Logger::log(exception.what());
+			LOGGER(log(exception.what()));
 			std::cerr << "'tis but a scratch: " << exception.what() << std::endl;
 		}
 		catch (EventTypes::NotRegistered &exception) {
-			Logger::log(exception.what());
+			LOGGER(log(exception.what()));
 			std::cerr << "Write better code: " << exception.what() << std::endl;
 			break;
 		}
 		catch (std::exception &exception) {
-			Logger::log(exception.what());
+			LOGGER(log(exception.what()));
 			std::cerr << "Something unexpected excepted: " << exception.what() << std::endl;
 			throw exception; // throw to main for quick debug, in production the loop should not be broken
 		}
 	}
-	Logger::log("Controlled Server Shutdown\n");
+	LOGGER(log("Controlled Server Shutdown\n"));
 	std::cout << "Server shutting down...\n";
 }
 

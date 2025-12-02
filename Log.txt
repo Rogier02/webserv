@@ -1,0 +1,6 @@
+Webserv Log
+time: 1764715987
+
+(src/Server/Epoll.cpp:24) epoll_wait(_fd, buffer, _EventBatchSize, _waitTimeout): Interrupted system call
+Controlled Server Shutdown
+

@@ -6,43 +6,43 @@
 # include <string>
 # include <fstream>
 # include <sstream>
-
-struct	Token
-{
-	std::string	text;
-	int			lineNbr;
-};
+# include <algorithm>
 
 class	TokenStream
 {
 	public:
+		struct	Token {
+			std::string	text;
+			int			lineNbr;
+		};
+
+		using Iterator	= std::vector<Token>::const_iterator;
+
+	public:
 		TokenStream() = delete;
-		TokenStream(TokenStream const &other) = delete;
-		TokenStream(TokenStream &&other) = delete;
+		TokenStream(TokenStream const &) = delete;
+		TokenStream(TokenStream &&) = delete;
 		TokenStream(std::string const &filePath);
 		~TokenStream() = default;
 
 	private:
 		std::vector<Token>	_tokens;
-		size_t				_index;
+		Iterator			_current;
 
 	public:
-		const Token	&current() const;
-		void		next();
-		std::string	takeToken();
+		Iterator	current() const;
+		Iterator	begin() const;
+		Iterator	end() const;
+
+		Token const	&peek() const;
+		std::string	consume();
+		void		advance();
 		bool		atEnd() const;
-		size_t		position() const;
-		size_t		firstTokenOnLine() const;
-		size_t		lastTokenOnLine() const;
-		bool		isLastTokenOnLine() const ;
+
+		Iterator	lineStart() const;
+		Iterator	lineEnd() const;
 		std::string	getLine() const;
-		void		printTokens(std::vector<Token> tokens);
-		void		checkSemicolon();
-		void		setIndex(size_t newIndex);
-		void		expect(std::string expected);
+		void		advanceLine();
 };
-
-void	printTokens(std::vector<Token> tokens);
-
 
 #endif

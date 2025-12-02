@@ -1,15 +1,14 @@
 #include "TokenStream.hpp"
 #include "log.hpp"
 
-TokenStream::TokenStream(std::string const &fileName)
-	:	_index(0)
+TokenStream::TokenStream(const std::string& fileName)
 {
 	if (fileName.rfind(".conf") == std::string::npos)
-		LOG("incorrect file extension\n");
+		throw std::runtime_error("incorrect file extension: " + fileName);
 
-	std::ifstream	file(fileName);
+	std::ifstream file(fileName);
 	if (!file.is_open())
-		LOG("couldn't open file\n");
+		throw std::runtime_error("could not open file: " + fileName);
 
 	std::string	line;
 	int			lineNbr = 1;
@@ -35,126 +34,77 @@ TokenStream::TokenStream(std::string const &fileName)
 		++lineNbr;
 	}
 	file.close();
+	_current = _tokens.begin();
 }
 
-const Token &
-TokenStream::current()
+TokenStream::Iterator TokenStream::current() const {
+	return (_current);
+}
+
+TokenStream::Iterator TokenStream::begin() const {
+	return (_tokens.begin());
+}
+
+TokenStream::Iterator TokenStream::end() const {
+	return (_tokens.end());
+}
+
+TokenStream::Token const &TokenStream::peek() const {
+	return (*_current);
+}
+
+std::string TokenStream::consume() {
+	return ((_current++)->text);
+}
+
+void TokenStream::advance() {
+	++_current;
+}
+
+bool TokenStream::atEnd() const {
+	return (_current >= _tokens.end());
+}
+
+TokenStream::Iterator
+TokenStream::lineStart()
 const {
-	return _tokens[_index];
+	int			lineNbr	= peek().lineNbr;
+	Iterator	it		= _current;
+
+	while (it != _tokens.begin() && (it - 1)->lineNbr == lineNbr)
+		--it;
+
+	return (it);
 }
 
-void
-TokenStream::next()
-{
-	if (_index < _tokens.size())
-		_index++;
-}
-
-std::string
-TokenStream::takeToken()
-{
-	std::string text = current().text;
-	next();
-	return (text);
-}
-
-
-bool
-TokenStream::atEnd()
+TokenStream::Iterator
+TokenStream::lineEnd()
 const {
-	return _index >= _tokens.size();
-}
+	int			lineNbr	= peek().lineNbr;
+	Iterator	it		= _current;
 
-size_t
-TokenStream::position()
-const {
-	return _index;
-}
+	while (it != _tokens.end() && it->lineNbr == lineNbr)
+		++it;
 
-size_t
-TokenStream::firstTokenOnLine()
-const {
-	int lineNbr = current().lineNbr;
-	size_t first = _index;
-
-	while (first > 0 && _tokens[first - 1].lineNbr == lineNbr) {
-		first--;
-	}
-
-	return (first);
-}
-
-size_t
-TokenStream::lastTokenOnLine()
-const {
-	int lineNbr = current().lineNbr;
-	size_t last = _index;
-
-	while (last + 1 < _tokens.size() && _tokens[last + 1].lineNbr == lineNbr) {
-		last++;
-	}
-
-	return (last);
-}
-
-bool
-TokenStream::isLastTokenOnLine()
-const {
-	return (position() == lastTokenOnLine());
+	return (it);
 }
 
 std::string
 TokenStream::getLine()
 const {
-	size_t first = firstTokenOnLine();
-	size_t last = lastTokenOnLine();
-	std::string line;
+	Iterator	start	= lineStart();
+	Iterator	end		= lineEnd();
 
-	for (size_t i = first; i <= last; ++i)
-        line += _tokens[i].text;
+	std::string	line;
+	for (Iterator it = start; it != end; ++it)
+		line += it->text + " ";
+
+	if (!line.empty())
+		line.pop_back();
 
 	return (line);
 }
 
-void
-TokenStream::printTokens(std::vector<Token> _tokens)
-{
-	for (size_t i = 0; i < _tokens.size(); i++){
-		std::cout << i << "\t- line: " << _tokens[i].lineNbr << "\t- Text: " << _tokens[i].text << "\n";
-	}
-}
-
-void
-TokenStream::checkSemicolon()
-{
-	std::string	line;
-
-	line = getLine();
-	if (current().text != ";")
-		LOG("[Config Error] at line: " << current().lineNbr << ": missing semicolon at the end of directive >> \"" << line << "\"\n");
-	// else
-	next(); //this might not work. Test when ready
-}
-
-void
-TokenStream::setIndex(size_t newIndex)
-{
-	if (newIndex < _tokens.size()) {
-		_index = newIndex;
-	}
-	else {
-		LOG("[Set Index Error] couldn't set _index.\n");
-	}
-}
-
-void
-TokenStream::expect(std::string expected)
-{
-	if (current().text != expected){
-		LOG("[Config Error] at line: " << current().lineNbr << " \"" << expected << "\" was expected, but not found.\n");
-		if (!atEnd())
-			setIndex(lastTokenOnLine() + 1);
-	}
-	else
-		next(); //check if this works. Don't wanna test it now.
+void TokenStream::advanceLine() {
+	_current = lineEnd();
 }

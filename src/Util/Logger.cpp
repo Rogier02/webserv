@@ -1,7 +1,12 @@
 #include "Logger.hpp"
 
+Logger &Logger::get() {
+	static Logger	instance;
+	return (instance);
+}
+
 Logger::Logger()
-	:	_logFile("failLog.txt", std::ios::out | std::ios::trunc)
+	:	_logFile(FileName, std::ios::out | std::ios::trunc)
 {
 	if (!_logFile.is_open())
 		throw std::ios_base::failure("Logger failed to create Log file");
@@ -12,18 +17,34 @@ Logger::~Logger() {
 	_logFile.close();
 }
 
-Logger &
-Logger::get()
+void Logger::log(std::string const &message) {
+	_logFile << message << "\n";
+}
+
+void Logger::startBlock(std::string const &blockName, std::string const &blockHeader)
 {
-	static Logger	instance;
+	_currentBlock = blockName;
 
-	return (instance);
+	const size_t	headerWidth	= std::max(_currentBlock.size(), blockHeader.size()) + 8;
+
+	log(std::string(headerWidth, BlockSeparator));
+	log("\tStart of Block:\t" + _currentBlock);
+	if (!blockHeader.empty())
+		log("\t\t" + blockHeader);
+	log(std::string(headerWidth, BlockSeparator));
 }
 
-void	Logger::log(std::string const &message) {
-	get()._logFile << message << "\n";
+void Logger::endBlock()
+{
+	const size_t	headerWidth = _currentBlock.size() + 8;
+
+	log(std::string(headerWidth, BlockSeparator));
+	log("\tEnd of Block:\t" + _currentBlock);
+	log(std::string(headerWidth, BlockSeparator));
+
+	_currentBlock.clear();
 }
 
-void	Logger::header() {
+void Logger::header() {
 	_logFile << "Webserv Log\n" << "time: " << time(NULL) << "\n\n";
 }
