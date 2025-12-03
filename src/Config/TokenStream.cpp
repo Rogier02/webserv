@@ -73,7 +73,7 @@ TokenStream::getLine() const{
 	std::string line;
 
 	for (size_t i = first; i <= last; ++i){
-        line += tokens[i].text;
+		line += tokens[i].text;
 		if (i != last)
 			line += " ";
 	}
@@ -118,4 +118,17 @@ TokenStream::expect(std::string expected){
 	}
 	else
 		next(); //check if this works. Don't wanna test it now.
+}
+
+bool
+TokenStream::expectedTokens(int nbr) const{
+	int	lineNbr = current().lineNbr;
+	int	count = 0;
+	size_t i = index;
+
+	while (i < tokens.size() && tokens[i].lineNbr == lineNbr) {
+		count++;
+		i++;
+	}
+	return count == nbr;
 }

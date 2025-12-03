@@ -32,6 +32,7 @@ public:
 	void		checkSemicolon();
 	void		setIndex(size_t newIndex);
 	void		expect(std::string expected);
+	bool		expectedTokens(int nbr) const;
 	void		printTokens();
 };
 

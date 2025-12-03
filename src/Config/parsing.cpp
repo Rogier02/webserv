@@ -19,11 +19,7 @@ parseServer(TokenStream &ts){
 			ts.checkSemicolon();
 		}
 		else if (current == "listen"){
-			std::string	hostPort = ts.takeToken();
-			size_t colonPos = hostPort.find(':');
-			server.host = parseHost(hostPort, colonPos);
-			server.port = parsePort(hostPort, colonPos);
-			ts.checkSemicolon();
+			parseAddressPort(server, ts);
 		}
 		else if (current == "client_max_body_size")
 			server.clientMaxBodySize = parseClientMaxBodySize(ts);
@@ -44,6 +40,16 @@ parseServer(TokenStream &ts){
 	return (server);
 }
 
+void
+parseAddressPort(Server &server, TokenStream &ts){
+
+	std::string	hostPort = ts.takeToken();
+	size_t colonPos = hostPort.find(':');
+	server.host = parseHost(hostPort, colonPos);
+	server.port = parsePort(hostPort, colonPos);
+	ts.checkSemicolon();
+}
+
 std::string
 parseHost(std::string hostPort, size_t colonPos){
 	std::string	host = hostPort.substr(0, colonPos);
@@ -61,6 +67,10 @@ parsePort(std::string hostPort, size_t colonPos){
 Config::Page
 parseErrorPage(TokenStream &ts){
 	Config::Page errorPage;
+	if (!ts.expectedTokens(3)){
+		LOG("Something is missing on line: " << ts.current().lineNbr << "\n"); //message should be better
+		return (errorPage); //maybe do something else instead of return empty struct?
+	}
 	errorPage.code = std::stoi(ts.takeToken());
 	errorPage.path = ts.takeToken();
 	ts.checkSemicolon();

@@ -4,6 +4,7 @@
 // C++
 # include <unordered_map>
 # include <string>
+# include <vector>
 
 struct	HttpRequest
 {
