@@ -1,6 +1,0 @@
-Webserv Log
-2025-12-03 01:33 CET (UTC+0100)
-
-(src/Server/Epoll.cpp:24) epoll_wait(_fd, buffer, _EventBatchSize, _waitTimeout): Interrupted system call
-Controlled Server Shutdown
-
