@@ -20,6 +20,7 @@ Config Parse::config()
 		}
 	}
 
+	report();
 	return (config);
 }
 
@@ -182,10 +183,15 @@ void Parse::log(std::string const &message) {
 
 void Parse::report()
 {
+	if (_log.empty())
+		return ;
+
 	LOGGER(startBlock("Config File Errors"));
 	for (std::string message : _log)
 		LOGGER(log(message));
 	LOGGER(endBlock());
+
+	throw std::runtime_error(std::string("Config File Errors detected, see \"") + Logger::FileName + "\" for detailed error messages");
 }
 
 std::string

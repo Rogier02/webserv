@@ -12,8 +12,10 @@ class	Logger
 	public:
 		static Logger	&get();// trying to make singleton usage stand out, might have to update Style guide for it?
 
-	private:
+	public:
 		static constexpr const char	*FileName = "Log.txt";
+
+	private:
 		static constexpr char		BlockSeparator = '=';
 
 	private:

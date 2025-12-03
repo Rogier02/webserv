@@ -2,8 +2,10 @@
 
 std::ostream	&operator<<(std::ostream &os, Config const &config)
 {
-	os << "==== CONFIG ====\n";
+	if (config.servers.empty())
+		return (os);
 
+	os << "==== CONFIG ====\n";
 	for (size_t i = 0; i < config.servers.size(); ++i)
 	{
 		const Config::Server& srv = config.servers[i];
@@ -53,7 +55,7 @@ std::ostream	&operator<<(std::ostream &os, Config const &config)
 
 		os << "\n";
 	}
-
 	os << "==== END CONFIG ====\n";
+
 	return (os);
 }

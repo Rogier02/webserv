@@ -24,27 +24,31 @@ void Logger::log(std::string const &message) {
 }
 
 void
-Logger::startBlock(std::string const &blockName, std::string const &blockHeader)
+Logger::startBlock(std::string const &blockName, std::string const &blockDescription)
 {
 	_currentBlock = blockName;
 
-	const size_t	headerWidth	= std::max(_currentBlock.size(), blockHeader.size()) + 8;
+	const std::string	start	= "Start of Block:";
+	const size_t		width	= std::max(_currentBlock.size(), blockDescription.size())
+								+ ((start.size()/4) * 4) + 12;
 
-	log(std::string(headerWidth, BlockSeparator));
-	log("\tStart of Block:\t" + _currentBlock);
-	if (!blockHeader.empty())
-		log("\t\t" + blockHeader);
-	log(std::string(headerWidth, BlockSeparator));
+	log(std::string(width, BlockSeparator));
+	log("\t" + start + "\t" + _currentBlock);
+	if (!blockDescription.empty())
+		log("\t\t" + blockDescription);
+	log(std::string(width, BlockSeparator));
 }
 
 void
 Logger::endBlock()
 {
-	const size_t	headerWidth = _currentBlock.size() + 8;
+	const std::string	end		= "End of Block:";
+	const size_t		width	= _currentBlock.size()
+								+ ((end.size()/4) * 4) + 12;
 
-	log(std::string(headerWidth, BlockSeparator));
-	log("\tEnd of Block:\t" + _currentBlock);
-	log(std::string(headerWidth, BlockSeparator));
+	log(std::string(width, BlockSeparator));
+	log("\t" + end + "\t" + _currentBlock);
+	log(std::string(width, BlockSeparator) + "\n");
 
 	_currentBlock.clear();
 }
