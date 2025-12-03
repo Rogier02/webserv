@@ -52,9 +52,15 @@ Parse::location()
 {
 	Config::Server::Location	location;
 
-	location.path = _ts.consume();
+	if (_ts.tokensOnLine() == 3){
+		location.path = _ts.consume();
+		expect("{");
+	}
+	else{
+		log()
+		_ts.advanceLine();
+	}
 
-	expect("{");
 	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
 		std::string	directive = _ts.consume();
@@ -206,4 +212,10 @@ Parse::unexpected(std::string const &expected, std::string const &found)
 {
 	return("Unexpected token: \"" + found + "\"" + " (expected: " + expected + ")" +
 		" on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
+}
+
+std::string
+Parse::unexpectedTokenCount(size_t expected, size_t found)
+{
+	return ("Unexpected token count: " + std::to_string(found) + " (expected: " + std::to_string(expected) + ") on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
 }

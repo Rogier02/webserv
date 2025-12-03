@@ -53,6 +53,7 @@ class	Parse
 		// error format
 		std::string	unknownDirective(const std::string& directive);
 		std::string	unexpected(std::string const &expected, std::string const &found);
+		std::string	unexpectedTokenCount(size_t expected, size_t found);
 
 	private:
 		using	ServerDirective = std::function<void (Config::Server &)>;

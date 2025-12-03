@@ -108,3 +108,10 @@ const {
 void TokenStream::advanceLine() {
 	_current = lineEnd();
 }
+
+std::size_t	TokenStream::tokensOnLine() {
+	Iterator	start	= lineStart();
+	Iterator	end		= lineEnd();
+
+	return(static_cast<std::size_t>(end - start));
+}
