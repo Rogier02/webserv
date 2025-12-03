@@ -1,6 +1,8 @@
 #include "Logger.hpp"
 
-Logger &Logger::get() {
+Logger &
+Logger::get()
+{
 	static Logger	instance;
 	return (instance);
 }
@@ -21,7 +23,8 @@ void Logger::log(std::string const &message) {
 	_logFile << message << "\n";
 }
 
-void Logger::startBlock(std::string const &blockName, std::string const &blockHeader)
+void
+Logger::startBlock(std::string const &blockName, std::string const &blockHeader)
 {
 	_currentBlock = blockName;
 
@@ -34,7 +37,8 @@ void Logger::startBlock(std::string const &blockName, std::string const &blockHe
 	log(std::string(headerWidth, BlockSeparator));
 }
 
-void Logger::endBlock()
+void
+Logger::endBlock()
 {
 	const size_t	headerWidth = _currentBlock.size() + 8;
 
@@ -45,6 +49,12 @@ void Logger::endBlock()
 	_currentBlock.clear();
 }
 
-void Logger::header() {
-	_logFile << "Webserv Log\n" << "time: " << time(NULL) << "\n\n";
+void
+Logger::header()
+{
+	time_t	timer = time(NULL);
+
+	_logFile
+		<< "Webserv Log\n"
+		<< std::put_time(std::localtime(&timer), "%F %R %Z (UTC%z)\n\n");
 }

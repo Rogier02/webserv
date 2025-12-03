@@ -4,6 +4,8 @@
 // C++
 # include <string>
 # include <fstream>
+# include <ctime>
+# include <iomanip>
 
 class	Logger
 {
