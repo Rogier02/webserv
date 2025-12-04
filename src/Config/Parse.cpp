@@ -106,9 +106,14 @@ Parse::multiple(std::vector<std::string>& dest)
 void
 Parse::page(Config::Server::Page &page)
 {
-	page.code	= std::stoi(_ts.consume());
-	page.path	= _ts.consume();
-	expect(";");
+	size_t	tokensOnLine = _ts.tokensOnline();
+	if (tokensOnline == 4) {
+		page.code	= std::stoi(_ts.consume());
+		page.path	= _ts.consume();
+		expect(";");
+	}
+	else
+		log(unexpectedTokenCount(4, tokensOnLine));
 }
 
 Config::Server::Page
@@ -123,52 +128,67 @@ Parse::page()
 void
 Parse::clientMaxBodySize(size_t &clientMaxBodySize)
 {
-	std::string	token	= _ts.peek().text;
-	char		unit	= token.back();
-	std::string	number	= _ts.consume();
+	size_t	tokensOnLine = _ts.tokensOnline();
+	if (tokensOnline == 3) {
+		std::string	token	= _ts.peek().text;
+		char		unit	= token.back();
+		std::string	number	= _ts.consume();
 
-	if (unit == 'k' || unit == 'm' || unit == 'g')
-		number = number.substr(0, number.size() - 1);
-	else
-		unit = 0;
+		if (unit == 'k' || unit == 'm' || unit == 'g')
+			number = number.substr(0, number.size() - 1);
+		else
+			unit = 0;
 
-	clientMaxBodySize = std::stoul(number);
+		clientMaxBodySize = std::stoul(number);
 
-	switch(unit) {
-		case 'k': clientMaxBodySize *= 1024;				break;
-		case 'm': clientMaxBodySize *= 1024 * 1024;			break;
-		case 'g': clientMaxBodySize *= 1024 * 1024 * 1024;	break;
+		switch(unit) {
+			case 'k': clientMaxBodySize *= 1024;				break;
+			case 'm': clientMaxBodySize *= 1024 * 1024;			break;
+			case 'g': clientMaxBodySize *= 1024 * 1024 * 1024;	break;
+		}
+
+		expect(";");
 	}
-
-	expect(";");
+	else
+		log(unexpectedTokenCount(3, tokensOnLine));
 }
 
 void
 Parse::listen(std::string& host, int& port)
 {
-	std::string	hostPort	= _ts.consume();
-	size_t		colonPos	= hostPort.find(':');
+	size_t	tokensOnLine = _ts.tokensOnline();
+	if (tokensOnline == 3) {
+		std::string	hostPort	= _ts.consume();
+		size_t		colonPos	= hostPort.find(':');
 
-	if (colonPos == std::string::npos)
-		log("listen directive requires host:port format");
+		if (colonPos == std::string::npos)
+			log("listen directive requires host:port format");
 
-	host	= hostPort.substr(0, colonPos);
-	port	= std::stoi(hostPort.substr(colonPos + 1));
-	expect(";");
+		host	= hostPort.substr(0, colonPos);
+		port	= std::stoi(hostPort.substr(colonPos + 1));
+		expect(";");
+	}
+	else
+		log(unexpectedTokenCount(3, tokensOnLine));
 }
 
 void Parse::autoIndex(bool& autoIndex)
 {
-	std::string	value = _ts.consume();
+	size_t	tokensOnLine = _ts.tokensOnline();
+	if (tokensOnline == 3) {
+		std::string	value = _ts.consume();
 
-	if (value == "off")
-		autoIndex = false;
-	else if (value == "on")
-		autoIndex = true;
+		if (value == "off")
+			autoIndex = false;
+		else if (value == "on")
+			autoIndex = true;
+		else
+			log("autoindex must be 'on' or 'off', got: " + value);
+
+		expect(";");
+	}
 	else
-		log("autoindex must be 'on' or 'off', got: " + value);
-
-	expect(";");
+		log(unexpectedTokenCount(3, tokensOnLine));
 }
 
 void
