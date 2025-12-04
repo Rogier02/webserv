@@ -59,3 +59,4 @@ std::ostream	&operator<<(std::ostream &os, Config const &config)
 
 	return (os);
 }
+

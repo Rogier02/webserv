@@ -47,5 +47,6 @@ struct	Config
 };
 
 std::ostream	&operator<<(std::ostream &os, Config const &config);
+bool			validateConfig(const Config& config);
 
 #endif
