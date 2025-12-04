@@ -4,7 +4,8 @@ Parse::Parse(std::string const &filePath)
 	:	_ts(filePath)
 {}
 
-Config Parse::config()
+Config
+Parse::config()
 {
 	Config	config;
 
@@ -64,7 +65,7 @@ Parse::location()
 
 	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
-		// Hier moet eigenlijk ook elke keer een tokenCount worden gedaan om te checken of er wel genoeg tokens in de line zitten, 
+		// Hier moet eigenlijk ook elke keer een tokenCount worden gedaan om te checken of er wel genoeg tokens in de line zitten denk ik > Of is dit al opgevangen in single() en multiple()??
 		std::string	directive = _ts.consume();
 
 		DirectiveMapIterator<LocationDirective> it = locationDirectives.find(directive);
@@ -188,7 +189,8 @@ Parse::listen(std::string& host, int& port)
 		log(unexpectedTokenCount("3", tokensFound));
 }
 
-void Parse::autoIndex(bool& autoIndex)
+void
+Parse::autoIndex(bool& autoIndex)
 {
 	size_t	tokensFound = _ts.tokensOnLine();
 	if (tokensFound == 3) {
@@ -219,11 +221,13 @@ Parse::expect(std::string const &expected)
 	_ts.advance();
 }
 
-void Parse::log(std::string const &message) {
+void
+Parse::log(std::string const &message) {
 	_log.push_back(message);
 }
 
-void Parse::report()
+void
+Parse::report()
 {
 	if (_log.empty())
 		return ;
