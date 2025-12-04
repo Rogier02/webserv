@@ -112,7 +112,7 @@ TokenStream::advanceLine() {
 
 void
 TokenStream::advanceTillBracket() {
-	while (_current.peek().text != '}')
+	while (current()->text != "}")
 		advance();
 }
 

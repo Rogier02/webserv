@@ -19,7 +19,7 @@ Config Parse::config()
 			_ts.advanceTillBracket();
 		}
 	}
-	expect('}');
+	expect("}");
 
 	report();
 	return (config);
@@ -52,18 +52,20 @@ Config::Server::Location
 Parse::location()
 {
 	Config::Server::Location	location;
+	size_t						tokensFound = _ts.tokensOnLine();
 
-	if (_ts.tokensOnLine() == 3){
+	if (tokensFound == 3){
 		location.path = _ts.consume();
 		expect("{");
 	}
 	else{
-		log()
+		log(unexpectedTokenCount("3", tokensFound));
 		_ts.advanceLine();
 	}
 
 	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
+		// Hier moet eigenlijk ook elke keer een tokenCount worden gedaan om te checken of er wel genoeg tokens in de line zitten, 
 		std::string	directive = _ts.consume();
 
 		DirectiveMapIterator<LocationDirective> it = locationDirectives.find(directive);
@@ -82,39 +84,53 @@ Parse::location()
 void
 Parse::single(std::string& dest)
 {
-	dest = _ts.consume();
-	expect(";");
+	size_t	tokensFound = _ts.tokensOnLine();
+	if (tokensFound == 4) {
+		dest = _ts.consume();
+		expect(";");
+	}
+	else
+		log(unexpectedTokenCount("3", tokensFound));
 }
 
 void
 Parse::single(int& dest)
 {
-	dest = std::stoi(_ts.consume());
-	expect(";");
+	size_t	tokensFound = _ts.tokensOnLine();
+	if (tokensFound == 4) {
+		dest = std::stoi(_ts.consume());
+		expect(";");
+	}
+	else
+		log(unexpectedTokenCount("3", tokensFound));
 }
 
 void
 Parse::multiple(std::vector<std::string>& dest)
 {
 	TokenStream::Iterator	lineEnd = _ts.lineEnd();
-
-	while (_ts.current() != lineEnd && _ts.peek().text != ";")
-		dest.push_back(_ts.consume());
-
-	expect(";");
+	size_t					tokensFound = _ts.tokensOnLine();
+	if (tokensFound >= 3) {
+		while (_ts.current() != lineEnd && _ts.peek().text != ";")
+			dest.push_back(_ts.consume());
+	
+		expect(";");
+	}
+	else
+		log(unexpectedTokenCount("3 or more", tokensFound));
 }
 
 void
 Parse::page(Config::Server::Page &page)
 {
-	size_t	tokensOnLine = _ts.tokensOnline();
-	if (tokensOnline == 4) {
+	size_t	tokensFound = _ts.tokensOnLine();
+	if (tokensFound == 4) {
 		page.code	= std::stoi(_ts.consume());
 		page.path	= _ts.consume();
 		expect(";");
 	}
 	else
-		log(unexpectedTokenCount(4, tokensOnLine));
+		log(unexpectedTokenCount("4", tokensFound));
 }
 
 Config::Server::Page
@@ -129,8 +145,8 @@ Parse::page()
 void
 Parse::clientMaxBodySize(size_t &clientMaxBodySize)
 {
-	size_t	tokensOnLine = _ts.tokensOnline();
-	if (tokensOnline == 3) {
+	size_t	tokensFound = _ts.tokensOnLine();
+	if (tokensFound == 3) {
 		std::string	token	= _ts.peek().text;
 		char		unit	= token.back();
 		std::string	number	= _ts.consume();
@@ -151,14 +167,14 @@ Parse::clientMaxBodySize(size_t &clientMaxBodySize)
 		expect(";");
 	}
 	else
-		log(unexpectedTokenCount(3, tokensOnLine));
+		log(unexpectedTokenCount("3", tokensFound));
 }
 
 void
 Parse::listen(std::string& host, int& port)
 {
-	size_t	tokensOnLine = _ts.tokensOnline();
-	if (tokensOnline == 3) {
+	size_t	tokensFound = _ts.tokensOnLine();
+	if (tokensFound == 3) {
 		std::string	hostPort	= _ts.consume();
 		size_t		colonPos	= hostPort.find(':');
 
@@ -170,13 +186,13 @@ Parse::listen(std::string& host, int& port)
 		expect(";");
 	}
 	else
-		log(unexpectedTokenCount(3, tokensOnLine));
+		log(unexpectedTokenCount("3", tokensFound));
 }
 
 void Parse::autoIndex(bool& autoIndex)
 {
-	size_t	tokensOnLine = _ts.tokensOnline();
-	if (tokensOnline == 3) {
+	size_t	tokensFound = _ts.tokensOnLine();
+	if (tokensFound == 3) {
 		std::string	value = _ts.consume();
 
 		if (value == "off")
@@ -189,7 +205,7 @@ void Parse::autoIndex(bool& autoIndex)
 		expect(";");
 	}
 	else
-		log(unexpectedTokenCount(3, tokensOnLine));
+		log(unexpectedTokenCount("3", tokensFound));
 }
 
 void
@@ -236,7 +252,7 @@ Parse::unexpected(std::string const &expected, std::string const &found)
 }
 
 std::string
-Parse::unexpectedTokenCount(size_t expected, size_t found)
+Parse::unexpectedTokenCount(std::string expected, size_t found)
 {
-	return ("Unexpected token count: " + std::to_string(found) + " (expected: " + std::to_string(expected) + ") on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
+	return ("Unexpected token count: " + std::to_string(found) + " (expected: " + expected + ") on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
 }
