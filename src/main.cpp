@@ -39,7 +39,7 @@ int	main(int argc, char **argv)
 	try {
 		Parse	parser(configFilePath);
 		Config	config = parser.config();
-		// std::cout << config;
+		std::cout << config;
 
 		// Server	server(configFilePath);
 		Server	server;

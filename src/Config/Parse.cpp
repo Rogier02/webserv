@@ -19,7 +19,6 @@ Config Parse::config()
 			_ts.advanceTillBracket();
 		}
 	}
-	expect("}");
 
 	report();
 	return (config);
@@ -85,7 +84,7 @@ void
 Parse::single(std::string& dest)
 {
 	size_t	tokensFound = _ts.tokensOnLine();
-	if (tokensFound == 4) {
+	if (tokensFound == 3) {
 		dest = _ts.consume();
 		expect(";");
 	}
@@ -97,7 +96,7 @@ void
 Parse::single(int& dest)
 {
 	size_t	tokensFound = _ts.tokensOnLine();
-	if (tokensFound == 4) {
+	if (tokensFound == 3) {
 		dest = std::stoi(_ts.consume());
 		expect(";");
 	}
