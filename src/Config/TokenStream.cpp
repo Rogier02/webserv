@@ -105,11 +105,19 @@ const {
 	return (line);
 }
 
-void TokenStream::advanceLine() {
+void
+TokenStream::advanceLine() {
 	_current = lineEnd();
 }
 
-std::size_t	TokenStream::tokensOnLine() {
+void
+TokenStream::advanceTillBracket() {
+	while (_current.peek().text != '}')
+		advance();
+}
+
+std::size_t
+TokenStream::tokensOnLine() {
 	Iterator	start	= lineStart();
 	Iterator	end		= lineEnd();
 

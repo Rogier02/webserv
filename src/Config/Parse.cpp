@@ -16,9 +16,10 @@ Config Parse::config()
 			config.servers.push_back(server());
 		else {
 			log(unknownDirective(directive));
-			_ts.advanceLine(); // this will be weird, we might need a advanceUntil("}") to fix that
+			_ts.advanceTillBracket();
 		}
 	}
+	expect('}');
 
 	report();
 	return (config);
