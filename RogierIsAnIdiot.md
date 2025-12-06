@@ -276,17 +276,17 @@ Let's trace what happens when a browser visits `http://localhost:8080/`:
 
 ## Component Interaction Matrix
 
-| Component | Uses | Is Used By | Purpose |
-|-----------|------|-----------|---------|
-| Epoll | Event | Server | Monitor file descriptors |
-| Event | (none) | Epoll, Server | Represent I/O events |
-| Server | Epoll, Socket, CgiHandler | main.cpp | Main logic & routing |
-| ListenSocket | Socket | Server | Create listening socket |
-| Socket | Wrappers | ListenSocket, Server | OS socket functions |
-| HttpResponse | (none) | Server | Build responses |
-| HttpRequest | (none) | Server (TODO) | Parse requests |
-| CgiHandler | (none) | Server | Execute scripts |
-| ErrorPageHandler | (none) | Server, CgiHandler | Generate error pages |
+| Component        | Uses                      | Is Used By           | Purpose                  |
+|------------------|---------------------------|----------------------|--------------------------|
+| Epoll            | Event                     | Server               | Monitor file descriptors |
+| Event            | (none)                    | Epoll, Server        | Represent I/O events     |
+| Server           | Epoll, Socket, CgiHandler | main.cpp             | Main logic & routing     |
+| ListenSocket     | Socket                    | Server               | Create listening socket  |
+| Socket           | Wrappers                  | ListenSocket, Server | OS socket functions      |
+| HttpResponse     | (none)                    | Server               | Build responses          |
+| HttpRequest      | (none)                    | Server (TODO)        | Parse requests           |
+| CgiHandler       | (none)                    | Server               | Execute scripts          |
+| ErrorPageHandler | (none)                    | Server, CgiHandler   | Generate error pages     |
 
 ---
 
