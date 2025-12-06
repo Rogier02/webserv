@@ -1,40 +1,14 @@
 #include "HttpRequest.hpp"
 #include "TokenStream.hpp"
-#include <vector>
-#include <fstream>
-#include <iostream>
+#include <sstream>
 
 /*
 -- HTTP1.0 request example --
-GET /index.html HTTP/1.0
-Host: www.example.com
-User-Agent: Mozilla/5.0
-Accept: text/html
-*/
-
-/*
-struct HttpRequest {
-    HttpMethod method;
-    std::string target; // URL path + query
-	struct	Version{
-		int httpMajorVersion; // usually 1
-		int httpMinorVersion; // 0 or 1
-	};
-
-    std::map<std::string, std::string> headers;
-    std::string body;
-
-    // Helper: find header case-insensitively
-    std::string getHeader(const std::string &name) const {
-        for (std::map<std::string, std::string>::const_iterator it = headers.begin();
-             it != headers.end(); ++it)
-        {
-            if (strcasecmp(it->first.c_str(), name.c_str()) == 0)
-                return it->second;
-        }
-        return "";
-    }
-};
+GET /index.html HTTP/1.0\r\n
+Host: www.example.com\r\n
+User-Agent: Mozilla/5.0\r\n
+Accept: text/html\r\n
+\r\n
 */
 
 //1. read first line --> split into method, path, version
@@ -42,15 +16,32 @@ struct HttpRequest {
 //3. if content-length exists --> read that many bytes for the body
 
 void
-HttpRequest::parseHttpRequest(){
+HttpRequest::parseHttpRequest(int clientFd){
 
-	std::string request;
-	std::string line = getline(request);
-	std::vector<std::string> parts = split(line, ' ');
+	char		buffer[4096];
+	std::string	request;
+	std::string line;
+	while (true)
+	{
+		ssize_t	n	=	recv(clientFd, buffer, 4096, 0);
+		request.append(buffer);
+		if (request.find("\r\n\r\n") != std::string::npos)
+			break;
+	}
 
-	method = parseMethod(parts[0]);
-	target = parts[1];
-	version = paseVersion(parts[2]);
+	std::istringstream	requestStream(request);
+	while (std::getline(requestStream, line))
+	{
+		std::stringstream	stream(line);
+		std::string			word;
+		while (stream >> word){
+			method = parseMethod(word[0]);
+			target = word[1];
+			version = paseVersion(word[2]);
+
+
+		}
+	}
 
 
 	std::vector<Token> httpTokens;
@@ -60,7 +51,7 @@ HttpRequest::parseHttpRequest(){
 }
 
 std::string
-parseMethod(std::string method){
+HttpRequest::parseMethod(std::string method){
 	while (allowedMethods){
 		if (method == allowedMethods)
 			return (method);
@@ -70,8 +61,8 @@ parseMethod(std::string method){
 		LOG("[HTTP Request Error] invalid method: " << method << "\n");
 }
 
-Version
-parseVersion(std::string version){
+HttpVersion
+HttpRequest::parseVersion(std::string version){
 	Version	httpVersion;
 
 	std::string::size_type slash = version.find('/');

@@ -1,9 +1,16 @@
 #ifndef HTTPREQUEST_HPP
 # define HTTPREQUEST_HPP
 
+// C
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <unistd.h>
 // C++
-# include <unordered_map>
 # include <string>
+# include <vector>
+# include <fstream>
+# include <iostream>
+
 
 struct	HttpRequest
 {
@@ -24,39 +31,9 @@ struct	HttpRequest
 	HttpVersion			version;
 	std::vector<Header>	headers;
 
-	void	parseHttpRequest(std::string request);
-	void	parseRequestLine(std::string line);
+	void		parseHttpRequest(int clientFd);
+	std::string	parseMethod(std::string method);
+	HttpVersion	parseVersion(std::string version);
 };
-
-
-// class HttpRequest
-// {
-
-// 	public:
-// 		enum	RequestType: uint8_t {
-// 			GET,
-// 			POST,
-// 			DELETE,
-// 		};
-
-// 	private:
-// 		static const std::unordered_map<std::string, RequestType>	Methods = {
-// 			{"GET", RequestType::GET},
-// 			{"POST", RequestType::POST},
-// 			{"DELETE", RequestType::DELETE},
-// 		};
-
-// 	public:
-// 		void	execGet();
-// 		void	execPost();
-// 		void	execDelete();
-
-// 	public:
-// 		//method
-	
-// 	private:
-// 		RequestType	_type;
-
-// };
 
 #endif

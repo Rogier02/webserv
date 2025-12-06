@@ -1,39 +1,85 @@
 #include "TokenStream.hpp"
 #include "log.hpp"
 
-TokenStream::TokenStream(const std::string& fileName)
+#define CONFIGFILE 1
+#define HTTPREQUEST 2
+
+// TokenStream::TokenStream(const std::string& fileName)
+// {
+// 	if (fileName.rfind(".conf") == std::string::npos)
+// 		throw std::runtime_error("incorrect file extension: " + fileName);
+
+// 	std::ifstream file(fileName);
+// 	if (!file.is_open())
+// 		throw std::runtime_error("could not open file: " + fileName);
+
+// 	std::string	line;
+// 	int			lineNbr = 1;
+// 	while (std::getline(file, line))
+// 	{
+// 		std::stringstream	stream(line);
+// 		std::string			word;
+
+// 		while (stream >> word)
+// 		{
+// 			if (word[0] == '#')
+// 				break;
+// 			if (!word.empty() && word.back() == ';')
+// 			{
+// 				word.pop_back();
+// 				if (!word.empty())
+// 					_tokens.push_back(Token{word, lineNbr});
+// 				_tokens.push_back(Token{";", lineNbr});
+// 			}
+// 			else
+// 				_tokens.push_back(Token{word, lineNbr});
+// 		}
+// 		++lineNbr;
+// 	}
+// 	file.close();
+// 	_current = _tokens.begin();
+// }
+
+TokenStream::TokenStream(std::istream& stream, int streamType)
 {
-	if (fileName.rfind(".conf") == std::string::npos)
-		throw std::runtime_error("incorrect file extension: " + fileName);
-
-	std::ifstream file(fileName);
-	if (!file.is_open())
-		throw std::runtime_error("could not open file: " + fileName);
-
 	std::string	line;
 	int			lineNbr = 1;
-	while (std::getline(file, line))
+	while (std::getline(stream, line))
 	{
 		std::stringstream	stream(line);
 		std::string			word;
 
 		while (stream >> word)
 		{
-			if (word[0] == '#')
-				break;
-			if (!word.empty() && word.back() == ';')
+			switch (streamType)
 			{
-				word.pop_back();
-				if (!word.empty())
-					_tokens.push_back(Token{word, lineNbr});
-				_tokens.push_back(Token{";", lineNbr});
+				case CONFIGFILE:
+					if (word[0] == '#')
+						break;
+					if (!word.empty() && word.back() == ';')
+					{
+						word.pop_back();
+						if (!word.empty())
+							_tokens.push_back(Token{word, lineNbr});
+						_tokens.push_back(Token{";", lineNbr});
+					}
+					else
+						_tokens.push_back(Token{word, lineNbr});
+					break;
+				case HTTPREQUEST:
+					if (!word.empty() && (word.back() == '\r' || word.back() == ':'))
+					{
+						word.pop_back();
+						if (!word.empty())
+							_tokens.push_back(Token{word, lineNbr});
+					}
+					else
+						_tokens.push_back(Token{word, lineNbr});
+					break;
 			}
-			else
-				_tokens.push_back(Token{word, lineNbr});
 		}
 		++lineNbr;
 	}
-	file.close();
 	_current = _tokens.begin();
 }
 

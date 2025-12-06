@@ -1,8 +1,22 @@
 #include "Parse.hpp"
+#define CONFIGFILE 1
+
+// Parse::Parse(std::string const &filePath)
+// 	:	_ts(filePath)
+// {}
 
 Parse::Parse(std::string const &filePath)
-	:	_ts(filePath)
-{}
+{
+	if (filePath.rfind(".conf") == std::string::npos)
+		throw std::runtime_error("incorrect file extension: " + filePath);
+
+	std::ifstream file(filePath);
+	if (!file.is_open())
+		throw std::runtime_error("could not open file: " + filePath);
+
+	_ts = TokenStream(file, CONFIGFILE);
+	file.close();
+}
 
 Config
 Parse::config()
