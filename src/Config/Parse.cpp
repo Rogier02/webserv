@@ -1,12 +1,14 @@
 #include "Parse.hpp"
 
-Parse::Parse(std::string const &filePath)
-	:	_ts(filePath)
-{}
+#define CONFIGFILE 1
 
 // Parse::Parse(std::string const &filePath)
-// 	:	_ts(stream, streamType)
+// 	:	_ts(filePath)
 // {}
+
+Parse::Parse(std::istream& stream, int streamType)
+	:	_ts(stream, streamType)
+{}
 
 Config
 Parse::config()

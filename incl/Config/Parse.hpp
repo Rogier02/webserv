@@ -21,7 +21,8 @@ class	Parse
 		Parse() = delete;
 		Parse(Parse const &other) = delete;
 		Parse(Parse &&other) = delete;
-		Parse(std::string const &filePath);
+		// Parse(std::string const &filePath);
+		Parse(std::istream& stream, int streamType);
 		~Parse() = default;
 
 	public:

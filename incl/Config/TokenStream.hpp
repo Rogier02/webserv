@@ -23,8 +23,8 @@ class	TokenStream
 		// TokenStream() = default;
 		TokenStream(TokenStream const &) = delete;
 		TokenStream(TokenStream &&) = delete;
-		TokenStream(std::string const &filePath);
-		// TokenStream(std::istream& stream, int streamType);
+		// TokenStream(std::string const &filePath);
+		TokenStream(std::istream& stream, int streamType);
 		~TokenStream() = default;
 
 	private:

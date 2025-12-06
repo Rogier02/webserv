@@ -34,21 +34,21 @@ int	main(int argc, char **argv)
 	std::string configFilePath = "configs/default.conf";
 	if (argc == 2)
 		configFilePath = argv[1];
-// 	if (configFilePath.rfind(".conf") == std::string::npos)
-// 		throw std::runtime_error("incorrect file extension: " + configFilePath);
+	if (configFilePath.rfind(".conf") == std::string::npos)
+		throw std::runtime_error("incorrect file extension: " + configFilePath);
 
-// 	std::ifstream file(configFilePath);
-// 	if (!file.is_open())
-// 		throw std::runtime_error("could not open file: " + configFilePath);
+	std::ifstream file(configFilePath);
+	if (!file.is_open())
+		throw std::runtime_error("could not open file: " + configFilePath);
 
 signal(SIGINT, stopAllServerLoops);
 signal(SIGTERM, stopAllServerLoops);
 
 	try {
-		Parse	parser(configFilePath);
-		// Parse	parser(file, CONFIGFILE);
+		// Parse	parser(configFilePath);
+		Parse	parser(file, CONFIGFILE);
 		Config	config = parser.config();
-		// 	file.close();
+			file.close();
 		std::cout << config;
 
 		// Server	server(configFilePath);
