@@ -1,22 +1,24 @@
 #include "Parse.hpp"
 #define CONFIGFILE 1
 
-// Parse::Parse(std::string const &filePath)
-// 	:	_ts(filePath)
-// {}
-
 Parse::Parse(std::string const &filePath)
-{
-	if (filePath.rfind(".conf") == std::string::npos)
-		throw std::runtime_error("incorrect file extension: " + filePath);
+	:	_ts(filePath)
+{}
 
-	std::ifstream file(filePath);
-	if (!file.is_open())
-		throw std::runtime_error("could not open file: " + filePath);
 
-	_ts = TokenStream(file, CONFIGFILE);
-	file.close();
-}
+// MOGELIJK NUTTIG VOOR REUSING TOKENSTREAM
+// Parse::Parse(std::string const &filePath)
+// {
+// 	if (filePath.rfind(".conf") == std::string::npos)
+// 		throw std::runtime_error("incorrect file extension: " + filePath);
+
+// 	std::ifstream file(filePath);
+// 	if (!file.is_open())
+// 		throw std::runtime_error("could not open file: " + filePath);
+
+// 	_ts = TokenStream(file, CONFIGFILE);
+// 	file.close();
+// }
 
 Config
 Parse::config()
@@ -31,7 +33,7 @@ Parse::config()
 			config.servers.push_back(server());
 		else {
 			log(unknownDirective(directive));
-			_ts.advanceTillBracket();
+			_ts.advanceUntil("}");
 		}
 	}
 
@@ -272,4 +274,12 @@ std::string
 Parse::unexpectedTokenCount(std::string expected, size_t found)
 {
 	return ("Unexpected token count: " + std::to_string(found) + " (expected: " + expected + ") on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
+}
+
+std::string
+Parse::consumeValue()
+{
+	std::string value = _ts.consume();
+	if (value == ";")
+		log("Unexpected ; on line " + );
 }

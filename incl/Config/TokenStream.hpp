@@ -19,12 +19,12 @@ class	TokenStream
 		using Iterator	= std::vector<Token>::const_iterator;
 
 	public:
-		// TokenStream() = delete;
-		TokenStream() = default;
+		TokenStream() = delete;
+		// TokenStream() = default;
 		TokenStream(TokenStream const &) = delete;
 		TokenStream(TokenStream &&) = delete;
-		// TokenStream(std::string const &filePath);
-		TokenStream(std::istream& stream, int streamType);
+		TokenStream(std::string const &filePath);
+		// TokenStream(std::istream& stream, int streamType);
 		~TokenStream() = default;
 
 	private:
@@ -45,7 +45,7 @@ class	TokenStream
 		Iterator	lineEnd() const;
 		std::string	getLine() const;
 		void		advanceLine();
-		void		advanceTillBracket();
+		void		advanceUntil(const std::string& target);
 		std::size_t	tokensOnLine();
 };
 
