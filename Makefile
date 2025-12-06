@@ -17,8 +17,8 @@ MAIN_FILES		=	main.cpp
 CONFIG_MODULE	=	Config
 CONFIG_FILES	=	Config.cpp			\
 					Parse.cpp			\
-					Validate.cpp		\
 					TokenStream.cpp		\
+# 					Validate.cpp		\
 
 EVENTBASE_MODULE=	Event/Base
 EVENTBASE_FILES	=	Event.cpp			\

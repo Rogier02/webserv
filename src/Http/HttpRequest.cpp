@@ -15,61 +15,61 @@ Accept: text/html\r\n
 //2. read header lines until empty line
 //3. if content-length exists --> read that many bytes for the body
 
-void
-HttpRequest::parseHttpRequest(int clientFd){
+// void
+// HttpRequest::parseHttpRequest(int clientFd){
 
-	char		buffer[4096];
-	std::string	request;
-	std::string line;
-	while (true)
-	{
-		ssize_t	n	=	recv(clientFd, buffer, 4096, 0);
-		request.append(buffer);
-		if (request.find("\r\n\r\n") != std::string::npos)
-			break;
-	}
+// 	char		buffer[4096];
+// 	std::string	request;
+// 	std::string line;
+// 	while (true)
+// 	{
+// 		ssize_t	n	=	recv(clientFd, buffer, 4096, 0);
+// 		request.append(buffer);
+// 		if (request.find("\r\n\r\n") != std::string::npos)
+// 			break;
+// 	}
 
-	std::istringstream	requestStream(request);
-	while (std::getline(requestStream, line))
-	{
-		std::stringstream	stream(line);
-		std::string			word;
-		while (stream >> word){
-			method = parseMethod(word[0]);
-			target = word[1];
-			version = paseVersion(word[2]);
-
-
-		}
-	}
+// 	std::istringstream	requestStream(request);
+// 	while (std::getline(requestStream, line))
+// 	{
+// 		std::stringstream	stream(line);
+// 		std::string			word;
+// 		while (stream >> word){
+// 			method = parseMethod(word[0]);
+// 			target = word[1];
+// 			version = paseVersion(word[2]);
 
 
-	std::vector<Token> httpTokens;
-	TokenStream httpTS(httpTokens);
+// 		}
+// 	}
 
-	httpTS.current
-}
 
-std::string
-HttpRequest::parseMethod(std::string method){
-	while (allowedMethods){
-		if (method == allowedMethods)
-			return (method);
-	}
-	else if (method)
-	else
-		LOG("[HTTP Request Error] invalid method: " << method << "\n");
-}
+// 	std::vector<Token> httpTokens;
+// 	TokenStream httpTS(httpTokens);
 
-HttpVersion
-HttpRequest::parseVersion(std::string version){
-	Version	httpVersion;
+// 	httpTS.current
+// }
 
-	std::string::size_type slash = version.find('/');
-	std::string::size_type dot = version.find('.');
+// std::string
+// HttpRequest::parseMethod(std::string method){
+// 	while (allowedMethods){
+// 		if (method == allowedMethods)
+// 			return (method);
+// 	}
+// 	else if (method)
+// 	else
+// 		LOG("[HTTP Request Error] invalid method: " << method << "\n");
+// }
 
-	version.httpMajorVersion = std::stoi(version.substr(slash + 1, 1));
-	version.httpMinorVersion = std::stoi(version.substr(dot + 1, 1));
+// HttpVersion
+// HttpRequest::parseVersion(std::string version){
+// 	Version	httpVersion;
 
-	return (httpVersion);
-}
+// 	std::string::size_type slash = version.find('/');
+// 	std::string::size_type dot = version.find('.');
+
+// 	version.httpMajorVersion = std::stoi(version.substr(slash + 1, 1));
+// 	version.httpMinorVersion = std::stoi(version.substr(dot + 1, 1));
+
+// 	return (httpVersion);
+// }
