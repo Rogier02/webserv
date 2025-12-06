@@ -3,3 +3,4 @@ obj/
 .o*
 webserv
 a.out
+failLog.txt
