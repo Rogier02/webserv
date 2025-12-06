@@ -8,11 +8,11 @@ EpollEvent::EpollEvent(int socket)
 
 EpollEvent::operator int() const
 {
-	return(fd());
+	return(getFd());
 }
 
 int
-EpollEvent::fd() const
+EpollEvent::getFd() const
 {
 	return (epoll_event::data.fd);
 }

@@ -8,8 +8,30 @@
  * @class Epoll::Event
  * @brief Wrapper around epoll_event with safe fd access
  * 
+ * @details Epoll returns raw epoll_event structs with file descriptors packed in a 
+ * union. This class wraps that struct and provides:
+ * - Safe methods to get and set fds
+ * - Helper to check for error condiitons
+ * - cast operator for convenient int conversion
+ * 
+ * EpollEvent inherits from epoll_event (C struct):
+ * 
+ * struct epoll_event {
+ * 		uint32_t		events;		<- What event occured (EPOLLIN, EPOLLOUT, etc)
+ * 		epoll_data_t	data;		<- User data (union containing FD)
+ * };
+ * 
+ * Problem: data is a packed union, can't take reference to its memeber
+ * Solution: Provide getFd() and setFd()
+ * 
  * @note Cannot create reference to packed struct memebers
  * 			so we use methods to get and set fds
+ * 
+ * event.getFd()		Get which socket had activity
+ * event.setFd()		Set wich socket to monitor
+ * event.isWeird()		Check if error/hangup occurred
+ * (int)event			Cast to int (same as event.fd())
+ * 
  */
 class EpollEvent : public epoll_event
 {
@@ -88,7 +110,7 @@ class EpollEvent : public epoll_event
 			 * @note Cannot use direct reference due to packed struct
 			 * 		 That's why we use this method instead
 			 */
-			int		fd()const;
+			int		getFd()const;
 
 			/**
 			 * @brief Set file descriptor for this event
