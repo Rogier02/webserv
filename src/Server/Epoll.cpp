@@ -40,18 +40,3 @@ int	Epoll::ctl(Epoll::Ctl operation, Event &event) const {
 	return (ctl(operation, event.data.fd, &event));
 }
 
-// EVENT
-Epoll::Event::Event(int socket)
-{
-	events = _defaultEvents;
-	data.fd = socket;
-}
-
-bool	Epoll::Event::isWeird() const {
-	return (events & (Epoll::Events::Err | Epoll::Events::Hup));
-}
-
-Epoll::Event::operator int() const {
-	return (data.fd);
-}
-// EVENT

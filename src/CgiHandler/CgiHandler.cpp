@@ -116,6 +116,7 @@ CgiHandler::execute(const std::string& path, const std::string& method,
 
 };
 
+//TODO: REMOVE SETENV and add own implamentation
 void
 CgiHandler::setupEnvironment(const std::string& path, const std::string& method,
         const std::string& query, const std::string& body) const

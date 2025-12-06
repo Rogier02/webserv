@@ -10,6 +10,7 @@
 # include "Socket.hpp"
 # include "ListenSocket.hpp"
 # include "EasyThrow.hpp"
+# include "Event.hpp"
 // wrappers
 # include "WrapEpoll.hpp"
 
@@ -71,6 +72,7 @@ class	Epoll
 		Epoll(Epoll &&other) = delete;
 		~Epoll();
 
+		/** @brief this is an operator  */
 		operator int() const;
 
 		/**
@@ -106,12 +108,39 @@ class	Epoll
 		/**
 		 * @brief Control operations (Add, Del, Mod)
 		 * 
+		 * @note Add: Start monitoring socket fd
+		 * @note Del: Stop monitoring socket fd
+		 * @note Mod: Change event to watch
 		 * 
+		 * @param operation What to do (Add, Del, Mod)
+		 * @param fd File descriptor to operate on
+		 * @param event Event object (required for Add/Mod, NULL for Del)
+		 * 
+		 * @return Result of operation (0 = Success, -1 = error)
+		 * 
+		 * @note Operation is thread-safe
+		 * @note Can be called from any thread 
+		 * @note Must match the Ctl::Enum for type safety
 		 */
 		int					ctl(Ctl operation, int fd, Event *event = NULL) const;
+
+		/**
+		 * @brief Control operations using Event objet directly
+		 * 
+		 * Convenience overload - extracts FD from Event object
+		 * 
+		 * @param operation What to do (Add, Del, Mod)
+		 * @param event Event object containing fd and settings
+		 */
 		int					ctl(Epoll::Ctl operation, Event &event) const;
 
 	private:
+		/**
+		 * @brief The epoll file descriptor
+		 * 
+		 * Created in constructor with epoll_create()
+		 * Closed in destructor with close()
+		 */
 		int	_fd;
 };
 
