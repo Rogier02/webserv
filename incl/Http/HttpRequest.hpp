@@ -5,6 +5,30 @@
 # include <unordered_map>
 # include <string>
 
+struct	HttpRequest
+{
+	struct Header {
+		std::string	headerName;
+		std::string	headerValue;
+	};
+
+	struct HttpVersion {
+		int	major;
+		int	minor;
+	};
+	
+	int					method;
+	std::string			target;
+	std::string			path;
+	std::string			query;
+	HttpVersion			version;
+	std::vector<Header>	headers;
+
+	void	parseHttpRequest(std::string request);
+	void	parseRequestLine(std::string line);
+};
+
+
 // class HttpRequest
 // {
 
