@@ -17,7 +17,7 @@ Parse::config()
 
 	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
-		std::string directive = _ts.consume();
+		std::string directive = consumeValue();
 
 		if (directive == "Server")
 			config.servers.push_back(server());
@@ -39,7 +39,7 @@ Parse::server()
 	expect("{");
 	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
-		std::string directive = _ts.consume();
+		std::string directive = consumeValue();
 
 		DirectiveMapIterator<ServerDirective> it = serverDirectives.find(directive);
 		if (it != serverDirectives.end())
@@ -58,21 +58,13 @@ Config::Server::Location
 Parse::location()
 {
 	Config::Server::Location	location;
-	size_t						tokensFound = _ts.tokensOnLine();
 
-	if (tokensFound == 3){
-		location.path = _ts.consume();
-		expect("{");
-	}
-	else{
-		log(unexpectedTokenCount("3", tokensFound));
-		_ts.advanceLine();
-	}
+	location.path = consumeValue();
+	expect("{");
 
 	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
-		// Hier moet eigenlijk ook elke keer een tokenCount worden gedaan om te checken of er wel genoeg tokens in de line zitten denk ik > Of is dit al opgevangen in single() en multiple()??
-		std::string	directive = _ts.consume();
+		std::string	directive = consumeValue();
 
 		DirectiveMapIterator<LocationDirective> it = locationDirectives.find(directive);
 		if (it != locationDirectives.end())
@@ -90,53 +82,34 @@ Parse::location()
 void
 Parse::single(std::string& dest)
 {
-	size_t	tokensFound = _ts.tokensOnLine();
-	if (tokensFound == 3) {
-		dest = _ts.consume();
-		expect(";");
-	}
-	else
-		log(unexpectedTokenCount("3", tokensFound));
+	dest = consumeValue();
+	expect(";");
 }
 
 void
 Parse::single(int& dest)
 {
-	size_t	tokensFound = _ts.tokensOnLine();
-	if (tokensFound == 3) {
-		dest = std::stoi(_ts.consume());
-		expect(";");
-	}
-	else
-		log(unexpectedTokenCount("3", tokensFound));
+	dest = std::stoi(consumeValue());
+	expect(";");
 }
 
 void
 Parse::multiple(std::vector<std::string>& dest)
 {
 	TokenStream::Iterator	lineEnd = _ts.lineEnd();
-	size_t					tokensFound = _ts.tokensOnLine();
-	if (tokensFound >= 3) {
-		while (_ts.current() != lineEnd && _ts.peek().text != ";")
-			dest.push_back(_ts.consume());
-	
-		expect(";");
-	}
-	else
-		log(unexpectedTokenCount("3 or more", tokensFound));
+
+	while (_ts.current() != lineEnd && _ts.peek().text != ";")
+		dest.push_back(consumeValue());
+
+	expect(";");
 }
 
 void
 Parse::page(Config::Server::Page &page)
 {
-	size_t	tokensFound = _ts.tokensOnLine();
-	if (tokensFound == 4) {
-		page.code	= std::stoi(_ts.consume());
-		page.path	= _ts.consume();
-		expect(";");
-	}
-	else
-		log(unexpectedTokenCount("4", tokensFound));
+	page.code	= std::stoi(consumeValue());
+	page.path	= consumeValue();
+	expect(";");
 }
 
 Config::Server::Page
@@ -151,68 +124,53 @@ Parse::page()
 void
 Parse::clientMaxBodySize(size_t &clientMaxBodySize)
 {
-	size_t	tokensFound = _ts.tokensOnLine();
-	if (tokensFound == 3) {
-		std::string	token	= _ts.peek().text;
-		char		unit	= token.back();
-		std::string	number	= _ts.consume();
+	std::string	token	= _ts.peek().text;
+	char		unit	= token.back();
+	std::string	number	= consumeValue();
 
-		if (unit == 'k' || unit == 'm' || unit == 'g')
-			number = number.substr(0, number.size() - 1);
-		else
-			unit = 0;
-
-		clientMaxBodySize = std::stoul(number);
-
-		switch(unit) {
-			case 'k': clientMaxBodySize *= 1024;				break;
-			case 'm': clientMaxBodySize *= 1024 * 1024;			break;
-			case 'g': clientMaxBodySize *= 1024 * 1024 * 1024;	break;
-		}
-
-		expect(";");
-	}
+	if (unit == 'k' || unit == 'm' || unit == 'g')
+		number = number.substr(0, number.size() - 1);
 	else
-		log(unexpectedTokenCount("3", tokensFound));
+		unit = 0;
+
+	clientMaxBodySize = std::stoul(number);
+
+	switch(unit) {
+		case 'k': clientMaxBodySize *= 1024;				break;
+		case 'm': clientMaxBodySize *= 1024 * 1024;			break;
+		case 'g': clientMaxBodySize *= 1024 * 1024 * 1024;	break;
+	}
+
+	expect(";");
 }
 
 void
 Parse::listen(std::string& host, int& port)
 {
-	size_t	tokensFound = _ts.tokensOnLine();
-	if (tokensFound == 3) {
-		std::string	hostPort	= _ts.consume();
-		size_t		colonPos	= hostPort.find(':');
+	std::string	hostPort	= consumeValue();
+	size_t		colonPos	= hostPort.find(':');
 
-		if (colonPos == std::string::npos)
-			log("listen directive requires host:port format");
+	if (colonPos == std::string::npos)
+		log("listen directive requires host:port format");
 
-		host	= hostPort.substr(0, colonPos);
-		port	= std::stoi(hostPort.substr(colonPos + 1));
-		expect(";");
-	}
-	else
-		log(unexpectedTokenCount("3", tokensFound));
+	host	= hostPort.substr(0, colonPos);
+	port	= std::stoi(hostPort.substr(colonPos + 1));
+	expect(";");
 }
 
 void
 Parse::autoIndex(bool& autoIndex)
 {
-	size_t	tokensFound = _ts.tokensOnLine();
-	if (tokensFound == 3) {
-		std::string	value = _ts.consume();
+	std::string	value = consumeValue();
 
-		if (value == "off")
-			autoIndex = false;
-		else if (value == "on")
-			autoIndex = true;
-		else
-			log("autoindex must be 'on' or 'off', got: " + value);
-
-		expect(";");
-	}
+	if (value == "off")
+		autoIndex = false;
+	else if (value == "on")
+		autoIndex = true;
 	else
-		log(unexpectedTokenCount("3", tokensFound));
+		log("autoindex must be 'on' or 'off', got: " + value);
+
+	expect(";");
 }
 
 void
@@ -261,16 +219,13 @@ Parse::unexpected(std::string const &expected, std::string const &found)
 }
 
 std::string
-Parse::unexpectedTokenCount(std::string expected, size_t found)
-{
-	return ("Unexpected token count: " + std::to_string(found) + " (expected: " + expected + ") on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
-}
-
-std::string
 Parse::consumeValue()
 {
-	std::string value = _ts.consume();
-	if (value == ";")
-		log("Unexpected ; on line ");
-	return (value);
+	if (_ts.peek().text == ";")
+	{
+		log(unexpected("no semicolon", ";"));
+		return ("semicolon");
+	}
+	else
+		return (_ts.consume());
 }
