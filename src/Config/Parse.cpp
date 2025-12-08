@@ -1,6 +1,7 @@
 #include "Parse.hpp"
 
 #define CONFIGFILE 1
+#define HTTPREQUEST 2
 
 // Parse::Parse(std::string const &filePath)
 // 	:	_ts(filePath)
@@ -17,7 +18,7 @@ Parse::config()
 
 	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
-		std::string directive = consumeValue();
+		std::string directive = _ts.consume();
 
 		if (directive == "Server")
 			config.servers.push_back(server());
@@ -39,7 +40,7 @@ Parse::server()
 	expect("{");
 	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
-		std::string directive = consumeValue();
+		std::string directive = _ts.consume();
 
 		DirectiveMapIterator<ServerDirective> it = serverDirectives.find(directive);
 		if (it != serverDirectives.end())
@@ -64,7 +65,7 @@ Parse::location()
 
 	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
-		std::string	directive = consumeValue();
+		std::string	directive = _ts.consume();
 
 		DirectiveMapIterator<LocationDirective> it = locationDirectives.find(directive);
 		if (it != locationDirectives.end())
@@ -124,9 +125,8 @@ Parse::page()
 void
 Parse::clientMaxBodySize(size_t &clientMaxBodySize)
 {
-	std::string	token	= _ts.peek().text;
-	char		unit	= token.back();
 	std::string	number	= consumeValue();
+	char		unit	= number.back();
 
 	if (unit == 'k' || unit == 'm' || unit == 'g')
 		number = number.substr(0, number.size() - 1);
@@ -173,12 +173,16 @@ Parse::autoIndex(bool& autoIndex)
 	expect(";");
 }
 
+// Parse::expect(std::string const &expected, int lineNbr)
 void
 Parse::expect(std::string const &expected)
 {
 	if (_ts.atEnd())
 		log(unexpected(expected, "EOF"));
-
+	if (lineNbr < _ts.peek().lineNbr){
+		log("Unexpected amount of tokens on line " + lineNbr);
+		return ;
+	}
 	std::string	token = _ts.peek().text;
 	if (token != expected)
 		log(unexpected(expected, token));
@@ -228,4 +232,79 @@ Parse::consumeValue()
 	}
 	else
 		return (_ts.consume());
+}
+
+/*
+-- HTTP1.0 request example --
+GET /index.html HTTP/1.0\r\n
+Host: www.example.com\r\n
+User-Agent: Mozilla/5.0\r\n
+Accept: text/html\r\n
+\r\n
+*/
+
+//1. read first line --> split into method, path, version
+//2. read header lines until empty line
+//3. if content-length exists --> read that many bytes for the body
+
+HttpRequest
+Parse::httpRequest(){
+
+	char		buffer[4096];
+	std::string	request;
+	std::string line;
+	while (true)
+	{
+		ssize_t	n	=	recv(clientFd, buffer, 4096, 0);
+		request.append(buffer);
+		if (request.find("\r\n\r\n") != std::string::npos)
+			break;
+	}
+
+	Parse	parser(request, HTTPREQUEST);
+	HttpRequest	httpRequest = parser.httpRequest();
+	std::cout << httpRequest;
+	std::istringstream	tokenStream(request);
+	while (std::getline(tokenStream, line))
+	{
+		std::stringstream	stream(line);
+		std::string			word;
+		while (stream >> word){
+			method = parseMethod(word[0]);
+			target = word[1];
+			version = paseVersion(word[2]);
+
+
+		}
+	}
+
+
+	std::vector<Token> httpTokens;
+	TokenStream httpTS(httpTokens);
+
+	httpTS.current
+}
+
+std::string
+Parse::parseMethod(std::string method){
+	while (allowedMethods){
+		if (method == allowedMethods)
+			return (method);
+	}
+	else if (method)
+	else
+		LOG("[HTTP Request Error] invalid method: " << method << "\n");
+}
+
+HttpVersion
+Parse::parseVersion(std::string version){
+	Version	httpVersion;
+
+	std::string::size_type slash = version.find('/');
+	std::string::size_type dot = version.find('.');
+
+	version.httpMajorVersion = std::stoi(version.substr(slash + 1, 1));
+	version.httpMinorVersion = std::stoi(version.substr(dot + 1, 1));
+
+	return (httpVersion);
 }

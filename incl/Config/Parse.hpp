@@ -1,13 +1,19 @@
 #ifndef PARSE_HPP
 # define PARSE_HPP
 
+// C
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <unistd.h>
 // C++
 # include <string>
 # include <vector>
 # include <functional>
 # include <map>
+# include <sstream>
 // webserv
 # include "Config.hpp"
+# include "HttpRequest.hpp"
 # include "TokenStream.hpp"
 # include "Logger.hpp"
 
@@ -46,6 +52,7 @@ class	Parse
 
 		// tools
 		void	expect(std::string const &expected);
+		// void	expect(std::string const &expected, int lineNbr);
 
 		// keep an error log
 		void	log(std::string const &message);
@@ -120,6 +127,8 @@ class	Parse
 		};
 		template <typename D>
 		using	DirectiveMapIterator = typename std::map<std::string, D>::iterator;
+
+
 };
 
 #endif

@@ -30,10 +30,8 @@ struct	HttpRequest
 	std::string			query;
 	HttpVersion			version;
 	std::vector<Header>	headers;
-
-	void		parseHttpRequest(int clientFd);
-	std::string	parseMethod(std::string method);
-	HttpVersion	parseVersion(std::string version);
 };
+
+std::ostream	&operator<<(std::ostream &os, HttpRequest const &httpRequest);
 
 #endif
