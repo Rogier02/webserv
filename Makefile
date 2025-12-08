@@ -16,7 +16,7 @@ MAIN_FILES		=	main.cpp
 
 CONFIG_MODULE	=	Config
 CONFIG_FILES	=	Config.cpp			\
-					Parse.cpp			\
+					ParseConfig.cpp		\
 					TokenStream.cpp		\
 # 					Validate.cpp		\
 
@@ -29,6 +29,7 @@ EVENTTYPE_FILES	=	ClientEvent.cpp		\
 
 HTTP_MODULE		=	Http
 HTTP_FILES		=	HttpRequest.cpp		\
+					ParseHttpRequest.cpp\
 					HttpResponse.cpp	\
 
 SERVER_MODULE	=	Server

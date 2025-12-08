@@ -1,5 +1,5 @@
-#ifndef PARSE_HPP
-# define PARSE_HPP
+#ifndef PARSECONFIG_HPP
+# define PARSECONFIG_HPP
 
 // C
 # include <sys/types.h>
@@ -17,7 +17,7 @@
 # include "TokenStream.hpp"
 # include "Logger.hpp"
 
-class	Parse
+class	ParseConfig
 {
 	private:
 		std::vector<std::string>	_log;
@@ -127,8 +127,6 @@ class	Parse
 		};
 		template <typename D>
 		using	DirectiveMapIterator = typename std::map<std::string, D>::iterator;
-
-
 };
 
 #endif
