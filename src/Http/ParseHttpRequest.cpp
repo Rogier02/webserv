@@ -2,6 +2,10 @@
 
 #define HTTPREQUEST 2
 
+ParseHttpRequest::ParseHttpRequest(std::istream& stream, int streamType)
+	:	_ts(stream, streamType)
+{}
+
 /*
 -- HTTP1.0 request example --
 GET /index.cgi?=jlkdsjfjr=h HTTP/1.0\r\n
@@ -16,7 +20,7 @@ Accept: text/html\r\n
 //3. if content-length exists --> read that many bytes for the body
 
 HttpRequest
-ParseHttpRequest::httpRequest(){
+ParseHttpRequest::httpRequest(std::istream& stream, int streamType){
 
 	char		buffer[4096];
 	std::string	request;

@@ -3,16 +3,12 @@
 #define CONFIGFILE 1
 #define HTTPREQUEST 2
 
-// Parse::Parse(std::string const &filePath)
-// 	:	_ts(filePath)
-// {}
-
-ParseHttpRequest::Parse(std::istream& stream, int streamType)
+ParseConfig::ParseConfig(std::istream& stream, int streamType)
 	:	_ts(stream, streamType)
 {}
 
 Config
-ParseHttpRequest::config()
+ParseConfig::config()
 {
 	Config	config;
 
@@ -33,7 +29,7 @@ ParseHttpRequest::config()
 }
 
 Config::Server
-ParseHttpRequest::server()
+ParseConfig::server()
 {
 	Config::Server	server;
 
@@ -56,7 +52,7 @@ ParseHttpRequest::server()
 }
 
 Config::Server::Location
-ParseHttpRequest::location()
+ParseConfig::location()
 {
 	Config::Server::Location	location;
 
@@ -81,21 +77,21 @@ ParseHttpRequest::location()
 }
 
 void
-ParseHttpRequest::single(std::string& dest)
+ParseConfig::single(std::string& dest)
 {
 	dest = consumeValue();
 	expect(";");
 }
 
 void
-ParseHttpRequest::single(int& dest)
+ParseConfig::single(int& dest)
 {
 	dest = std::stoi(consumeValue());
 	expect(";");
 }
 
 void
-ParseHttpRequest::multiple(std::vector<std::string>& dest)
+ParseConfig::multiple(std::vector<std::string>& dest)
 {
 	TokenStream::Iterator	lineEnd = _ts.lineEnd();
 
@@ -106,7 +102,7 @@ ParseHttpRequest::multiple(std::vector<std::string>& dest)
 }
 
 void
-ParseHttpRequest::page(Config::Server::Page &page)
+ParseConfig::page(Config::Server::Page &page)
 {
 	page.code	= std::stoi(consumeValue());
 	page.path	= consumeValue();
@@ -114,7 +110,7 @@ ParseHttpRequest::page(Config::Server::Page &page)
 }
 
 Config::Server::Page
-ParseHttpRequest::page()
+ParseConfig::page()
 {
 	Config::Server::Page	object;
 
@@ -123,7 +119,7 @@ ParseHttpRequest::page()
 }
 
 void
-ParseHttpRequest::clientMaxBodySize(size_t &clientMaxBodySize)
+ParseConfig::clientMaxBodySize(size_t &clientMaxBodySize)
 {
 	std::string	number	= consumeValue();
 	char		unit	= number.back();
@@ -145,7 +141,7 @@ ParseHttpRequest::clientMaxBodySize(size_t &clientMaxBodySize)
 }
 
 void
-ParseHttpRequest::listen(std::string& host, int& port)
+ParseConfig::listen(std::string& host, int& port)
 {
 	std::string	hostPort	= consumeValue();
 	size_t		colonPos	= hostPort.find(':');
@@ -159,7 +155,7 @@ ParseHttpRequest::listen(std::string& host, int& port)
 }
 
 void
-ParseHttpRequest::autoIndex(bool& autoIndex)
+ParseConfig::autoIndex(bool& autoIndex)
 {
 	std::string	value = consumeValue();
 
@@ -173,9 +169,9 @@ ParseHttpRequest::autoIndex(bool& autoIndex)
 	expect(";");
 }
 
-// ParseHttpRequest::expect(std::string const &expected, int lineNbr)
+// ParseConfig::expect(std::string const &expected, int lineNbr)
 void
-ParseHttpRequest::expect(std::string const &expected)
+ParseConfig::expect(std::string const &expected)
 {
 	if (_ts.atEnd())
 		log(unexpected(expected, "EOF"));
@@ -190,12 +186,12 @@ ParseHttpRequest::expect(std::string const &expected)
 }
 
 void
-ParseHttpRequest::log(std::string const &message) {
+ParseConfig::log(std::string const &message) {
 	_log.push_back(message);
 }
 
 void
-ParseHttpRequest::report()
+ParseConfig::report()
 {
 	if (_log.empty())
 		return ;
@@ -209,21 +205,21 @@ ParseHttpRequest::report()
 }
 
 std::string
-ParseHttpRequest::unknownDirective(const std::string& directive)
+ParseConfig::unknownDirective(const std::string& directive)
 {
 	return("Unknown directive: \"" + directive + "\"" +
 		" on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
 }
 
 std::string
-ParseHttpRequest::unexpected(std::string const &expected, std::string const &found)
+ParseConfig::unexpected(std::string const &expected, std::string const &found)
 {
 	return("Unexpected token: \"" + found + "\"" + " (expected: " + expected + ")" +
 		" on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
 }
 
 std::string
-ParseHttpRequest::consumeValue()
+ParseConfig::consumeValue()
 {
 	if (_ts.peek().text == ";")
 	{

@@ -13,7 +13,6 @@
 # include <sstream>
 // webserv
 # include "Config.hpp"
-# include "HttpRequest.hpp"
 # include "TokenStream.hpp"
 # include "Logger.hpp"
 
@@ -24,12 +23,11 @@ class	ParseConfig
 		TokenStream					_ts;
 
 	public:
-		Parse() = delete;
-		Parse(Parse const &other) = delete;
-		Parse(Parse &&other) = delete;
-		// Parse(std::string const &filePath);
-		Parse(std::istream& stream, int streamType);
-		~Parse() = default;
+		ParseConfig() = delete;
+		ParseConfig(ParseConfig const &other) = delete;
+		ParseConfig(ParseConfig &&other) = delete;
+		ParseConfig(std::istream& stream, int streamType);
+		~ParseConfig() = default;
 
 	public:
 		Config	config();

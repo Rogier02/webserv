@@ -1,7 +1,20 @@
 #ifndef PARSEHTTPREQUEST_HPP
-#define PARSEHTTPREQUEST_HPP
+# define PARSEHTTPREQUEST_HPP
 
-#include "TokenStream"
+// C
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <unistd.h>
+// C++
+# include <string>
+# include <vector>
+# include <functional>
+# include <map>
+# include <sstream>
+// webserv
+# include "HttpRequest.hpp"
+# include "TokenStream.hpp"
+# include "Logger.hpp"
 
 class	ParseHttpRequest
 {
@@ -13,7 +26,6 @@ class	ParseHttpRequest
 		ParseHttpRequest() = delete;
 		ParseHttpRequest(ParseHttpRequest const &other) = delete;
 		ParseHttpRequest(ParseHttpRequest &&other) = delete;
-		// ParseHttpRequest(std::string const &filePath);
 		ParseHttpRequest(std::istream& stream, int streamType);
 		~ParseHttpRequest() = default;
 
@@ -21,9 +33,8 @@ class	ParseHttpRequest
 		HttpRequest	httpRequest();
 	
 	private:
-		void		parseHttpRequest(int clientFd);
-		std::string	parseMethod(std::string method);
-		HttpVersion	parseVersion(std::string version);
+		std::string					parseMethod(std::string method);
+		HttpRequest::HttpVersion	parseVersion(std::string version);
 }
 
 #endif
