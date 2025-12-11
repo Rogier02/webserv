@@ -9,7 +9,7 @@ const {
 	{
 		request += Socket::recv(data.fd);
 		if (request.empty())
-			throw data.fd;
+			throw ShouldClose(data.fd);
 	}
 	std::cout << "Client Request:\n" << request << std::endl;
 

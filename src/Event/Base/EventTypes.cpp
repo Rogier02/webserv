@@ -18,8 +18,6 @@ EventTypes::get(int fd)
 	return (it->second.get());
 }
 
-const char *
-EventTypes::NotRegistered::what()
-const throw() {
-	return ("file descriptor is not registered to a specific type of event");
+const char *EventTypes::NotRegistered::what() const throw() {
+	return ("no event type is specified for this file descriptor");
 }

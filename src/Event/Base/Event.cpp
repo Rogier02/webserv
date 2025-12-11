@@ -1,23 +1,31 @@
 #include "Event.hpp"
 
-Event::Event(EpollEvents eventTypes, int fd)
+Event::Event(Epoll::Events eventTypes, int fd)
 {
 	events = eventTypes;
 	data.fd = fd;
 }
 
-Event::operator int() const {
-	return (data.fd);
-}
-
 void	Event::handle()
 {
-	if (events & EpollEvents::In)
+	if (events & Epoll::Events::In)
 		_in();
-	if (events & EpollEvents::Out)
+	if (events & Epoll::Events::Out)
 		_out();
 }
 
 void	Event::_in() const {}
 
 void	Event::_out() const {}
+
+Event::ShouldClose::ShouldClose(int fd)
+	:	_fd(fd)
+{}
+
+int Event::ShouldClose::fd() {
+	return (_fd);
+}
+
+const char *Event::ShouldClose::what() const throw() {
+	return ("Event should close");
+}

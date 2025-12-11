@@ -24,7 +24,7 @@ usage(const char *executable)
 	return (EINVAL);
 }
 
-int	main(int argc, char **argv)
+int	main(int argc, char *argv[])
 {
 	if (argc > 2)
 		return (usage(argv[0]));
@@ -37,12 +37,10 @@ int	main(int argc, char **argv)
 	signal(SIGTERM, stopAllServerLoops);
 
 	try {
-		Parse	parser(configFilePath);
-		Config	config = parser.config();
-		std::cout << config;
+		Config	config = Parse(configFilePath).config();
+		// std::cout << config;
 
-		// Server	server(configFilePath);
-		Server	server;
+		Server	server(config);
 		server.run();
 	} catch (std::exception &exception) {
 		std::cerr << "Fatal Error: " << exception.what() << std::endl;

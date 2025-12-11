@@ -11,12 +11,6 @@
 class	EventTypes
 {
 	public:
-		class	NotRegistered : public std::exception {
-			public:
-				const char *what() const throw() override;
-		};
-
-	public:
 		EventTypes() = delete;
 		EventTypes(EventTypes const &other) = delete;
 		EventTypes &operator=(EventTypes const &other) = delete;
@@ -32,6 +26,13 @@ class	EventTypes
 
 		template <typename Type>
 		static void		specify(Event const &event);
+
+	public:
+		class	NotRegistered : public std::exception
+		{
+			public:
+				const char *what() const throw() override;
+		};
 };
 
 # include "EventTypes.tpp"

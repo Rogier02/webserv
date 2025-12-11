@@ -11,43 +11,38 @@
 # include <vector>
 # include <map>
 // webserv
+# include "EasyThrow.hpp"
+# include "EasyPrint.hpp"
 # include "Config.hpp"
 # include "ListenSocket.hpp"
 # include "Epoll.hpp"
 # include "EventTypes.hpp"
 # include "Logger.hpp"
+// events
 # include "ClientEvent.hpp"
-// wrappers
-# include "WrapEpoll.hpp"
+# include "ListenEvent.hpp"
 
 extern	std::atomic<bool>	_pleaseShutDown;
 
 class	Server
 {
 	public:
-		using	EpollEvents	= enum WrapEpoll::Events;
-
-	private:
-		static constexpr int	_DefaultPort = 8080;
-
-	public:
-		Server();
-		// Server(Config const &config);
+		Server() = delete;
 		Server(Server const &other) = delete;
 		Server &operator=(Server const &other) = delete;
+		Server(Config &config);
 		~Server() = default;
 
 	private:
-		int				_port = _DefaultPort;
-		ListenSocket	_listenSocket;
-		Epoll			_epoll;
+		int							_port;
+		Epoll						_epoll;
+		std::vector<ListenSocket>	_listenSockets;
 
 	public:
 		void	run();
 
 	private:
-		void	_addClient();
-		void	_delClient(int fd);
+		void	_closeConnection(int fd);
 };
 
 #endif

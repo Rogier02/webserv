@@ -25,11 +25,6 @@ Socket::recv(int fd){
 	return (std::string(buffer, nBytes));
 }
 
-int Socket::accept() const {
-	return (accept(_fd));
-}
-
-// Rogiers additions Nov 16 - start
 int
 Socket::send(int fd, const std::string& data)
 {

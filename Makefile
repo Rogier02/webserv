@@ -3,7 +3,7 @@ NAME			=	webserv
 MAKEFLAGS		=	-r -R
 
 CXX				=	c++
-CXXFLAGS		=	-MMD -MP -std=c++14
+CXXFLAGS		=	-MMD -MP -std=c++20
 CXXFLAGS		+=	-Wall -Wextra -Werror
 # CXXFLAGS		+=	-fsanitize=address
 CXXFLAGS		+=	-g
@@ -25,6 +25,7 @@ EVENTBASE_FILES	=	Event.cpp			\
 
 EVENTTYPE_MODULE=	Event/Type
 EVENTTYPE_FILES	=	ClientEvent.cpp		\
+					ListenEvent.cpp		\
 
 HTTP_MODULE		=	Http
 HTTP_FILES		=	HttpRequest.cpp		\

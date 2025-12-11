@@ -20,8 +20,6 @@ class	Socket
 		operator int() const;
 
 	public:
-		int	accept() const;
-
 		static int			accept(int fd);
 		static std::string	recv(int fd);
 		static int			send(int fd, std::string const &data);

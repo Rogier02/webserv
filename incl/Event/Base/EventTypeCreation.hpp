@@ -7,12 +7,13 @@
 # include "EventTypes.hpp"
 
 # define newEvent(Type)											\
+\
 class Type##Event : public Event								\
 {																\
 	public:														\
 		Type##Event() = default;								\
 		Type##Event(Event const &base) : Event(base) {};		\
-	public:														\
+	private:													\
 		void	_in() const override;							\
 		void	_out() const override;							\
 };																\

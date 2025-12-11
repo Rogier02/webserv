@@ -22,6 +22,7 @@ class	ListenSocket : public Socket
 		ListenSocket(ListenSocket const &other) = delete;
 		ListenSocket(ListenSocket &&other) = delete;
 		ListenSocket(int port);
+		~ListenSocket() = default;
 };
 
 #endif

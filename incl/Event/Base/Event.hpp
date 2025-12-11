@@ -3,27 +3,21 @@
 
 // C
 # include <stddef.h>
+# include <sys/epoll.h>
 // C++
 # include <iostream>
 // webserv
+# include "Epoll.hpp"
 # include "Socket.hpp"
-// wrappers
-# include "WrapEpoll.hpp"
 
-class	Event : public epoll_event
+struct	Event : public epoll_event
 {
 	public:
-		using	EpollEvents	= enum WrapEpoll::Events;
-
-	public:
 		Event() = default;
-		Event(EpollEvents eventTypes, int fd);
-		Event(Event const &other) = default;
-		Event(Event &&other) = default;
+		Event(Event const &) = default;
+		Event(Event &&) = default;
+		Event(Epoll::Events eventTypes, int fd);
 		virtual ~Event() = default;
-
-	public:
-		operator int() const;
 
 	public:
 		void	handle();
@@ -31,6 +25,20 @@ class	Event : public epoll_event
 	private:
 		virtual void	_in() const;
 		virtual void	_out() const;
+
+	public:
+		class	ShouldClose : public std::exception
+		{
+			public:
+				ShouldClose(int fd);
+
+			public:
+				const char *what() const throw() override;
+				int			fd();
+
+			private:
+				int	_fd;
+		};
 };
 
 #endif

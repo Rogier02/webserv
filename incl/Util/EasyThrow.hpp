@@ -2,6 +2,7 @@
 # define EASYTHROW_HPP
 
 // C++
+# include <iostream>
 # include <stdexcept>
 # include <cstring>
 
@@ -20,6 +21,10 @@ namespace detail
 	}
 }
 
-# define EasyThrow(functionCall) ::detail::easyThrow(#functionCall, (functionCall), __FILE__, __LINE__)
+# define EasyThrow(functionCall) \
+	::detail::easyThrow(#functionCall, (functionCall), __FILE__, __LINE__)
+
+# define LocatedThrow(message) \
+	std::runtime_error(static_cast<std::string>("(") + __FILE__ + ":" + std::to_string(__LINE__) + ") : " + message)
 
 #endif

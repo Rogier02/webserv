@@ -1,5 +1,4 @@
 #include "TokenStream.hpp"
-#include "log.hpp"
 
 TokenStream::TokenStream(const std::string& fileName)
 {

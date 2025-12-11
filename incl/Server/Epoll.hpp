@@ -2,6 +2,8 @@
 # define EPOLL_HPP
 
 // C
+# include <sys/epoll.h>
+# include <sys/resource.h>
 # include <unistd.h>
 // C++
 # include <stdexcept>
@@ -10,17 +12,22 @@
 # include "Socket.hpp"
 # include "ListenSocket.hpp"
 # include "EasyThrow.hpp"
-// wrappers
-# include "WrapEpoll.hpp"
+# include "EasyPrint.hpp"
 
 class	Epoll
 {
 	public:
-		using	Ctl		= enum WrapEpoll::Ctl;
-
-	private:
-		static constexpr int	_EventBatchSize	= 64;
-		static constexpr int	_waitTimeout	= 10000;
+		enum	Ctl : int {
+			Add	= EPOLL_CTL_ADD,
+			Del	= EPOLL_CTL_DEL,
+			Mod	= EPOLL_CTL_MOD,
+		};
+		enum	Events : unsigned int {
+			In	= EPOLL_EVENTS::EPOLLIN,
+			Out	= EPOLL_EVENTS::EPOLLOUT,
+			Err	= EPOLL_EVENTS::EPOLLERR,
+			Hup	= EPOLL_EVENTS::EPOLLHUP,
+		};
 
 	public:
 		Epoll();
@@ -28,15 +35,15 @@ class	Epoll
 		Epoll(Epoll &&other) = delete;
 		~Epoll();
 
-		operator int() const;
+	public:
+		std::vector<epoll_event>	wait(int timeout_ms);
 
-		int					create() const;
-		std::vector<epoll_event>	wait() const;
-		int					ctl(Ctl operation, int fd, epoll_event *event = NULL) const;
-		int					ctl(Epoll::Ctl operation, epoll_event &event) const;
+		int	ctl(Ctl operation, int fd, epoll_event *event = NULL);
+		int	ctl(Epoll::Ctl operation, epoll_event &event);
 
 	private:
-		int	_fd;
+		int				_epfd;
+		unsigned long	_bufferSize;
 };
 
 #endif
