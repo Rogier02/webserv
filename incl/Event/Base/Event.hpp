@@ -10,7 +10,7 @@
 # include "Epoll.hpp"
 # include "Socket.hpp"
 
-struct	Event : public epoll_event
+class	Event : public epoll_event
 {
 	public:
 		Event() = default;
@@ -27,15 +27,10 @@ struct	Event : public epoll_event
 		virtual void	_out() const;
 
 	public:
-		class	ShouldClose : public std::exception
-		{
+		class	CloseConnection : public std::runtime_error {
 			public:
-				ShouldClose(int fd);
-
-			public:
-				const char *what() const throw() override;
-				int			fd();
-
+				CloseConnection(int fd);
+				int	fd();
 			private:
 				int	_fd;
 		};

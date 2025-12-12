@@ -4,12 +4,17 @@ Server::Server(Config &config)
 {
 	for (Config::Server &listener : config.servers)
 	{
-		Event	listen(Epoll::Events::In, EasyPrint((int)ListenSocket(listener.port)));
+		int	socketFd = ListenSocket(listener.port);
+		EasyPrint(socketFd);
+		// ListenEvent	listen(Epoll::Events::In, socketFd, _epoll);
+		// EventTypes::specify(listen);
 
-		EventTypes::specify<ListenEvent>(listen);
+		ListenEvent	&listen =
+			EventTypes::create<ListenEvent>(socketFd, Epoll::Events::In, _epoll);
+
 		EasyThrow(_epoll.ctl(Epoll::Ctl::Add, listen));
 
-		std::cout << "listening on port " << _port << "\n";
+		std::cout << "listening on port " << listener.port << "\n";
 	}
 }
 
@@ -26,7 +31,7 @@ Server::run()
 					_closeConnection(unknown.data.fd);
 				else try {
 					EventTypes::get(unknown.data.fd)->handle();
-				} catch (Event::ShouldClose &badEvent) {
+				} catch (Event::CloseConnection &badEvent) {
 					_closeConnection(badEvent.fd());
 				}
 			}

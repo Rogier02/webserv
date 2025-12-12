@@ -18,14 +18,12 @@ void	Event::_in() const {}
 
 void	Event::_out() const {}
 
-Event::ShouldClose::ShouldClose(int fd)
-	:	_fd(fd)
+// should this give the user an 'internal err' error page?
+Event::CloseConnection::CloseConnection(int fd)
+	:	std::runtime_error("Connection error, needs closing")
+	,	_fd(fd)
 {}
 
-int Event::ShouldClose::fd() {
+int Event::CloseConnection::fd() {
 	return (_fd);
-}
-
-const char *Event::ShouldClose::what() const throw() {
-	return ("Event should close");
 }

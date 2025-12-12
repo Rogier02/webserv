@@ -9,7 +9,7 @@ const {
 	{
 		request += Socket::recv(data.fd);
 		if (request.empty())
-			throw ShouldClose(data.fd);
+			throw CloseConnection(data.fd);
 	}
 	std::cout << "Client Request:\n" << request << std::endl;
 
@@ -27,7 +27,3 @@ const {
 
 	Socket::send(data.fd, response.toString());
 }
-
-void
-ClientEvent::_out()
-const {}
