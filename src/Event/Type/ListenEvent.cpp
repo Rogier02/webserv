@@ -1,17 +1,16 @@
 #include "ListenEvent.hpp"
 
 ListenEvent::ListenEvent(int socketFd, Epoll::Events events, Epoll &epoll)
-	:	Event(events, socketFd)
+	:	Event(socketFd, events)
 	,	r_epoll(epoll)
 {}
 
 void
 ListenEvent::_in()
 const {
-	// Event	newClient(Epoll::Events::In, Socket::accept(data.fd));
+	ClientEvent	client =
+		EventTypes::create<ClientEvent>(Socket::accept(data.fd), Epoll::Events::In);
+	EasyThrow(r_epoll.ctl(Epoll::Ctl::Add, client));
 
-	// EventTypes::specify<ClientEvent>(newClient);
-	// EasyThrow(r_epoll.ctl(Epoll::Ctl::Add, newClient));
-
-	// std::cout << "Client " << newClient.data.fd << " connected.\n";
+	std::cout << "Client " << client.data.fd << " connected.\n";
 }

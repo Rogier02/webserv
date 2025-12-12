@@ -1,9 +1,9 @@
 #include "Event.hpp"
 
-Event::Event(Epoll::Events eventTypes, int fd)
+Event::Event(int fd, Epoll::Events eventTypes)
 {
-	events = eventTypes;
 	data.fd = fd;
+	events = eventTypes;
 }
 
 void	Event::handle()

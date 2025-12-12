@@ -6,8 +6,6 @@ Server::Server(Config &config)
 	{
 		int	socketFd = ListenSocket(listener.port);
 		EasyPrint(socketFd);
-		// ListenEvent	listen(Epoll::Events::In, socketFd, _epoll);
-		// EventTypes::specify(listen);
 
 		ListenEvent	&listen =
 			EventTypes::create<ListenEvent>(socketFd, Epoll::Events::In, _epoll);

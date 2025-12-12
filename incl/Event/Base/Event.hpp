@@ -16,7 +16,7 @@ class	Event : public epoll_event
 		Event() = default;
 		Event(Event const &) = default;
 		Event(Event &&) = default;
-		Event(Epoll::Events eventTypes, int fd);
+		Event(int fd, Epoll::Events eventTypes);
 		virtual ~Event() = default;
 
 	public:

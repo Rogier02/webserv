@@ -7,7 +7,7 @@ Epoll::Epoll()
 	EasyThrow(getrlimit(RLIMIT_NOFILE, &resourceLimit));
 	if (resourceLimit.rlim_cur == RLIM_INFINITY)
 		throw LocatedThrow("Epoll resource limit (nofile) is too large");
-	_bufferSize = resourceLimit.rlim_cur;
+	_bufferSize = std::min((unsigned long)1024, resourceLimit.rlim_cur);
 
 	EasyPrint(_epfd);
 	EasyPrint(_bufferSize);

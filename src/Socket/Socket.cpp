@@ -3,9 +3,8 @@
 Socket::Socket()
 {}
 
-Socket::~Socket() {
-	close(_fd);
-}
+Socket::~Socket()
+{}
 
 Socket::operator int() const {
 	return (_fd);

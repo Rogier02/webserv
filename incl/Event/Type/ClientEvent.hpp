@@ -10,8 +10,7 @@
 class ClientEvent : public Event
 {
 	public:
-		ClientEvent() = delete;
-		ClientEvent(Event const &base) : Event(base) {};
+		ClientEvent(int socketFd, Epoll::Events events);
 
 	private:
 		void	_in() const override;

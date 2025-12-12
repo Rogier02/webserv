@@ -1,5 +1,9 @@
 #include "ClientEvent.hpp"
 
+ClientEvent::ClientEvent(int socketFd, Epoll::Events events)
+	:	Event(socketFd, events)
+{}
+
 void
 ClientEvent::_in()
 const {
