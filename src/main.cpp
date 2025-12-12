@@ -5,7 +5,7 @@
 
 #include "Server.hpp"
 #include "Config.hpp"
-#include "Parse.hpp"
+#include "ParseConfig.hpp"
 #include "HttpRequest.hpp"
 
 #define CONFIGFILE 1
@@ -45,13 +45,11 @@ signal(SIGINT, stopAllServerLoops);
 signal(SIGTERM, stopAllServerLoops);
 
 	try {
-		// Parse	parser(configFilePath);
-		Parse	parser(file, CONFIGFILE);
-		Config	config = parser.config();
-			file.close();
+		ParseConfig	parser(file, CONFIGFILE);
+		Config		config = parser.config();
+		file.close();
 		std::cout << config;
 
-		// Server	server(configFilePath);
 		Server	server;
 		server.run();
 	} catch (std::exception &exception) {

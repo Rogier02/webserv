@@ -24,8 +24,8 @@ Accept: text/html\r\n
 	// 		break;
 	// }
 
-	// Parse	parser(request, HTTPREQUEST);
-	// HttpRequest	httpRequest = parser.httpRequest();
+	// ParseHttpRequest	parser(request, HTTPREQUEST, config);
+	// HttpRequest		httpRequest = parser.httpRequest();
 	// std::cout << httpRequest;
 
 

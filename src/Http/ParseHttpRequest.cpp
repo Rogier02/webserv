@@ -1,9 +1,11 @@
-#include "ParseHttpRequest"
+#include "ParseHttpRequest.hpp"
+
 
 #define HTTPREQUEST 2
 
-ParseHttpRequest::ParseHttpRequest(std::istream& stream, int streamType)
+ParseHttpRequest::ParseHttpRequest(std::istream& stream, int streamType, Config &config)
 	:	_ts(stream, streamType)
+	,	_config(config)
 {}
 
 /*
@@ -20,46 +22,20 @@ Accept: text/html\r\n
 //3. if content-length exists --> read that many bytes for the body
 
 HttpRequest
-ParseHttpRequest::httpRequest(std::istream& stream, int streamType){
+ParseHttpRequest::httpRequest()
+{
+	HttpRequest	httpRequest;
 
-	char		buffer[4096];
-	std::string	request;
-	std::string line;
-	while (true)
-	{
-		ssize_t	n	=	recv(clientFd, buffer, 4096, 0);
-		request.append(buffer);
-		if (request.find("\r\n\r\n") != std::string::npos)
-			break;
-	}
 
-	Parse	parser(request, HTTPREQUEST);
-	HttpRequest	httpRequest = parser.httpRequest();
-	std::cout << httpRequest;
-	std::istringstream	tokenStream(request);
-	while (std::getline(tokenStream, line))
-	{
-		std::stringstream	stream(line);
-		std::string			word;
-		while (stream >> word){
 			method = parseMethod(word[0]);
 			target = word[1];
-			version = paseVersion(word[2]);
+			version = parseVersion(word[2]);
 
-
-		}
-	}
-
-
-	std::vector<Token> httpTokens;
-	TokenStream httpTS(httpTokens);
-
-	httpTS.current
 }
 
 std::string
 ParseHttpRequest::parseMethod(std::string method){
-	while (allowedMethods){
+	while (_config.servers.locations[i].allowMethods){
 		if (method == allowedMethods)
 			return (method);
 	}
@@ -68,15 +44,16 @@ ParseHttpRequest::parseMethod(std::string method){
 		LOG("[HTTP Request Error] invalid method: " << method << "\n");
 }
 
-HttpVersion
-ParseHttpRequest::parseVersion(std::string version){
-	Version	httpVersion;
+HttpRequest::HttpVersion
+ParseHttpRequest::parseVersion(std::string version)
+{
+	HttpRequest::HttpVersion	httpVersion;
 
 	std::string::size_type slash = version.find('/');
 	std::string::size_type dot = version.find('.');
 
-	version.httpMajorVersion = std::stoi(version.substr(slash + 1, 1));
-	version.httpMinorVersion = std::stoi(version.substr(dot + 1, 1));
+	httpVersion.major = std::stoi(version.substr(slash + 1, 1));
+	httpVersion.minor = std::stoi(version.substr(dot + 1, 1));
 
 	return (httpVersion);
 }

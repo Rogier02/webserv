@@ -29,7 +29,7 @@ EVENTTYPE_FILES	=	ClientEvent.cpp		\
 
 HTTP_MODULE		=	Http
 HTTP_FILES		=	HttpRequest.cpp		\
-					ParseHttpRequest.cpp\
+					ParseHttpRequest.cpp \
 					HttpResponse.cpp	\
 
 SERVER_MODULE	=	Server
