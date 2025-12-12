@@ -34,7 +34,6 @@ class	Server
 		~Server() = default;
 
 	private:
-		int							_port;
 		Epoll						_epoll;
 		std::vector<ListenSocket>	_listenSockets;
 

@@ -7,24 +7,23 @@ Epoll::Epoll()
 	EasyThrow(getrlimit(RLIMIT_NOFILE, &resourceLimit));
 	if (resourceLimit.rlim_cur == RLIM_INFINITY)
 		throw LocatedThrow("Epoll resource limit (nofile) is too large");
-	_bufferSize = std::min((unsigned long)1024, resourceLimit.rlim_cur);
+	_buffer = new epoll_event[resourceLimit.rlim_cur];
 
 	EasyPrint(_epfd);
-	EasyPrint(_bufferSize);
+	EasyPrint(resourceLimit.rlim_cur);
 }
 
 Epoll::~Epoll()
 {
 	close(_epfd);
+	delete[] _buffer;
 }
 
 std::vector<epoll_event>
 Epoll::wait(int timeout_ms)
 {
-	epoll_event	buffer[_bufferSize];
-
-	int nEvents = EasyThrow(epoll_wait(_epfd, buffer, _bufferSize, timeout_ms));
-	return (std::vector<epoll_event>(buffer, (epoll_event *)(buffer + nEvents)));
+	int nEvents = EasyThrow(epoll_wait(_epfd, _buffer, sizeof(_buffer), timeout_ms));
+	return (std::vector<epoll_event>(_buffer, (epoll_event *)(_buffer + nEvents)));
 }
 
 int	Epoll::ctl(Epoll::Ctl operation, int fd, epoll_event *event) {

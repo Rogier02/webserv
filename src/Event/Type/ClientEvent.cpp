@@ -13,7 +13,7 @@ const {
 	{
 		request += Socket::recv(data.fd);
 		if (request.empty())
-			throw CloseConnection(data.fd);
+			throw CloseConnection(data.fd); // what is this behaviour for? should it close on empty recv or empty request?
 	}
 	std::cout << "Client Request:\n" << request << std::endl;
 

@@ -39,11 +39,11 @@ class	Epoll
 		std::vector<epoll_event>	wait(int timeout_ms);
 
 		int	ctl(Ctl operation, int fd, epoll_event *event = NULL);
-		int	ctl(Epoll::Ctl operation, epoll_event &event);
+		int	ctl(Ctl operation, epoll_event &event);
 
 	private:
 		int				_epfd;
-		unsigned long	_bufferSize;
+		epoll_event		*_buffer;
 };
 
 #endif
