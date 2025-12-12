@@ -103,12 +103,15 @@ CgiHandler::execute(const std::string& path, const std::string& method,
 	
 	size_t lastSlash = path.find_last_of("/");
 	std::string scriptFilename;
+
+	// filename extraction why? start
 	if (lastSlash != std::string::npos)
 		scriptFilename = path.substr(lastSlash + 1);
 	else
 		scriptFilename = path;
 
 	std::string scriptPath = _cgiDirectory + scriptFilename;
+	// end
 
 	setupEnvironment(path, method, query, body);
 
@@ -188,7 +191,7 @@ CgiHandler::executeScript(const std::string& interpreter,
 		char *args[] = {
 			(char *)interpreter.c_str(), // Progam to run
 			(char *)scripitPath.c_str(), // First argument (script file)
-			NULL 						 // NULL-terminated argument list
+			NULL,						 // NULL-terminated argument list
 		};
 
 		// Execute script (replace this process)

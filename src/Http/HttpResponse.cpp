@@ -2,22 +2,13 @@
 #include <sstream>
 #include <ctime>
 
-HttpResponse::HttpResponse(int statusCode) : _statusCode(statusCode)
+HttpResponse::HttpResponse(int statusCode)
+	:	_statusCode(statusCode)
 {
-	switch (statusCode) {
-		case 200:
-			_reasonPhrase = "OK";
-			break;
-		case 404:
-			_reasonPhrase = "Not Found";
-			break;
-		case 500:
-			_reasonPhrase = "Internal Server Error";
-			break;
-		default:
-			_reasonPhrase = "Unknown";
-			break;
-	}
+	// if (errorPageHandler.isError(statuscode))
+	// 	_reasonPhrase = errorPageHandler.getError(statuscode);
+
+	setStatus(statusCode);
 
 	// Default Headers;
 	_headers["Server"] = "webserv/1.0";

@@ -169,8 +169,6 @@ const {
 				response.setContentType("text/html");
 				response.setBody(_errorPageHandler.getErrorPage(404));
 			}
-		} else if (path == "/cgi.py") {
-			// Already handled above
 		} else {
 			// Return 404 error
 			response.setStatus(404);
@@ -183,8 +181,10 @@ const {
 	std::string responseStr = response.toString();
 	send(fd, responseStr.c_str(), responseStr.length(), 0);
 
-	// Close connections (HTTP/1.0 style for now)
-	close(fd);
+
+	std::cout << responseStr;
+	// // Close connections (HTTP/1.0 style for now)
+	// close(fd);
 	_epoll.ctl(Epoll::Ctl::Del, fd);
 }
 // End 
