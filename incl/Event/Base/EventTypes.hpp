@@ -22,12 +22,6 @@ class	EventTypes
 		template <typename Type, typename... Args>
 		static Type		&create(int fd, Args&&... args);
 		static Event	*get(int fd);
-
-	public:
-		class	NotRegistered : public std::exception {
-			public:
-				const char *what() const throw() override;
-		};
 };
 
 # include "EventTypes.tpp"

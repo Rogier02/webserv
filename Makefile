@@ -32,7 +32,9 @@ HTTP_FILES		=	HttpRequest.cpp		\
 					HttpResponse.cpp	\
 
 SERVER_MODULE	=	Server
-SERVER_FILES	=	Epoll.cpp			\
+SERVER_FILES	=	CGI.cpp				\
+					Epoll.cpp			\
+					ErrorPages.cpp		\
 					Server.cpp			\
 
 SOCKET_MODULE  =	Socket

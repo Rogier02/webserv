@@ -38,7 +38,7 @@ Server::run()
 			LOGGER(log(exception.what()));
 			std::cerr << "'tis but a scratch: " << exception.what() << std::endl;
 		}
-		catch (EventTypes::NotRegistered &exception) {
+		catch (std::logic_error &exception) {
 			LOGGER(log(exception.what()));
 			std::cerr << "Write better code: " << exception.what() << std::endl;
 			break;

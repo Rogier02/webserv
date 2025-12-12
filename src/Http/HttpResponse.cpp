@@ -5,20 +5,10 @@
 HttpResponse::HttpResponse(int statusCode)
 	:	_statusCode(statusCode)
 {
-	switch (statusCode) {
-		case 200:
-			_reasonPhrase = "OK";
-			break;
-		case 404:
-			_reasonPhrase = "Not Found";
-			break;
-		case 500:
-			_reasonPhrase = "Internal Server Error";
-			break;
-		default:
-			_reasonPhrase = "Unknown";
-			break;
-	}
+	// if (errorPageHandler.isError(statuscode))
+	// 	_reasonPhrase = errorPageHandler.getError(statuscode);
+
+	setStatus(statusCode);
 
 	// Default Headers;
 	_headers["Server"] = "webserv/1.0";
@@ -53,11 +43,12 @@ HttpResponse::setStatus(int code)
 
 std::string
 HttpResponse::toString()
-const {
+const
+{
 	std::stringstream response;
 
 	//Status line
-	response << "HTTP/1.1 " << _statusCode << " " << _reasonPhrase << "\r\n";
+		response << "HTTP/1.1 " << _statusCode << " " << _reasonPhrase << "\r\n";
 
 	// Headers
 	for (std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it) {

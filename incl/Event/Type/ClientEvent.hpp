@@ -6,6 +6,8 @@
 // webserv
 # include "EventTypes.hpp"
 # include "HttpResponse.hpp"
+# include "ErrorPages.hpp"
+# include "CGI.hpp"
 
 class ClientEvent : public Event
 {
