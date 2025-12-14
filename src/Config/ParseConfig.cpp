@@ -15,6 +15,7 @@ ParseConfig::config()
 	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
 		std::string directive = _ts.consume();
+			std::cout << directive << "\n";
 
 		if (directive == "Server")
 			config.servers.push_back(server());
@@ -36,7 +37,8 @@ ParseConfig::server()
 	expect("{");
 	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
-		std::string directive = _ts.consume();
+		std::string directive = _ts.peek().text;
+			std::cout << directive << "\n";
 
 		DirectiveMapIterator<ServerDirective> it = serverDirectives.find(directive);
 		if (it != serverDirectives.end())
@@ -56,12 +58,14 @@ ParseConfig::location()
 {
 	Config::Server::Location	location;
 
-	location.path = consumeValue();
+	(void)_ts.consume();
+	location.path = _ts.consume();
 	expect("{");
 
 	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
-		std::string	directive = _ts.consume();
+		std::string	directive = _ts.peek().text;
+			std::cout << directive << "\n";
 
 		DirectiveMapIterator<LocationDirective> it = locationDirectives.find(directive);
 		if (it != locationDirectives.end())
@@ -79,24 +83,33 @@ ParseConfig::location()
 void
 ParseConfig::single(std::string& dest)
 {
-	dest = consumeValue();
+	if (format(1) == -1)
+		return ;
+
+	dest = _ts.consume();
 	expect(";");
 }
 
 void
 ParseConfig::single(int& dest)
 {
-	dest = std::stoi(consumeValue());
+	if (format(1) == -1)
+		return ;
+
+	dest = std::stoi(_ts.consume());
 	expect(";");
 }
 
 void
 ParseConfig::multiple(std::vector<std::string>& dest)
 {
+	if (format() == -1)
+		return ;
+
 	TokenStream::Iterator	lineEnd = _ts.lineEnd();
 
 	while (_ts.current() != lineEnd && _ts.peek().text != ";")
-		dest.push_back(consumeValue());
+		dest.push_back(_ts.consume());
 
 	expect(";");
 }
@@ -104,8 +117,11 @@ ParseConfig::multiple(std::vector<std::string>& dest)
 void
 ParseConfig::page(Config::Server::Page &page)
 {
-	page.code	= std::stoi(consumeValue());
-	page.path	= consumeValue();
+	if (format(2) == -1)
+		return ;
+
+	page.code	= std::stoi(_ts.consume());
+	page.path	= _ts.consume();
 	expect(";");
 }
 
@@ -121,7 +137,10 @@ ParseConfig::page()
 void
 ParseConfig::clientMaxBodySize(size_t &clientMaxBodySize)
 {
-	std::string	number	= consumeValue();
+	if (format(1) == -1)
+		return ;
+
+	std::string	number	= _ts.consume();
 	char		unit	= number.back();
 
 	if (unit == 'k' || unit == 'm' || unit == 'g')
@@ -131,6 +150,7 @@ ParseConfig::clientMaxBodySize(size_t &clientMaxBodySize)
 
 	clientMaxBodySize = std::stoul(number);
 
+	// default case log error
 	switch(unit) {
 		case 'k': clientMaxBodySize *= 1024;				break;
 		case 'm': clientMaxBodySize *= 1024 * 1024;			break;
@@ -143,7 +163,10 @@ ParseConfig::clientMaxBodySize(size_t &clientMaxBodySize)
 void
 ParseConfig::listen(std::string& host, int& port)
 {
-	std::string	hostPort	= consumeValue();
+	if (format(1) == -1)
+		return ;
+
+	std::string	hostPort	= _ts.consume();
 	size_t		colonPos	= hostPort.find(':');
 
 	if (colonPos == std::string::npos)
@@ -157,7 +180,10 @@ ParseConfig::listen(std::string& host, int& port)
 void
 ParseConfig::autoIndex(bool& autoIndex)
 {
-	std::string	value = consumeValue();
+	if (format(1) == -1)
+		return ;
+
+	std::string	value = _ts.consume();
 
 	if (value == "off")
 		autoIndex = false;
@@ -167,6 +193,50 @@ ParseConfig::autoIndex(bool& autoIndex)
 		log("autoindex must be 'on' or 'off', got: " + value);
 
 	expect(";");
+}
+
+int
+ParseConfig::format(size_t noValuesExpected)
+{
+	int			lineNbr			= (*_ts.current()).lineNbr;
+	std::string	directive		= _ts.consume();
+	size_t		noValuesFound	= 0;
+
+	TokenStream::Iterator	iterator = _ts.current();
+	while (iterator != _ts.end()
+		&& (*iterator).text	!= ";"
+		&& (*iterator).lineNbr == lineNbr) {
+		++noValuesFound;
+		++iterator;
+	}
+
+	if ((*iterator).text != ";")
+	{
+		log("Directive " + directive + " is missing a semi-colon");
+		if (_ts.peek().lineNbr == lineNbr)
+			_ts.advanceLine();
+		return (-1);
+	}
+
+	if (noValuesFound < 1)
+	{
+		log("Directive " + directive + " has no value");
+		if (_ts.peek().lineNbr == lineNbr)
+			_ts.advanceLine();
+		return (-1);
+	}
+
+	if (noValuesExpected != 0
+	&&	noValuesExpected != noValuesFound)
+	{
+		log("Directive " + directive + " has unexpected number of values: " +
+			std::to_string(noValuesFound) + "/" + std::to_string(noValuesExpected));
+		if (_ts.peek().lineNbr == lineNbr)
+			_ts.advanceLine();
+		return (-1);
+	}
+
+	return (noValuesFound);
 }
 
 // ParseConfig::expect(std::string const &expected, int lineNbr)
@@ -216,16 +286,4 @@ ParseConfig::unexpected(std::string const &expected, std::string const &found)
 {
 	return("Unexpected token: \"" + found + "\"" + " (expected: " + expected + ")" +
 		" on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
-}
-
-std::string
-ParseConfig::consumeValue()
-{
-	if (_ts.peek().text == ";")
-	{
-		log(unexpected("no semicolon", ";"));
-		return ("semicolon");
-	}
-	else
-		return (_ts.consume());
 }

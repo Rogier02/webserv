@@ -49,6 +49,7 @@ class	ParseConfig
 		void	autoIndex(bool &autoIndex);
 
 		// tools
+		int		format(size_t noValuesExpected = 0);
 		void	expect(std::string const &expected);
 		// void	expect(std::string const &expected, int lineNbr);
 
@@ -59,8 +60,6 @@ class	ParseConfig
 		// error format
 		std::string	unknownDirective(const std::string& directive);
 		std::string	unexpected(std::string const &expected, std::string const &found);
-
-		std::string	consumeValue();
 
 	private:
 		using	ServerDirective = std::function<void (Config::Server &)>;
