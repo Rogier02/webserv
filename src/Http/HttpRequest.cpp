@@ -10,32 +10,6 @@ Accept: text/html\r\n
 \r\n
 */
 
-// Even hier geparkeerd:
-
-	// int			clientFd;
-	// char		buffer[4096];
-	// std::string	request;
-	// std::string line;
-	// while (true)
-	// {
-	// 	ssize_t	n	=	recv(clientFd, buffer, 4096, 0);
-	// 	request.append(buffer);
-	// 	if (request.find("\r\n\r\n") != std::string::npos)
-	// 		break;
-	// }
-
-	// ParseHttpRequest	parser(request, HTTPREQUEST, config);
-	// HttpRequest		httpRequest = parser.httpRequest();
-	// std::cout << httpRequest;
-
-
-
-
-
-
-
-
-
 // Adjust this to the HTTPREQUEST class
 
 // std::ostream	&operator<<(std::ostream &os, HttpRequest const &httpRequest)

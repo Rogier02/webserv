@@ -46,7 +46,7 @@ class	ParseConfig
 		void	page(Config::Server::Page &page);
 		void	clientMaxBodySize(size_t &clientMaxBodySize);
 		void	listen(std::string &host, int &port);
-		void	autoIndex(bool &autoIndex);
+		void	autoIndex(AutoIndexState &autoIndex);
 
 		// tools
 		int		format(size_t noValuesExpected = 0);
@@ -59,6 +59,10 @@ class	ParseConfig
 
 		// error format
 		std::string	unknownDirective(const std::string& directive);
+		std::string	doubleDirective();
+		std::string	noValueFound(std::string &directive, int lineNbr);
+		std::string	noSemicolon(std::string &directive, int lineNbr);
+		std::string	unexpectedNoValues(std::string &directive, int lineNbr, int noValuesFound, int noValuesExpected);
 		std::string	unexpected(std::string const &expected, std::string const &found);
 
 	private:
@@ -102,7 +106,7 @@ class	ParseConfig
 				{ single(l.redirectStatus); }},
 			{"autoindex",
 				[this](Config::Server::Location& l)
-				{ autoIndex(l.autoindex); }},
+				{ autoIndex(l.autoIndex); }},
 			{"upload_dir",
 				[this](Config::Server::Location& l)
 				{ single(l.uploadDir); }},

@@ -3,7 +3,7 @@
 #define CONFIGFILE 1
 #define HTTPREQUEST 2
 
-ParseConfig::ParseConfig(std::istream& stream, int streamType)
+ParseConfig::ParseConfig(std::istream &stream, int streamType)
 	:	_ts(stream, streamType)
 {}
 
@@ -15,7 +15,7 @@ ParseConfig::config()
 	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
 		std::string directive = _ts.consume();
-			std::cout << directive << "\n";
+			// std::cout << directive << "\n";
 
 		if (directive == "Server")
 			config.servers.push_back(server());
@@ -24,6 +24,7 @@ ParseConfig::config()
 			_ts.advanceUntil("}");
 		}
 	}
+	std::cout << config;
 
 	report();
 	return (config);
@@ -38,7 +39,7 @@ ParseConfig::server()
 	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
 		std::string directive = _ts.peek().text;
-			std::cout << directive << "\n";
+			// std::cout << directive << "\n";
 
 		DirectiveMapIterator<ServerDirective> it = serverDirectives.find(directive);
 		if (it != serverDirectives.end())
@@ -81,8 +82,14 @@ ParseConfig::location()
 }
 
 void
-ParseConfig::single(std::string& dest)
+ParseConfig::single(std::string &dest)
 {
+	if (!dest.empty())
+	{
+		doubleDirective();
+		_ts.advanceLine();
+		return ;
+	}
 	if (format(1) == -1)
 		return ;
 
@@ -91,8 +98,14 @@ ParseConfig::single(std::string& dest)
 }
 
 void
-ParseConfig::single(int& dest)
+ParseConfig::single(int &dest)
 {
+	if (dest != -1)
+	{
+		doubleDirective();
+		_ts.advanceLine();
+		return ;
+	}
 	if (format(1) == -1)
 		return ;
 
@@ -101,8 +114,14 @@ ParseConfig::single(int& dest)
 }
 
 void
-ParseConfig::multiple(std::vector<std::string>& dest)
+ParseConfig::multiple(std::vector<std::string> &dest)
 {
+	if (!dest.empty())
+	{
+		doubleDirective();
+		_ts.advanceLine();
+		return ;
+	}
 	if (format() == -1)
 		return ;
 
@@ -137,13 +156,20 @@ ParseConfig::page()
 void
 ParseConfig::clientMaxBodySize(size_t &clientMaxBodySize)
 {
+	if (clientMaxBodySize != 0)
+	{
+		doubleDirective();
+		_ts.advanceLine();
+		return ;
+	}
 	if (format(1) == -1)
 		return ;
 
+	std::string	lineNbr	= std::to_string(_ts.peek().lineNbr);
 	std::string	number	= _ts.consume();
 	char		unit	= number.back();
 
-	if (unit == 'k' || unit == 'm' || unit == 'g')
+	if (isalpha(unit))
 		number = number.substr(0, number.size() - 1);
 	else
 		unit = 0;
@@ -151,18 +177,30 @@ ParseConfig::clientMaxBodySize(size_t &clientMaxBodySize)
 	clientMaxBodySize = std::stoul(number);
 
 	// default case log error
-	switch(unit) {
+	switch(std::tolower(unit)) {
 		case 'k': clientMaxBodySize *= 1024;				break;
 		case 'm': clientMaxBodySize *= 1024 * 1024;			break;
 		case 'g': clientMaxBodySize *= 1024 * 1024 * 1024;	break;
+		default:
+			if (!isdigit(unit)) {
+				log("Unknown unit \"" + std::string(1, unit) + "\" on line " + lineNbr);
+				return ;
+			}
+			break;
 	}
 
 	expect(";");
 }
 
 void
-ParseConfig::listen(std::string& host, int& port)
+ParseConfig::listen(std::string &host, int &port)
 {
+	if (!host.empty() && port != 0)
+	{
+		log(doubleDirective());
+		_ts.advanceLine();
+		return ;
+	}
 	if (format(1) == -1)
 		return ;
 
@@ -178,17 +216,23 @@ ParseConfig::listen(std::string& host, int& port)
 }
 
 void
-ParseConfig::autoIndex(bool& autoIndex)
+ParseConfig::autoIndex(AutoIndexState &autoIndex)
 {
+	if (autoIndex != UNSET)
+	{
+		log(doubleDirective());
+		_ts.advanceLine();
+		return ;
+	}
 	if (format(1) == -1)
 		return ;
 
 	std::string	value = _ts.consume();
 
 	if (value == "off")
-		autoIndex = false;
+		autoIndex = OFF;
 	else if (value == "on")
-		autoIndex = true;
+		autoIndex = ON;
 	else
 		log("autoindex must be 'on' or 'off', got: " + value);
 
@@ -212,7 +256,7 @@ ParseConfig::format(size_t noValuesExpected)
 
 	if ((*iterator).text != ";")
 	{
-		log("Directive " + directive + " is missing a semi-colon");
+		log("Directive " + directive + " on line " + std::to_string(lineNbr) + " is missing a semi-colon");
 		if (_ts.peek().lineNbr == lineNbr)
 			_ts.advanceLine();
 		return (-1);
@@ -220,7 +264,7 @@ ParseConfig::format(size_t noValuesExpected)
 
 	if (noValuesFound < 1)
 	{
-		log("Directive " + directive + " has no value");
+		log("Directive " + directive + " on line " + std::to_string(lineNbr) + " has no value");
 		if (_ts.peek().lineNbr == lineNbr)
 			_ts.advanceLine();
 		return (-1);
@@ -229,8 +273,7 @@ ParseConfig::format(size_t noValuesExpected)
 	if (noValuesExpected != 0
 	&&	noValuesExpected != noValuesFound)
 	{
-		log("Directive " + directive + " has unexpected number of values: " +
-			std::to_string(noValuesFound) + "/" + std::to_string(noValuesExpected));
+		log("Directive " + directive + " on line " + std::to_string(lineNbr) + " has unexpected number of values: " + std::to_string(noValuesFound) + "/" + std::to_string(noValuesExpected));
 		if (_ts.peek().lineNbr == lineNbr)
 			_ts.advanceLine();
 		return (-1);
@@ -239,16 +282,12 @@ ParseConfig::format(size_t noValuesExpected)
 	return (noValuesFound);
 }
 
-// ParseConfig::expect(std::string const &expected, int lineNbr)
 void
 ParseConfig::expect(std::string const &expected)
 {
 	if (_ts.atEnd())
 		log(unexpected(expected, "EOF"));
-	// if (lineNbr < _ts.peek().lineNbr){
-	// 	log("Unexpected amount of tokens on line " + lineNbr);
-	// 	return ;
-	// }
+
 	std::string	token = _ts.peek().text;
 	if (token != expected)
 		log(unexpected(expected, token));
@@ -275,10 +314,34 @@ ParseConfig::report()
 }
 
 std::string
-ParseConfig::unknownDirective(const std::string& directive)
+ParseConfig::unknownDirective(const std::string &directive)
 {
 	return("Unknown directive: \"" + directive + "\"" +
 		" on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
+}
+
+std::string
+ParseConfig::doubleDirective()
+{
+	return ("Directive on line " + std::to_string(_ts.peek().lineNbr) + " has already been set on a previous line.");
+}
+
+std::string
+ParseConfig::noValueFound(std::string &directive, int lineNbr)
+{
+	return ("Directive " + directive + " on line " + std::to_string(lineNbr) + " has no value");
+}
+
+std::string
+ParseConfig::noSemicolon(std::string &directive, int lineNbr)
+{
+	return ("Directive " + directive + " on line " + std::to_string(lineNbr) + " is missing a semi-colon");
+}
+
+std::string
+ParseConfig::unexpectedNoValues(std::string &directive, int lineNbr, int noValuesFound, int noValuesExpected)
+{
+	return ("Directive " + directive + " on line " + std::to_string(lineNbr) + " has unexpected number of values: " + std::to_string(noValuesFound) + "/" + std::to_string(noValuesExpected));
 }
 
 std::string

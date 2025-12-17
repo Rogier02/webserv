@@ -4,43 +4,6 @@
 #define CONFIGFILE 1
 #define HTTPREQUEST 2
 
-// TokenStream::TokenStream(const std::string& fileName)
-// {
-// 	if (fileName.rfind(".conf") == std::string::npos)
-// 		throw std::runtime_error("incorrect file extension: " + fileName);
-
-// 	std::ifstream file(fileName);
-// 	if (!file.is_open())
-// 		throw std::runtime_error("could not open file: " + fileName);
-
-// 	std::string	line;
-// 	int			lineNbr = 1;
-// 	while (std::getline(file, line))
-// 	{
-// 		std::stringstream	stream(line);
-// 		std::string			word;
-
-// 		while (stream >> word)
-// 		{
-// 			if (word[0] == '#')
-// 				break;
-// 			if (!word.empty() && word.back() == ';')
-// 			{
-// 				word.pop_back();
-// 				if (!word.empty())
-// 					_tokens.push_back(Token{word, lineNbr});
-// 				_tokens.push_back(Token{";", lineNbr});
-// 			}
-// 			else
-// 				_tokens.push_back(Token{word, lineNbr});
-// 		}
-// 		++lineNbr;
-// 	}
-// 	file.close();
-// 	_current = _tokens.begin();
-// }
-
-// HERSCHREVEN VOOR HERGEBRUIK VAN TOKENSTREAM, NOG NIET KLAAR
 TokenStream::TokenStream(std::istream& stream, int streamType)
 {
 	std::string	line;
@@ -71,7 +34,7 @@ TokenStream::TokenStream(std::istream& stream, int streamType)
 						_tokens.push_back(Token{word, lineNbr});
 					break;
 				case HTTPREQUEST:
-					if (!word.empty() && (word.back() == '\r' || word.back() == ':'))
+					if (!word.empty() && (word.back() == '\r' || word.back() == ':')) // Maybe check if \r en : wel echt delete moet worden.
 					{
 						word.pop_back();
 						if (!word.empty())

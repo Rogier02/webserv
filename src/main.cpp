@@ -7,6 +7,7 @@
 #include "Config.hpp"
 #include "ParseConfig.hpp"
 #include "HttpRequest.hpp"
+#include "get.hpp"
 
 #define CONFIGFILE 1
 
@@ -34,12 +35,7 @@ int	main(int argc, char **argv)
 	std::string configFilePath = "configs/default.conf";
 	if (argc == 2)
 		configFilePath = argv[1];
-	if (configFilePath.rfind(".conf") == std::string::npos)
-		throw std::runtime_error("incorrect file extension: " + configFilePath);
-
-	std::ifstream file(configFilePath);
-	if (!file.is_open())
-		throw std::runtime_error("could not open file: " + configFilePath);
+	std::ifstream file = getFile(configFilePath);
 
 signal(SIGINT, stopAllServerLoops);
 signal(SIGTERM, stopAllServerLoops);

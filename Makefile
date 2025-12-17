@@ -42,6 +42,7 @@ SOCKET_FILES	=	ListenSocket.cpp	\
 
 UTILS_MODULE	=	Util
 UTILS_FILES		=	Logger.cpp			\
+					get.cpp				\
 
 ALL_MODULES		:=	$(CONFIG_MODULE)	\
 					$(EVENTBASE_MODULE)	\

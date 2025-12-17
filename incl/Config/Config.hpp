@@ -6,28 +6,34 @@
 # include <vector>
 # include <iostream>
 
+enum AutoIndexState {
+	UNSET = -1,
+	OFF = 0,
+	ON = 1
+};
+
 struct	Config
 {
 	struct	Server
 	{
 		struct Page
 		{
-			int			code = 0;
+			int			code = -1;
 			std::string	path;
 		};
 
 		struct Location
 		{
-			std::string	path;
-			std::string	root;
-			size_t		clientMaxBodySize = 0;
-			Page		returnURL;
-			int			redirectStatus = 0;
-			bool		autoindex = false;
-			std::string	uploadDir;
-			std::string	index;
-			std::string	cgiEXT;
-			std::string	cgiPath;
+			std::string		path;
+			std::string		root;
+			size_t			clientMaxBodySize = 0;
+			Page			returnURL;
+			int				redirectStatus = -1;
+			AutoIndexState	autoIndex = UNSET;
+			std::string		uploadDir;
+			std::string		index;
+			std::string		cgiEXT;
+			std::string		cgiPath;
 
 			std::vector<std::string>	allowedMethods;
 			std::vector<std::string>	indexFiles;

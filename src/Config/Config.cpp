@@ -36,7 +36,7 @@ std::ostream	&operator<<(std::ostream &os, Config const &config)
 			os << "  clientMaxBodySize: " << loc.clientMaxBodySize << "\n";
 			os << "  returnURL: " << loc.returnURL.path << "\n";
 			os << "  redirectStatus: " << loc.redirectStatus << "\n";
-			os << "  autoindex: " << (loc.autoindex ? "true" : "false") << "\n";
+			os << "  autoindex: " << (loc.autoIndex ? "true" : "false") << "\n";
 			os << "  uploadDir: " << loc.uploadDir << "\n";
 			os << "  index: " << loc.index << "\n";
 			os << "  cgiEXT: " << loc.cgiEXT << "\n";
