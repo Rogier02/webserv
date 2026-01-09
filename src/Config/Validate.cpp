@@ -81,6 +81,12 @@ Validate::validateErrorPage(const Config::Server::Page &errorPage)
 	// check if the file is not empty??
 }
 
+bool
+isValidMethod(std::string method)
+{
+	return (method == "GET" || method == "POST" || method == "DELETE");
+}
+
 void
 Validate::validateLocation(const Config::Server::Location &location)
 {
@@ -95,7 +101,8 @@ Validate::validateLocation(const Config::Server::Location &location)
 	location.cgiPath;
 	for (int i = 0; i < location.allowedMethods.size(); i++)
 	{
-		if (location.allowedMethods[i] 
+		if (!isValidMethod(location.allowedMethods[i]))
+			log("")
 	}
 	for (int i = 0; i < location.indexFiles.size(); i++)
 	{
