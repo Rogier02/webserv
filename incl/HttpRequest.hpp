@@ -22,14 +22,6 @@
 // 			{"DELETE", RequestType::DELETE},
 // 		};
 
-// 	public:
-// 		void	execGet();
-// 		void	execPost();
-// 		void	execDelete();
-
-// 	public:
-// 		//method
-	
 // 	private:
 // 		RequestType	_type;
 
