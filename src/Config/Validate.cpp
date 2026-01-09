@@ -75,6 +75,8 @@ void
 Validate::validateErrorPage(const Config::Server::Page &errorPage)
 {
 	validErrorCodes.count(errorPage.code);
+	if (errorPage.path.empty())
+		log("");
 	// check if page.path exists
 	// check if the file is not empty??
 }
@@ -82,11 +84,23 @@ Validate::validateErrorPage(const Config::Server::Page &errorPage)
 void
 Validate::validateLocation(const Config::Server::Location &location)
 {
-	location.path
-	location.root
-	location.clientMaxBodySize
-
-
+	location.path;
+	location.root;
+	location.clientMaxBodySize;
+	location.returnURL.code;
+	location.returnURL.path;
+	location.uploadDir;
+	location.index;
+	location.cgiEXT;
+	location.cgiPath;
+	for (int i = 0; i < location.allowedMethods.size(); i++)
+	{
+		if (location.allowedMethods[i] 
+	}
+	for (int i = 0; i < location.indexFiles.size(); i++)
+	{
+		location.indexFiles[i];
+	}
 	// // check :
 	// 			std::string	path;
 	// 		std::string	root;
@@ -124,24 +138,4 @@ Validate::report()
 	LOGGER(endBlock());
 
 	throw std::runtime_error(std::string("Config File Errors detected, see \"") + Logger::FileName + "\" for detailed error messages");
-}
-
-std::string
-Validate::unknownDirective(const std::string &directive)
-{
-	return("Unknown directive: \"" + directive + "\"" +
-		" on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
-}
-
-std::string
-Validate::unexpected(std::string const &expected, std::string const &found)
-{
-	return("Unexpected token: \"" + found + "\"" + " (expected: " + expected + ")" +
-		" on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
-}
-
-std::string
-Validate::unexpectedTokenCount(std::string expected, size_t found)
-{
-	return ("Unexpected token count: " + std::to_string(found) + " (expected: " + expected + ") on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
 }

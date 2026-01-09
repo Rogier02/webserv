@@ -1,3 +1,26 @@
+
+Other common HTTP methods (good to know)
+PUT – “Replace this”
+Replaces an existing resource completely
+
+PATCH – “Change part of this”
+Updates only part of a resource
+
+HEAD
+Same as GET, but only asks for metadata (no content)
+
+OPTIONS
+Asks the server: “What methods do you support?”
+
+
+
+
+
+
+
+
+
+
 🧩 1. Core architecture & configuration (Person A)
 
 Focus: Foundation of the server and configuration parsing.
