@@ -1,9 +1,13 @@
 #include "Server.hpp"
 #include "HttpResponse.hpp"
+#include "ClientState.hpp"
 #include "CgiHandler.hpp"
-#include "ErrorPageHandler.hpp"
 #include <sstream>
+#include <map>
 #include <errno.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <cstring>
 
 std::atomic<bool> Server::_running(false);
 
@@ -11,33 +15,10 @@ Server::Server()
 	:	_socket(_port)
 	,	_epoll(_socket)
 	,	_cgiHandler()
-	,	_errorPageHandler()
 {
 	signal(SIGINT, shutdown);
 	signal(SIGTERM, shutdown); // should this happen in main() or ::run() instead? static _running doesn't work for multiple servers anyway
 }
-
-/* Server::Server(std::vector<Config::Server> const &config)
-	:	_config(config)
-	,	_socket()
-	,	_epoll(_socket)
-{
-	(void)_config;
-
-	sockaddr_in	serverAddress{};
-	serverAddress.sin_family		= AF_INET;
-	serverAddress.sin_port			= htons(_port);
-	serverAddress.sin_addr.s_addr	= INADDR_ANY;
-
-	if (bind(_socket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1)
-		throw std::runtime_error("bind()");
-
-	if (listen(_socket, 5) == -1)
-		throw std::runtime_error("listen()");
-
-	signal(SIGINT, shutdown);
-	signal(SIGTERM, shutdown);
-} */
 
 void
 Server::run()
@@ -53,8 +34,12 @@ const {
 					zombieClient(event.data.fd);
 				else if (event.data.fd == _socket)
 					newClient();
-				else
-					existingClient(event.data.fd);// this should absolutely pass a Socket... but how do I make Event::Fd a Socket???
+				else if (_cgiPipeToClientFd.find(even.data.fd) != cgiPipeToClientFd.end()) {
+					// This is a CGI pipe FD with data available.
+					readCgiOutput(event.data.fd);
+				} else {
+					existingClient(event.data.fd); // this should absolutely pass a Socket... but how do I make Event::Fd a Socket???
+				}
 			}
 		} catch	(std::runtime_error &restartRequired) {
 			Logger::log(restartRequired.what());
@@ -77,118 +62,149 @@ Server::shutdown(int)
 void
 Server::newClient()
 const {
-	Epoll::Event	event(_socket.accept());
+	int clientFd = _socket.accept();
 
+	Epoll::Event	event(_socket.accept());
 	_epoll.ctl(Epoll::Ctl::Add, event);
-	std::cout << "New client connected.\n";
+	_clients[clientFd] = ClientState();
+
+	std::cout << "New client connected | Client fd = " << clientFd << "\n";
 }
 
-// Rogier's additions Nov 16 - start
 void
 Server::existingClient(int fd)
 const {
-	std::string	request;
-	char buffer[1024];
 
-	// Step 1: Read complete HTTP request from client
-	// Must wait for all headers (ends with \r\n\r\n)
-	while (true){
-		// Read available data (non-blocking)
-		ssize_t nBytes = recv(fd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
-
-		if (nBytes > 0) {
-			//Received data - add to request buffer
-			buffer[nBytes] = '\0';
-			request.append(buffer, nBytes);
-
-			//Check if we have a complete headers (ends with \r\n\r\n)
-			if (request.find("\r\n\r\n") != std::string::npos) {
-				break; // Complete request received
-			}
-		} else if (nBytes == 0) {
-			// Client disconnected
-			std::cout << "client disconnected.\n";
-			_epoll.ctl(Epoll::Ctl::Del, fd);
-			close(fd);
-			return ;
-		} else {
-			// EAGAIN/EWOULDBLOCK means no more data available right now
-			if (errno == EAGAIN || errno == EWOULDBLOCK) {
-				if (!request.empty()) {
-					break; // we have datal, process it
-				}
-				return; // No data yet wait for next event
-			} else {
-				// Real error
-				std::cout << "Client disconnected: " << strerror(errno) << std::endl;
-				_epoll.ctl(Epoll::Ctl::Del, fd);
-				close(fd);
-				return;
-			}
-
-		}
+	auto clientIt = _clients.find(fd);
+	if (clientIt == _clients.end()) {
+		close(fd);
+		_epoll.ctl(Epoll::Ctl::Del, fd);
+		return;
 	}
+	
+	ClientState& client = clientIt->second;
 
-	// Validate we have request data
-	if (request.empty()) {
+	switch (client._currentState) {
+		case ClientState::READING_REQUEST:
+			readRequest(fd, client);
+			break;
+		case ClientState::PARSING_REQUEST:
+			parseRequest(fd, client);
+			break;
+		case ClientState::GENERATING_RESPONSE:
+			generateResponse(fd, client);
+			break;
+		case ClientState::EXECUTIING_CGI:
+			executeCgi(fd, client);
+			break;
+		case ClientState::SENDING_RESPONSE:
+			sendResponse(fd, client);
+			break;
+	}
+}
+
+void
+Server::readRequest(int fd, ClientState& client)
+const {
+	char buffer[4096];
+	ssize_t nBytes = recv(fd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
+
+	if (nBytes > 0) {
+		buffer[nBytes] = '\0'
+		client.appendToRequestBuffer(std::string(buffer,nBytes));
+		
+		if (client.isRequestComplete()){
+			client._currentState = ClientState::PARSING_REQUEST;
+		}
+	} else if (nBytes == 0) {
+		std::cout << "Client " << fd << " disconnected\n";
+		cleanupClient(fd, client);
+	} else if (errno != EAGAIN && errno != EWOULDBLOACK) {
+		return;
+	} else {
+		Logger::log("recv() error: " + std::string(strerror(errno)));
+		cleanupClient(fd, client);
+	}
+}
+
+void 
+Server::parseRequest(int fd, ClientState& client)
+const {
+	try {
+		// TODO: Call your teamate's HTTP parser
+		// client._request = HttpReqeustParser::parse(client._requestBuffer);
+
+		client._currentState - ClientState::GENERATING_RESPONSE;
+	} catch (const std::execption& e) {
+		Logger::log("Parse error: " + std::string(e.what()));
+		client._response.setStatus(400);
+		client._response.setContentType("text/html");
+		client._response.setBody("<html><body><h1>400 Bad Request</h1></body></html");
+		client._responseBuffer = client.response.toString();
+		client._currentState - ClientState::SENDING_RESPONSE;
+	}
+}
+
+// NOTE: This code is probably not suitable for handling cgi properly. or generating a response.
+void server::generateResponse(int fd, ClientState& client)
+const {
+
+	(void)fd;
+
+	// Check if this is a CGI request by checking request buffer
+	bool isCgiRequest = _cgiHandler.isCgiRequest(client._requestBuffer);
+
+	if (isCgiRequest) {
+		client._currentState = ClientState::EXECUTING_CGI;
 		return;
 	}
 
-	// Parse request (tempcode will be repaced with HttpRequest parser)
+	client._response.setStatus(200);
+	client._response.setContentType("text/html");
+	client._response.setBody("<html><body><h1>Hello From Webserve! (CGI response)</h1></body></html>");
 
-	std::cout << "Client Request:\n" << request << std::endl;
-	// TODO: Implatement Raw request parser -- request(rawRequest);
-
-	
-	// Temporary simple parsing ( REPLACE: )
-	std::istringstream stream(request);
-	std::string method, path, version;
-	stream >> method >> path >> version;
-
-	// Http response object
-	HttpResponse response(200);
-
-	// Check if CGI request
-	if (_cgiHandler.isCgiRequest(path)) {
-		// Execute CGI script
-		std::string cgiOutput = _cgiHandler.execute(path, method, "", "");
-		response.setStatus(200);
-		response.setContentType("text/html");
-		response.setBody(cgiOutput);
-	} else {
-		// Non-CGI request (static files)
-		// Temporary: Return 404 for any path that's not / or /cgi.py
-		if (path == "/") {
-			std::string indexContent = readFile("./webpages/index.html");
-			if (!indexContent.empty()) {
-				response.setStatus(200);
-				response.setContentType("text/html");
-				response.setBody(indexContent);
-			} else {
-				response.setStatus(404);
-				response.setContentType("text/html");
-				response.setBody(_errorPageHandler.getErrorPage(404));
-			}
-		} else {
-			// Return 404 error
-			response.setStatus(404);
-			response.setContentType("text/html");
-			response.setBody(_errorPageHandler.getErrorPage(404));
-		}	
-	}
-
-	// Send response
-	std::string responseStr = response.toString();
-	send(fd, responseStr.c_str(), responseStr.length(), 0);
-
-
-	std::cout << responseStr;
-	// // Close connections (HTTP/1.0 style for now)
-	// close(fd);
-	_epoll.ctl(Epoll::Ctl::Del, fd);
+	client._responseBuffer = client._response.toString();
+	client._currentState = ClientState::SENDING_RESPOSNE;
 }
-// End 
 
+void 
+Server::executeCgi(int fd, ClientState& client)
+const {
+	// Onlsy start CGI once per client
+	if (client._cgiPid != -1)
+		return;
+	
+	try {
+		// TODO: Extract path, maethod, query, bodu from client,_request
+		// FOr now, use placehold values
+		CgiHandler::CgiProcess process = _cgiHandler.executeAsync(
+			"/cgi", // path 
+			"GET",	// method
+			"",		// query
+			""		// body
+		);
+
+		// Store CGI process info
+		client._cgiPid = process.processId;
+		client.cgiPipeReadFd = process.ouotputPipeFd;
+
+		EpollEvent pipeEvent(process.outputPipefd);
+		_epoll.ctl(Epoll::Ctl::Add, pipeEvent);
+
+		_cgiPipeToClientFd[process.outputPipeFd] = fd;
+
+		std::cout << "CGI process started | pid = "<< process.processId << ", pipe = " << process.outputPipeFd << "\n";
+	} catch (const std::exception& e) {
+		// CGI execution fialed
+		Logger::log("CGI error: " + std:string(e.what()));
+		client._response.setStatus(500);
+		client._response.setContentType("text/html");
+		client._response.setBody("<html><body><h1>500 CGI Error</h1></body></html>");
+		client._responseBuffer = client._response.toString();
+		client._currentState = ClientState::SENDING_RESPOSNE;
+		
+	}
+}
 void
 Server::zombieClient(int fd)
 const {
@@ -196,14 +212,3 @@ const {
 	_epoll.ctl(Epoll::Ctl::Del, fd);
 }
 
-std::string
-Server::readFile(const std::string& filePath) const
-{
-	std::ifstream file(filePath);
-	if (!file.is_open()) {
-		return ("");
-	}
-	std::stringstream buffer;
-	buffer << file.rdbuf();
-	return (buffer.str());
-}

@@ -26,6 +26,15 @@ class CgiHandler
 		CgiHandler();
 		~CgiHandler();
 
+		/**
+		 * @struct CgiProcess
+		 * @brief Info about a running CGI process
+		 */
+		struct CgiProcess {
+			pid_t	processId;		// Child process ID
+			int		outputPipeFd;	// File des to read output from
+		};
+
 	private:
 		/**
 		 * @brief Map of file extensions to their interpreters
@@ -63,35 +72,24 @@ class CgiHandler
 		bool			isCgiRequest(const std::string& path) const;
 
 		/**
-		 * @brief Execute a CGI script and return its output
+		 * @brief Start CGI script execution (non-blocking (hopefully))
 		 * 
-		 * Process flow:
-		 * 1. Validate script extension
-		 * 2. Get interpreter path
-		 * 3. Set up CGI environment variables
-		 * 4. runs executeScript() <- handles Forking, Redirects, etc.
-		 * 5. returns output error messager from executeScript()
+		 * Forks child process but doesnt wait.
+		 * Returns process info to Epoll loop
 		 * 
 		 * @param path The request path/script filename
 		 * @param method HTTP method (GET, POST, etc.)
 		 * @param query Query string from URL (e.g., "param1=value1&param2=value2")
 		 * @param body Request body (for POST requests)
 		 * 
-		 * @return Script output as string (readu to be used as HTTP response body)
+		 * @return CgiProcess with pid and output pipe fd
 		 * 
-		 * @note On error returns HTML error message instead of throwing execption
-		 * @note Script timeout should be implemented in future
-		 * 
-		 * @example 
-		 * std::string output = handler.execute(
-		 * 		"/cgi.py", 
-		 * 		"GET",
-		 * 		"name=john&age=30",
-		 * 		"" );
-		 * // Returns: "<html><body><h1>Hello, World!</h1></body></html>"
+		 * @throws std::runtime_error on fork/pipe failure
 		 */
-		std::string		execute(const std::string& path, const std::string& method,
-							const std::string& query, const std::string& body) const;
+		CgiProcess		executeAsync(const std::string& path, 
+								const std::string& method,
+								const std::string& query, 
+								const std::string& body) const;
 
 	private:
 		/**
@@ -143,37 +141,6 @@ class CgiHandler
 		 */
 		void			setupEnvironment(const std::string& path, const std::string& method,
 								const std::string& query, const std::string& body) const;
-		
-		
-		/**
-		 * @brief Execute script in forked child process and capture output
-		 * 
-		 * Process flow:
-		 * 1. Create pipe for inter-process communication
-		 * 2. Fork child process
-		 * 3. In child: redirect stdout/stderr to pipe and exec script
-		 * 4. In parent: read script output from pipe 
-		 * 5. wait ofr child process termination
-		 * 
-		 * @param interpreter Path to script interpreter (e.g., "/usr/bin/python03")
-		 * @param scriptPath Full path to script file
-		 * @param body Request body (may be used for stdin in future)
-		 * 
-		 * @return Script output as string 
-		 * 
-		 * @note Output is limited by pipe buffer size (typically 64KB)
-		 * @note If script fails, returns error HTML page
-		 * @warning Ensure interpreter path exists and is executable
-		 * 
-		 * @example
-		 * std::string result = executeScript(
-		 * 		"/usr/bin/python3",
-		 * 		"./src/cgi-bin/cgi.py",
-		 * 		"" );
-		 *
-		 */
-		std::string		executeScript(const std::string& interpreter,
-                        const std::string& scriptPath, const std::string& body) const;
 
 };
 
