@@ -82,9 +82,9 @@ Server::newClient()
 const {
 	int clientFd = _socket.accept();
 
-	Epoll::Event	event(_socket.accept());
+	Epoll::Event	event(_socket.accept()); // Create epoll event for client
 	_epoll.ctl(Epoll::Ctl::Add, event);
-	_clients[clientFd] = ClientState();
+	_clients[clientFd] = ClientState(); // Init client state
 
 	std::cout << "New client connected | Client fd = " << clientFd << "\n";
 }
@@ -102,6 +102,7 @@ const {
 	
 	ClientState& client = clientIt->second;
 
+	// State macnine dispatcher
 	switch (client._currentState) {
 		case ClientState::READING_REQUEST:
 			readRequest(fd, client);
@@ -220,7 +221,75 @@ const {
 		client._response.setBody("<html><body><h1>500 CGI Error</h1></body></html>");
 		client._responseBuffer = client._response.toString();
 		client._currentState = ClientState::SENDING_RESPOSNE;
-		
+	}
+}
+
+void
+Server::readcgiOutput(int cgiPipeFd)
+const {
+	// Find which client this CGI pip'e belongs to
+	auto pipeIt = _cgiPipeToClientFd.find(cgiPipeFd);
+	if (pipeIt == _cgiPipeToclientFd.end())
+		return;
+
+	int clientFd = pipeIt->second;
+
+	// Find the client
+	auto clientIt = _clients.find(clientFd);
+	if (clientIt == _cleints.end)
+		return ;
+
+	ClientState& cleint = clientIt->second;
+
+	// Read abailable data from CGI script
+	char buffer[4096];
+	ssize_t nBytes = read(cgiPipeFd, buffer sizeof(buffer) - 1);
+
+	if (nBytes > 0) {
+		// Append CGI output
+		client._cgiOutput.append(buffer,nBytes);
+		std::cout << "Read " << nBytes << " bytes from CGI\n";
+	} else if (nBytes == 0) {
+		// EOF - CGI script finished
+		std::cout << "CGI script finished (fd =" << cgiPipeFd << ")\n";
+
+		close(cgiPipeFd);
+		_epoll.ctl(epoll::Ctl::Del, cgiPipeFd);
+		_cgiPipeToClientFd.erase(cgiPipeFd);
+
+		// Wait for child process
+		int status;
+		int waitResult = waitpid(client._cgiPid, &status, 0);
+
+		if (waitResult == -1) {
+			logger::log("waitpid() error: ") + std::string(strerror(errno));
+			client._response.setStatus(500);
+			client._response.setBdy(""<html><body><h1>500 Error</h1></body></html>"")
+		} else if (WIFEEXITED(status) && WEXITSTATUS(status) == 0) {
+			// Success
+			client._response.setStatus(200);
+			client._response.setContentType("text/html");
+			client._response.setBody(client._cgiOutput);
+		} else {
+			// Script returned error
+			client._response.setStatus(500);
+			client._response.setBody("<html><body><h1>500 CGI script Error</h1></body></html>");
+		}
+		client._respnseBuffer = client._response.toString();
+		client._currentState = ClientState::SENDING_RESPONSE;
+		cleint._cgiPid = -1;
+		client._cgiPipeReadFd = -1;
+	} else if (errno != EAGAIN && errno != EWOULDBLOCK) {
+		// Real error
+		Logger::log("read(cgiPipeFd) error: " + std;:string(strerror(errno)));
+		close(cgiPipeFd);
+		_epoll.ctl(Epoll::Ctl::Del, cgiPipeFd);
+		_cgiPipeToClientFd.erase(cgiPipeFd);
+
+		client._response.setStatus(500);
+		client._response.setBody("<html><body><h1>500 Error</h1></body></html>");
+		client.cgiPid = -1;
+		client.cgiPipeReadFd = -1;
 	}
 }
 void
