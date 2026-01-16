@@ -1,31 +1,23 @@
 #ifndef HTTPRESPONSE_HPP
 # define HTTPRESPONSE_HPP
 
-// c++ headers
+// C++
 #include <string>
 #include <map>
 
-# define TYPE
-# define CONTENT_LENGTH
-# define CONNECTION
-# define DATE
-# define SERVER
-
-//HttpResponse Class
-class HttpResponse {
-	
-	//attributes
-	private: 
-		int _statusCode;
-		std::string _reasonPhrase;
-		std::map<std::string, std::string> _headers;
-		std::string _body;
-
-	// Methods
+class	HttpResponse
+{
 	public:
-		
 		HttpResponse(int statusCode = 200);
+		~HttpResponse() = default;
 
+	private:
+		int									_statusCode;
+		std::string							_reasonPhrase;
+		std::map<std::string, std::string>	_headers;
+		std::string							_body;
+
+	public:
 		void	setStatus(int code);
 		void	setHeader(const std::string& key, const std::string& value);
 		void	setBody(const std::string& body);

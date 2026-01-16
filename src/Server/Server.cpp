@@ -16,19 +16,28 @@ Server::Server()
 	,	_epoll(_socket)
 	,	_cgiHandler()
 {
-	signal(SIGINT, shutdown);
-	signal(SIGTERM, shutdown); // should this happen in main() or ::run() instead? static _running doesn't work for multiple servers anyway
+	for (Config::Server &listener : config.servers)
+	{
+		int	socketFd = ListenSocket(listener.port);
+		EasyPrint(socketFd);
+
+		ListenEvent	&listen =
+			EventTypes::create<ListenEvent>(socketFd, Epoll::Events::In, _epoll);
+
+		EasyThrow(_epoll.ctl(Epoll::Ctl::Add, listen));
+
+		std::cout << "listening on port " << listener.port << "\n";
+	}
 }
 
 void
 Server::run()
-const {
-	_running = true;
-	std::cout << "Server running... (listening on port " << _port << ")\n";
-	while (_running)
+{
+	std::cout << "Server running...\n";
+	while (_pleaseShutDown == false)
 	{
 		try {
-			for (Epoll::Event &event : _epoll.wait())
+			for (epoll_event &unknown : _epoll.wait(10000))
 			{
 				if (event.isWeird())
 					zombieClient(event.data.fd);
@@ -41,19 +50,28 @@ const {
 					existingClient(event.data.fd); // this should absolutely pass a Socket... but how do I make Event::Fd a Socket???
 				}
 			}
-		} catch	(std::runtime_error &restartRequired) {
-			Logger::log(restartRequired.what());
-			std::cerr << restartRequired.what() << std::endl;
-		} catch (std::exception &unknownException) {
-			// log unknown and throw to main? or just don't catch and let Logger class catch somehow?
-			throw unknownException;
+		}
+		catch	(std::runtime_error &exception) {
+			LOGGER(log(exception.what()));
+			std::cerr << "'tis but a scratch: " << exception.what() << std::endl;
+		}
+		catch (std::logic_error &exception) {
+			LOGGER(log(exception.what()));
+			std::cerr << "Write better code: " << exception.what() << std::endl;
+			break;
+		}
+		catch (std::exception &exception) {
+			LOGGER(log(exception.what()));
+			std::cerr << "Something unexpected excepted: " << exception.what() << std::endl;
+			throw exception; // throw to main for quick debug, in production the loop should not be broken
 		}
 	}
+	LOGGER(log("Controlled Server Shutdown\n"));
 	std::cout << "Server shutting down...\n";
 }
 
 void
-Server::shutdown(int)
+Server::_closeConnection(int fd)
 {
 	_running = false;
 	std::cerr << std::endl;

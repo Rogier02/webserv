@@ -1,7 +1,9 @@
 .vscode/
 obj/
-.o*
+*.o
+
 webserv
 a.out
 *.txt
 RogierIsAnIdiot.md
+Log.txt

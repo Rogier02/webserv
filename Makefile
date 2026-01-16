@@ -3,56 +3,79 @@ NAME			=	webserv
 MAKEFLAGS		=	-r -R
 
 CXX				=	c++
-CXXFLAGS		=	-MMD -MP -std=c++11
-# CXXFLAGS		+=	-Wall -Wextra -Werror
+CXXFLAGS		=	-MMD -MP -std=c++20
+CXXFLAGS		+=	-Wall -Wextra -Werror
 # CXXFLAGS		+=	-fsanitize=address
-# CXXFLAGS		+=	-g
-
-INCLUDE_DIRS	=	incl \
-					incl/Wrappers \
-					incl/Cgi
-INCLUDE_FLAGS	=	$(addprefix -I , $(INCLUDE_DIRS))
+CXXFLAGS		+=	-g
 
 SRC_DIR			=	src
-SRC_FILES		=	main.cpp \
-					Logger.cpp
-
-CONFIG_DIR		:=	$(SRC_DIR)/Config
-CONFIG_FILES	=	Config.cpp
-
-HTTP_DIR		:=	$(SRC_DIR)/Http
-HTTP_FILES		=	HttpRequest.cpp \
-					HttpResponse.cpp
-
-SERVER_DIR		:=	$(SRC_DIR)/Server
-SERVER_FILES	=	Epoll.cpp \
-					Event.cpp \
-					Server.cpp
-
-SOCKETS_DIR		:=	$(SRC_DIR)/Sockets
-SOCKETS_FILES	=	ListenSocket.cpp \
-					Socket.cpp
-
-CGI_DIR			:=	$(SRC_DIR)/CgiHandler
-CGI_FILES		=	CgiHandler.cpp \
-					ErrorPageHandler.cpp
-
-SRC				=	$(addprefix $(SRC_DIR)/, $(SRC_FILES)) \
-					$(addprefix $(CONFIG_DIR)/, $(CONFIG_FILES)) \
-					$(addprefix $(HTTP_DIR)/, $(HTTP_FILES)) \
-					$(addprefix $(SERVER_DIR)/, $(SERVER_FILES)) \
-					$(addprefix $(SOCKETS_DIR)/, $(SOCKETS_FILES)) \
-					$(addprefix $(CGI_DIR)/, $(CGI_FILES))
-
+INC_DIR			=	incl
 OBJ_DIR			=	obj
+
+MAIN_FILES		=	main.cpp
+
+CONFIG_MODULE	=	Config
+CONFIG_FILES	=	Config.cpp			\
+					Parse.cpp			\
+					TokenStream.cpp		\
+
+EVENTBASE_MODULE=	Event/Base
+EVENTBASE_FILES	=	Event.cpp			\
+					EventTypes.cpp		\
+
+EVENTTYPE_MODULE=	Event/Type
+EVENTTYPE_FILES	=	ClientEvent.cpp		\
+					ListenEvent.cpp		\
+
+HTTP_MODULE		=	Http
+HTTP_FILES		=	HttpRequest.cpp		\
+					HttpResponse.cpp	\
+
+SERVER_MODULE	=	Server
+SERVER_FILES	=	CGI.cpp				\
+					Epoll.cpp			\
+					ErrorPages.cpp		\
+					Server.cpp			\
+
+SOCKET_MODULE  =	Socket
+SOCKET_FILES	=	ListenSocket.cpp	\
+					Socket.cpp			\
+
+UTILS_MODULE	=	Util
+UTILS_FILES		=	Logger.cpp			\
+
+ALL_MODULES		:=	$(CONFIG_MODULE)	\
+					$(EVENTBASE_MODULE)	\
+					$(EVENTTYPE_MODULE)	\
+					$(HTTP_MODULE)		\
+					$(SERVER_MODULE)	\
+					$(SOCKET_MODULE)	\
+					$(UTILS_MODULE)		\
+
+ALL_FILES		:=	$(MAIN_FILES)											\
+					$(addprefix $(CONFIG_MODULE)/, $(CONFIG_FILES))			\
+					$(addprefix $(EVENTBASE_MODULE)/, $(EVENTBASE_FILES))	\
+					$(addprefix $(EVENTTYPE_MODULE)/, $(EVENTTYPE_FILES))	\
+					$(addprefix $(HTTP_MODULE)/, $(HTTP_FILES))				\
+					$(addprefix $(SERVER_MODULE)/, $(SERVER_FILES))			\
+					$(addprefix $(SOCKET_MODULE)/, $(SOCKET_FILES))			\
+					$(addprefix $(UTILS_MODULE)/, $(UTILS_FILES))			\
+
+INCLUDE_DIRS	:=	$(INC_DIR)									\
+					$(INC_DIR)/Wrapper							\
+					$(addprefix $(INC_DIR)/, $(ALL_MODULES))	\
+
+INCLUDE_FLAGS	:=	$(addprefix -I , $(INCLUDE_DIRS))
+
+SRC				:=	$(addprefix $(SRC_DIR)/, $(ALL_FILES))
 OBJ				:=	$(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
-DEP				:=	$(OBJ:%.o=%.d)
+DEP				:=	$(OBJ:.o=.d)
 
 all : $(NAME)
 
 $(NAME) : $(OBJ)
 	@ echo "${BLUE}$(NAME) compiling...${RESET}"
-	$(CXX) $^ $(CXXFLAGS) $(INCLUDE_FLAGS) -o $(NAME)
+	$(CXX) $(CXXFLAGS) $^ -o $@
 	@ echo "${GREEN}$(NAME) made!${RESET}"
 
 $(OBJ_DIR)/%.o:$(SRC_DIR)/%.cpp

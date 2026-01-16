@@ -86,7 +86,7 @@ specifier1 specifier2 {
 ```
 
 ### Exception:
-Functions with a single line body should not take up too much space,
+Trivial functions should not take up too much space,
 	they follow this format instead:
 
 - return type, name, parameters, specifiers, body opening bracket exist on one line;
@@ -100,6 +100,8 @@ int	min(int a, int b) const {
 	return ((a < b) ? a : b);
 }
 ```
+\*Trivial could mean having a single line body using a single operator or keyword,
+	but really that's for yourself to decide.
 
 ## Class Function Format
 #### In a Class, new features, and thus new rules are introduced.

@@ -1,0 +1,84 @@
+🧩 1. Core architecture & configuration (Person A)
+
+Focus: Foundation of the server and configuration parsing.
+
+Tasks:
+
+Parse and store the configuration file (server / location blocks, routes, methods, ports, etc.)
+
+Implement the server startup logic:
+
+Create and manage sockets
+
+Bind to ports
+
+Set up poll() or select() for multiple client handling
+
+Handle basic error management and logging
+
+Define core data structures (ServerConfig, Client, Request, Response, etc.)
+
+Why:
+This person defines the skeleton that the rest of the project runs on. They’ll set the stage for everyone else to plug their parts in.
+
+🌐 2. HTTP protocol handling (Person B)
+
+Focus: Request parsing, response building, and HTTP compliance.
+
+Tasks:
+
+Implement the HTTP request parser (headers, methods, body, chunked encoding, etc.)
+
+Create the HTTP response builder (status lines, headers, content-length, etc.)
+
+Handle different HTTP methods (GET, POST, DELETE)
+
+Implement correct status codes and error handling (404, 405, 500, etc.)
+
+Why:
+This is the “heart” of the web server — turning raw socket input into meaningful HTTP requests, and output back into valid responses.
+
+⚙️ 3. I/O handling, CGI, and testing (Person C)
+
+Focus: Managing I/O, CGI scripts, and integration testing.
+
+Tasks:
+
+Handle the event loop and client connections (poll/epoll)
+
+Implement CGI handling:
+
+Environment setup
+
+Forking and executing scripts
+
+Managing input/output pipes
+
+Serve static files (reading files from disk, directory listing if required)
+
+Do integration tests with curl, browsers, and test configs
+
+Why:
+This person deals with the async and external aspects — ensuring the server actually runs well and communicates properly.
+
+🔧 Integration phase (all three together)
+
+Once the individual parts are working:
+
+Integrate configuration → server startup → HTTP parsing → response handling.
+
+Test extensively with multiple clients, edge cases, malformed requests, CGI scripts, etc.
+
+Optimize (memory leaks, performance, file descriptors).
+
+Refactor for readability and norm compliance.
+
+💡 Tips for collaboration
+
+Use Git branches per person (e.g., config, http, cgi).
+
+Agree on core data structures early (Request, Response, ServerConfig).
+
+Define clear interfaces between modules (so e.g. HTTP handler doesn’t need to know about socket details).
+
+Have a weekly integration check — merge and test everything together to avoid huge merge conflicts at the end.

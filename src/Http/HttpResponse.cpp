@@ -21,7 +21,7 @@ HttpResponse::HttpResponse(int statusCode)
 	_headers["Date"] = std::string(dateBuffer);
 }
 
-void 
+void
 HttpResponse::setStatus(int code)
 {
 	_statusCode = code;
@@ -41,14 +41,14 @@ HttpResponse::setStatus(int code)
 	}
 }
 
-std::string 
-HttpResponse::toString() 
-const 
+std::string
+HttpResponse::toString()
+const
 {
 	std::stringstream response;
 
-	//Status line 
-	response << "HTTP/1.1 " << _statusCode << " " << _reasonPhrase << "\r\n";
+	//Status line
+		response << "HTTP/1.1 " << _statusCode << " " << _reasonPhrase << "\r\n";
 
 	// Headers
 	for (std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it) {
@@ -64,20 +64,20 @@ const
 	return response.str();
 }
 
-void 
+void
 HttpResponse::setHeader(const std::string& key, const std::string& value)
 {
 	_headers[key] = value;
 }
 
-void 
+void
 HttpResponse::setBody(const std::string& body)
 {
 	_body = body;
 	_headers["Content-Length"] = std::to_string(body.length());
 }
 
-void 
+void
 HttpResponse::setContentType(const std::string& type)
 {
 	_headers["Content-Type"] = type;
