@@ -34,7 +34,7 @@ const {
 					zombieClient(event.data.fd);
 				else if (event.data.fd == _socket)
 					newClient();
-				else if (_cgiPipeToClientFd.find(even.data.fd) != cgiPipeToClientFd.end()) {
+				else if (_cgiPipeToClientFd.find(event.data.fd) != cgiPipeToClientFd.end()) {
 					// This is a CGI pipe FD with data available.
 					readCgiOutput(event.data.fd);
 				} else {
