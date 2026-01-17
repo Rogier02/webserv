@@ -1,5 +1,5 @@
 #ifndef CLIENTSTATE_HPP
-# define CLIENTSTAT_HPP
+# define CLIENTSTATE_HPP
 
 #include <string>
 #include <ctime>
@@ -33,6 +33,11 @@ struct ClientState {
 	HttpResponse	_response;
 	size_t			_responseBytesSent;
 
+	// CGI handling 
+	pid_t			_cgiPid;
+	int				_cgiPipeReadFd;
+	std::string		_cgiOutput;
+
 	//Constructor
 	ClientState()
 		:	_currentState(READING_REQUEST)
@@ -53,10 +58,10 @@ struct ClientState {
 
 	// Update last activity timestamp
 	void updateActivity() {
-		_lastActivity - std::time(nullptr);
+		_lastActivity = std::time(nullptr);
 	}
 
-	void appendToRequestBugger(const std::string& data) {
+	void appendToRequestBuffer(const std::string& data) {
 		_requestBuffer.append(data);
 		updateActivity();
 	}
@@ -64,9 +69,17 @@ struct ClientState {
 	void reset() {
 		_requestBuffer.clear();
 		_responseBuffer.clear();
-		_responsBytesSent = 0;
-		_requestComplete =
+		_responseBytesSent = 0;
+		_requestComplete = false;
+		_currentState = READING_REQUEST;
+		_cgiPid = -1;
+		_cgiPipeReadFd = -1;
+		_cgiOutput.clear();
+		updateActivity();
+	}
 
+	size_t getRemainigResponseBytes() const {
+		return _responseBuffer.length() - _responseBytesSent;
 	}
 };
 

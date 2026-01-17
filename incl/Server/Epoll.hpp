@@ -23,10 +23,10 @@ class	Epoll
 			Mod	= EPOLL_CTL_MOD,
 		};
 		enum	Events : uint32_t {
-			In	= EPOLL_EVENTS::EPOLLIN,
-			Out	= EPOLL_EVENTS::EPOLLOUT,
-			Err	= EPOLL_EVENTS::EPOLLERR,
-			Hup	= EPOLL_EVENTS::EPOLLHUP,
+			In	= EPOLLIN,
+			Out	= EPOLLOUT,
+			Err	= EPOLLERR,
+			Hup	= EPOLLHUP,
 		};
 
 	public:
