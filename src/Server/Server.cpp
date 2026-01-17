@@ -80,9 +80,9 @@ Server::_closeConnection(int fd)
 void
 Server::newClient()
 const {
-	int clientFd = _socket.accept();
+	int clientFd = _socket.accept(); //TODO: Make sure all sockets(client and CGI pipes) are set to non-blocking mode after creating/accept
 
-	Epoll::Event	event(_socket.accept()); // Create epoll event for client
+	Epoll::Event event(clientFd); // Create epoll event for client
 	_epoll.ctl(Epoll::Ctl::Add, event);
 	_clients[clientFd] = ClientState(); // Init client state
 
@@ -119,6 +119,9 @@ const {
 		case ClientState::SENDING_RESPONSE:
 			sendResponse(fd, client);
 			break;
+		case ClientState::DONE:
+			cleanupClient(fd, client);
+			break;
 	}
 }
 
@@ -154,7 +157,7 @@ const {
 		// client._request = HttpReqeustParser::parse(client._requestBuffer);
 
 		client._currentState - ClientState::GENERATING_RESPONSE;
-	} catch (const std::execption& e) {
+	} catch (const std::exception& e) {
 		Logger::log("Parse error: " + std::string(e.what()));
 		client._response.setStatus(400);
 		client._response.setContentType("text/html");
@@ -205,9 +208,9 @@ const {
 
 		// Store CGI process info
 		client._cgiPid = process.processId;
-		client.cgiPipeReadFd = process.ouotputPipeFd;
+		client._cgiPipeReadFd = process.ouotputPipeFd;
 
-		EpollEvent pipeEvent(process.outputPipefd);
+		Epoll::Event pipeEvent(process.outputPipefd);
 		_epoll.ctl(Epoll::Ctl::Add, pipeEvent);
 
 		_cgiPipeToClientFd[process.outputPipeFd] = fd;
@@ -215,7 +218,7 @@ const {
 		std::cout << "CGI process started | pid = "<< process.processId << ", pipe = " << process.outputPipeFd << "\n";
 	} catch (const std::exception& e) {
 		// CGI execution fialed
-		Logger::log("CGI error: " + std:string(e.what()));
+		Logger::log("CGI error: " + std::string(e.what()));
 		client._response.setStatus(500);
 		client._response.setContentType("text/html");
 		client._response.setBody("<html><body><h1>500 CGI Error</h1></body></html>");
@@ -229,17 +232,17 @@ Server::readcgiOutput(int cgiPipeFd)
 const {
 	// Find which client this CGI pip'e belongs to
 	auto pipeIt = _cgiPipeToClientFd.find(cgiPipeFd);
-	if (pipeIt == _cgiPipeToclientFd.end())
+	if (pipeIt == _cgiPipeToClientFd.end())
 		return;
 
 	int clientFd = pipeIt->second;
 
 	// Find the client
 	auto clientIt = _clients.find(clientFd);
-	if (clientIt == _cleints.end)
+	if (clientIt == _clients.end)
 		return ;
 
-	ClientState& cleint = clientIt->second;
+	ClientState& client = clientIt->second;
 
 	// Read abailable data from CGI script
 	char buffer[4096];
@@ -277,7 +280,7 @@ const {
 		}
 		client._respnseBuffer = client._response.toString();
 		client._currentState = ClientState::SENDING_RESPONSE;
-		cleint._cgiPid = -1;
+		client._cgiPid = -1;
 		client._cgiPipeReadFd = -1;
 	} else if (errno != EAGAIN && errno != EWOULDBLOCK) {
 		// Real error
@@ -302,8 +305,8 @@ const {
 	}
 
 	// Calculate how much data is left to send.
-	size_t remaing = client.getRemainingResponseBytes();
-	const char *data = client._repsonseBuffer.c_str() + cleint._resposneBytesSent;
+	size_t remaining = client.getRemainingResponseBytes();
+	const char *data = client._responseBuffer.c_str() + client._responseBytesSent;
 
 	//Send one batch of data (non-blocking)
 	size_t sent = send(fd, data, remaing, MSG_DONTWAIT);
@@ -313,7 +316,7 @@ const {
 
 		// Check if all data has been sent
 		if (client._resposneBytesSent >= client._responseBuffer.length()) {
-			std::cout << "Response fully sent to cleint " << fd << "\n"
+			std::cout << "Response fully sent to client " << fd << "\n"
 		}
 	} else if (errno -- EAGAIN || errno == EWOULDBLOCK) {
 		// Socket send buffer is full - wait for next epoll event
@@ -325,7 +328,7 @@ const {
 }
 
 void
-Server::cleanupClient(int fd, ClientState& cleint)
+Server::cleanupClient(int fd, ClientState& client)
 const {
 	// Clean up CGI if still running
 	if (client._cgiPid > 0) {
@@ -335,15 +338,16 @@ const {
 	}
 
 	// Close CGI pipe if open
-	if (cleint._cgiPipeReadFd != -1) {
+	if (client._cgiPipeReadFd != -1) {
 		close(client._cgiPipeReadFd);
-		_epoll.ctl(Epoll::Ctl:Del, cloent._cgiPipeReadFd);
-		_cgiPipeToCLientFd.erase(client._cgiPipeReadFd);
+		_epoll.ctl(Epoll::Ctl:Del, client._cgiPipeReadFd);
+		_cgiPipeToClientFd.erase(client._cgiPipeReadFd);
 	}
 
+	// Close client socket
 	close(fd);
 	_epoll.ctl(Epoll::Ctl::Del, fd);
-	_cleints.erase(fd);
+	_clients.erase(fd);
 
 	std::cout << "Client " << fd << " cleaned up\n";
 }
