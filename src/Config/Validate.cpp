@@ -42,9 +42,9 @@ Validate::validateHost(const std::string &host)
 	std::stringstream	ss(host);
 	std::string			part;
 	int					count = 0;
-	int					n = std::stoi(part);
-
+	
 	while (std::getline(ss, part, '.')){
+		int	n = std::stoi(part);
 		if (++count > 4) // 12.52.192.168.1 (not 4 parts)
 			log("Host IP too big, format: 0.0.0.0");
 		if (part.empty()) // 12..14.22 (empty part)
@@ -76,9 +76,10 @@ Validate::validateErrorPage(const Config::Server::Page &errorPage)
 {
 	validErrorCodes.count(errorPage.code);
 	if (errorPage.path.empty())
-		log("");
-	// check if page.path exists
-	// check if the file is not empty??
+		log("Error page path is empty!");
+	if (!fileExists(errorPage.path))
+		log(errorPage.path + " doesn't exist.");
+	// check if the file is not empty?? maybe don't check for this in validate.
 }
 
 bool
@@ -90,43 +91,36 @@ isValidMethod(std::string method)
 void
 Validate::validateLocation(const Config::Server::Location &location)
 {
-	location.path;
+	if (!fileExists(location.path))
+		log(location.path + " doesn't exist.");
 	location.root;
 	location.clientMaxBodySize;
 	location.returnURL.code;
-	location.returnURL.path;
+	if (!fileExists(location.returnURL.path))
+		log(location.returnURL.path + " doesn't exist.");
 	location.uploadDir;
 	location.index;
 	location.cgiEXT;
-	location.cgiPath;
+	if (!fileExists(location.cgiPath))
+		log(location.cgiPath + " doesn't exist.");
+	location.redirectStatus;
 	for (int i = 0; i < location.allowedMethods.size(); i++)
 	{
 		if (!isValidMethod(location.allowedMethods[i]))
-			log("")
+			log(location.allowedMethods[i] + " is an NOT an allowed method!");
 	}
 	for (int i = 0; i < location.indexFiles.size(); i++)
 	{
 		location.indexFiles[i];
 	}
-	// // check :
-	// 			std::string	path;
-	// 		std::string	root;
-	// 		size_t		clientMaxBodySize = 0;
-	// 		Page		returnURL;
-	// 		int			redirectStatus = 0;
-	// 		bool		autoindex = false;
-	// 		std::string	uploadDir;
-	// 		std::string	index;
-	// 		std::string	cgiEXT;
-	// 		std::string	cgiPath;
-
-	// 		std::vector<std::string>	allowedMethods;
-	// 		std::vector<std::string>	indexFiles;
 }
 
-
-
-
+bool
+Validate::fileExists(const std::string& path)
+{
+	std::ifstream	file(path);
+	return (file.good());
+}
 
 void
 Validate::log(std::string const &message) {

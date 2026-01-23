@@ -30,6 +30,7 @@ class	Validate
 		void	validateLocation(const Config::Server::Location &location);
 		void	validateHost(const std::string &host);
 		void	validatePort(int port);
+		bool	fileExists(const std::string& path);
 
 	private:
 		// keep an error log

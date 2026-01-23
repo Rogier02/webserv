@@ -40,7 +40,7 @@ struct	Config
 		};
 
 		std::string	name;
-		std::string	host;
+		std::string	host; //0.0.0.0
 		std::string	root;
 		int			port = 0;
 		size_t		clientMaxBodySize;
