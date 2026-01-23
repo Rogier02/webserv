@@ -7,6 +7,7 @@
 #include "Config.hpp"
 #include "ParseConfig.hpp"
 #include "HttpRequest.hpp"
+#include "Validate.hpp"
 #include "get.hpp"
 
 #define CONFIGFILE 1
@@ -44,7 +45,9 @@ signal(SIGTERM, stopAllServerLoops);
 		ParseConfig	parser(file, CONFIGFILE);
 		Config		config = parser.config();
 		file.close();
-		std::cout << config;
+		// std::cout << config;
+		Validate	validation(config);
+		validation.validateConfig();
 
 		Server	server;
 		server.run();

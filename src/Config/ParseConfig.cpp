@@ -24,7 +24,7 @@ ParseConfig::config()
 			_ts.advanceUntil("}");
 		}
 	}
-	std::cout << config;
+	// std::cout << config;
 
 	report();
 	return (config);

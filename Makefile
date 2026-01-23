@@ -3,7 +3,7 @@ NAME			=	webserv
 MAKEFLAGS		=	-r -R
 
 CXX				=	c++
-CXXFLAGS		=	-MMD -MP -std=c++14
+CXXFLAGS		=	-MMD -MP -std=c++20
 CXXFLAGS		+=	-Wall -Wextra -Werror
 # CXXFLAGS		+=	-fsanitize=address
 CXXFLAGS		+=	-g
@@ -18,7 +18,7 @@ CONFIG_MODULE	=	Config
 CONFIG_FILES	=	Config.cpp			\
 					ParseConfig.cpp		\
 					TokenStream.cpp		\
-# 					Validate.cpp		\
+					Validate.cpp		\
 
 EVENTBASE_MODULE=	Event/Base
 EVENTBASE_FILES	=	Event.cpp			\

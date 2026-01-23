@@ -30,6 +30,7 @@ class	Validate
 		void	validateLocation(const Config::Server::Location &location);
 		void	validateHost(const std::string &host);
 		void	validatePort(int port);
+		bool	directoryExists(const std::string& path);
 		bool	fileExists(const std::string& path);
 
 	private:
@@ -42,7 +43,7 @@ class	Validate
 
 };
 
-
+void	iAmHere();
 
 // These are all the http valid errorCodes I could find. If we have less, we can make this list way smaller
 static const std::unordered_set<int> validErrorCodes = {
