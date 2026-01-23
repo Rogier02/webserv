@@ -17,7 +17,7 @@ class ListenEvent : public Event
 		Epoll	&r_epoll;
 
 	private:
-		void	_in() const override;
+		void	_in() override;
 };
 
 #endif

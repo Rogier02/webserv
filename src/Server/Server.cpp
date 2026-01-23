@@ -28,7 +28,7 @@ Server::run()
 				if (unknown.events & (Epoll::Events::Err | Epoll::Events::Hup))
 					_closeConnection(unknown.data.fd);
 				else try {
-					EventTypes::get(unknown.data.fd)->handle();
+					EventTypes::get(unknown.data.fd)->handle(); // if clients hold data, they need to survive beyond this line! they're static now
 				} catch (Event::CloseConnection &badEvent) {
 					_closeConnection(badEvent.fd());
 				}
@@ -56,8 +56,9 @@ Server::run()
 void
 Server::_closeConnection(int fd)
 {
-	EasyThrow(_epoll.ctl(Epoll::Ctl::Del, fd));
 	EasyThrow(close(fd));
+	EasyThrow(_epoll.ctl(Epoll::Ctl::Del, fd));
+	// EventTypes::destroy(fd);
 
 	std::cout << "Client " << fd << " disconnected.\n";
 }

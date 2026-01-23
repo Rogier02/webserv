@@ -10,3 +10,8 @@ EventTypes::get(int fd)
 		throw std::logic_error("no event type is specified for file descriptor");
 	return (it->second.get());
 }
+
+// void	EventTypes::destroy(int fd) {
+// 	_handlers.erase(fd);
+// 	std::cout << "Event " << fd << " destroyed\n";
+// }

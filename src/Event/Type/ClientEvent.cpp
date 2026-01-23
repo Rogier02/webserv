@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <sstream>
+
 static std::string
 readFile(const std::string& filePath)
 {
@@ -16,75 +17,137 @@ readFile(const std::string& filePath)
 
 ClientEvent::ClientEvent(int socketFd, Epoll::Events events)
 	:	Event(socketFd, events)
+	,	_state(State::READING_REQUEST)
 {}
+
+ClientEvent::~ClientEvent()
+{
+	// // Close CGI pipe if open
+	// if (client._cgiPipeReadFd != -1) {
+	// 	close(client._cgiPipeReadFd);
+	// 	_epoll.ctl(Epoll::Ctl:Del, client._cgiPipeReadFd);
+	// 	_cgiPipeToClientFd.erase(client._cgiPipeReadFd);
+	// }
+
+	// // Close client socket
+	// close(fd);
+	// _epoll.ctl(Epoll::Ctl::Del, fd);
+	// _clients.erase(fd);
+
+	std::cout << "Client " << data.fd << " destructed\n";
+}
 
 void
 ClientEvent::_in()
-const {
-	std::string	request;
-
-	while (request.find("\r\n\r\n") == std::string::npos)
-	{
-		request += Socket::recv(data.fd);
-		if (request.empty())
-			throw CloseConnection(data.fd); // what is this behaviour for? should it close on empty recv or empty request?
+{
+	switch (_state) {
+		case State::READING_REQUEST:
+			readRequest();
+			break;
+		case State::PARSING_REQUEST:
+			parseRequest();
+			break;
+		case State::GENERATING_RESPONSE:
+			generateResponse();
+			break;
+		case State::SENDING_RESPONSE:
+			sendResponse();
+			break;
+		// case State::EXECUTING_CGI:
+		// 	CGIRequest();
+		// 	break;
+		default:;
+			// throw CloseConnection(data.fd);
 	}
-	std::cout << "Client " << data.fd << " Request:\n" << request << "\n";
+}
 
-	// HttpResponse	response(200);
-	// response.setContentType("text/html");
-	// response.setBody(
-	// 	"<html>\n"
-	// 		"<head><title>Webserv</title></head>\n"
-	// 		"<body>\n"
-	// 			"<h1>Hello from Webserv!</h1>\n"
-	// 			"<p>Your request was received successfully.</p>\n"
-	// 		"</body>\n"
-	// 	"</html>\n"
-	// );
+void
+ClientEvent::readRequest()
+{
+	_request += Socket::recv(data.fd);
 
-	// Socket::send(data.fd, response.toString());
+	if (_request.find("\r\n\r\n") == std::string::npos) {
+		_state = State::PARSING_REQUEST;
+		return;
+	}
 
-	// Temporary simple parsing ( REPLACE: )
-	std::istringstream stream(request);
+	if (_request.empty())
+		throw CloseConnection(data.fd); // replace this with Epoll::Events::Err usage maybe
+
+	if (errno != EAGAIN && errno != EWOULDBLOCK) {
+		events = Epoll::Events::Err;
+		LOGGER(log("recv() error: " + std::string(strerror(errno))));
+		throw CloseConnection(data.fd);
+	}
+
+	std::cout << "Client " << data.fd << " Request:\n" << _request << "\n";
+}
+
+void
+ClientEvent::parseRequest()
+{
+	try {
+		// call HttpRequestParser
+
+		_state = State::GENERATING_RESPONSE;
+	} catch (const std::exception& e) {
+		LOGGER(log("Parse error: " + std::string(e.what())));
+		_response.setStatus(400);
+		_response.setContentType("text/html");
+		_response.setBody("<html><body><h1>400 Bad Request</h1></body></html");
+		_state = State::SENDING_RESPONSE;
+	}
+}
+
+void
+ClientEvent::generateResponse()
+{
+	std::istringstream stream(_request);
 	std::string method, path, version;
 	stream >> method >> path >> version;
 
-	// Http response object
-	HttpResponse	response;
-
-	// Check if CGI request
 	if (CGI::isCgiRequest(path)) {
-		// Execute CGI script
+		// _state = State::EXECUTING_CGI;
+		_state = State::SENDING_RESPONSE;
 		std::string cgiOutput = CGI::execute(path, method, "", "");
-		response.setStatus(200);
-		response.setContentType("text/html");
-		response.setBody(cgiOutput);
+		_response.setStatus(200);
+		_response.setContentType("text/html");
+		_response.setBody(cgiOutput);
 	} else {
 		// Non-CGI request (static files)
 		// Temporary: Return 404 for any path that's not / or /cgi.py
 		if (path == "/") {
 			std::string indexContent = readFile("./defaultPages/index.html");
-			if (!indexContent.empty()) {
-				response.setStatus(200);
-				response.setContentType("text/html");
-				response.setBody(indexContent);
+			if (indexContent.empty()) {
+				_response.setStatus(404);
+				_response.setContentType("text/html");
+				_response.setBody(ErrorPages::getErrorPage(404));
 			} else {
-				response.setStatus(404);
-				response.setContentType("text/html");
-				response.setBody(ErrorPages::getErrorPage(404));
+				_response.setStatus(200);
+				_response.setContentType("text/html");
+				_response.setBody(indexContent);
 			}
 		} else {
 			// Return 404 error
-			response.setStatus(404);
-			response.setContentType("text/html");
-			response.setBody(ErrorPages::getErrorPage(404));
+			_response.setStatus(404);
+			_response.setContentType("text/html");
+			_response.setBody(ErrorPages::getErrorPage(404));
 		}
+		_state = State::SENDING_RESPONSE;
+	}
+}
+
+void
+ClientEvent::sendResponse()
+{
+	if (_response.toString().empty()) {
+		_state = State::DONE;
+		return;
 	}
 
 	// Send response
-	std::string responseStr = response.toString();
+	std::string responseStr = _response.toString();
 	send(data.fd, responseStr.c_str(), responseStr.length(), 0);
 
-	// std::cout << "Client " << data.fd << " Response:\n" << responseStr << "\n";
+	_state = State::DONE;
 }

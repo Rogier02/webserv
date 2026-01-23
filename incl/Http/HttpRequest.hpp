@@ -29,7 +29,7 @@
 
 // 	public:
 // 		//method
-	
+
 // 	private:
 // 		RequestType	_type;
 

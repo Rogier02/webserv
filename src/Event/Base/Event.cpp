@@ -14,9 +14,9 @@ void	Event::handle()
 		_out();
 }
 
-void	Event::_in() const {}
+void	Event::_in() {}
 
-void	Event::_out() const {}
+void	Event::_out() {}
 
 // should this give the user an 'internal err' error page?
 Event::CloseConnection::CloseConnection(int fd)

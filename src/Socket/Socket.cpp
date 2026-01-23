@@ -20,7 +20,7 @@ std::string
 Socket::recv(int fd){
 	char	buffer[1024];
 
-	ssize_t nBytes = EasyThrow(::recv(fd, buffer, sizeof(buffer) - 1, 0));
+	ssize_t nBytes = EasyThrow(::recv(fd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT));
 	return (std::string(buffer, nBytes));
 }
 

@@ -22,6 +22,7 @@ class	EventTypes
 		template <typename Type, typename... Args>
 		static Type		&create(int fd, Args&&... args);
 		static Event	*get(int fd);
+		// static void		destroy(int fd);
 };
 
 # include "EventTypes.tpp"

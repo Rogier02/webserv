@@ -23,8 +23,8 @@ class	Event : public epoll_event
 		void	handle();
 
 	private:
-		virtual void	_in() const;
-		virtual void	_out() const;
+		virtual void	_in();
+		virtual void	_out();
 
 	public:
 		class	CloseConnection : public std::runtime_error {

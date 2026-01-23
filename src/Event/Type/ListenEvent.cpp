@@ -7,7 +7,7 @@ ListenEvent::ListenEvent(int socketFd, Epoll::Events events, Epoll &epoll)
 
 void
 ListenEvent::_in()
-const {
+{
 	ClientEvent	client =
 		EventTypes::create<ClientEvent>(Socket::accept(data.fd), Epoll::Events::In);
 	EasyThrow(r_epoll.ctl(Epoll::Ctl::Add, client));
