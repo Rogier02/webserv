@@ -25,8 +25,9 @@ class	Server
 
 	public:
 		Server();
-		Server(Server const &other) = delete;
-		Server &operator=(Server const &other) = delete;
+		Server(const Config &config);
+		Server(const Server &other) = delete;
+		Server &operator=(const Server &other) = delete;
 		~Server() = default;
 
 	private:

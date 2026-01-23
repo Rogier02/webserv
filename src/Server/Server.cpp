@@ -7,26 +7,27 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <string>
 #include <cstring>
 
 std::atomic<bool> Server::_running(false);
 
-Server::Server()
+Server::Server(const Config& config)
 	:	_socket(_port)
 	,	_epoll(_socket)
 	,	_cgiHandler()
 {
-	for (Config::Server &listener : config.servers)
+	for (const Config::Server &server : config.servers)
 	{
-		int	socketFd = ListenSocket(listener.port);
+		int	socketFd = ListenSocket(server.port);
 		EasyPrint(socketFd);
 
-		ListenEvent	&listen =
+		ListenSocket &listening(Config::Server.port);
 			EventTypes::create<ListenEvent>(socketFd, Epoll::Events::In, _epoll);
 
 		EasyThrow(_epoll.ctl(Epoll::Ctl::Add, listen));
 
-		std::cout << "listening on port " << listener.port << "\n";
+		std::cout << "listening on port " << server.port << "\n";
 	}
 }
 
@@ -290,7 +291,7 @@ const {
 		_cgiPipeToClientFd.erase(cgiPipeFd);
 
 		client._response.setStatus(500);
-		client._response.setBody("<html><body><h1>500 Error</h1></body></html>");
+		client._response.setBody(getBody());
 		client.cgiPid = -1;
 		client.cgiPipeReadFd = -1;
 	}
