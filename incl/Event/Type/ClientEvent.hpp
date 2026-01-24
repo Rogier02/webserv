@@ -24,10 +24,13 @@ class ClientEvent : public Event
 
 	public:
 		ClientEvent(int socketFd, Epoll::Events events);
+		ClientEvent(ClientEvent const &other) = delete;
+		ClientEvent(ClientEvent &&other) = delete;
 		~ClientEvent();
 
 	private:
 		State		_state;
+		std::string	_requestBuffer;
 		std::string	_request;
 
 		// HttpRequest		_request;

@@ -6,13 +6,13 @@ Server::Server(Config &config)
 	{
 		int	socketFd = ListenSocket(listener.port);
 		EasyPrint(socketFd);
+		EasyPrint(listener.port);
 
 		ListenEvent	&listen =
-			EventTypes::create<ListenEvent>(socketFd, Epoll::Events::In, _epoll);
+			EventTypes::create<ListenEvent>(
+				socketFd, Epoll::Events::In, _epoll);
 
 		EasyThrow(_epoll.ctl(Epoll::Ctl::Add, listen));
-
-		std::cout << "listening on port " << listener.port << "\n";
 	}
 }
 
@@ -25,7 +25,7 @@ Server::run()
 		try {
 			for (epoll_event &unknown : _epoll.wait(10000))
 			{
-				if (unknown.events & (Epoll::Events::Err | Epoll::Events::Hup))
+				if (unknown.events & (Epoll::Events::Err | Epoll::Events::Hup | Epoll::Events::RdH))
 					_closeConnection(unknown.data.fd);
 				else try {
 					EventTypes::get(unknown.data.fd)->handle(); // if clients hold data, they need to survive beyond this line! they're static now
@@ -56,9 +56,9 @@ Server::run()
 void
 Server::_closeConnection(int fd)
 {
-	EasyThrow(close(fd));
 	EasyThrow(_epoll.ctl(Epoll::Ctl::Del, fd));
+	EasyThrow(close(fd));
 	// EventTypes::destroy(fd);
 
-	std::cout << "Client " << fd << " disconnected.\n";
+	std::cout << "Client " << fd << " Successfully Disconnected.\n";
 }

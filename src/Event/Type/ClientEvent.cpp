@@ -18,11 +18,13 @@ readFile(const std::string& filePath)
 ClientEvent::ClientEvent(int socketFd, Epoll::Events events)
 	:	Event(socketFd, events)
 	,	_state(State::READING_REQUEST)
-{}
+{
+	std::cout << "Client " << data.fd << " Constructed\n";
+}
 
 ClientEvent::~ClientEvent()
 {
-	// // Close CGI pipe if open
+/* 	// // Close CGI pipe if open
 	// if (client._cgiPipeReadFd != -1) {
 	// 	close(client._cgiPipeReadFd);
 	// 	_epoll.ctl(Epoll::Ctl:Del, client._cgiPipeReadFd);
@@ -32,9 +34,9 @@ ClientEvent::~ClientEvent()
 	// // Close client socket
 	// close(fd);
 	// _epoll.ctl(Epoll::Ctl::Del, fd);
-	// _clients.erase(fd);
+	// _clients.erase(fd); */
 
-	std::cout << "Client " << data.fd << " destructed\n";
+	std::cout << "Client " << data.fd << " Destructed\n";
 }
 
 void
@@ -53,34 +55,30 @@ ClientEvent::_in()
 		case State::SENDING_RESPONSE:
 			sendResponse();
 			break;
-		// case State::EXECUTING_CGI:
+/* 		// case State::EXECUTING_CGI:
 		// 	CGIRequest();
-		// 	break;
-		default:;
-			// throw CloseConnection(data.fd);
+		// 	break; */
+		default:
+			events = Epoll::Events::RdH;
 	}
 }
 
 void
 ClientEvent::readRequest()
 {
-	_request += Socket::recv(data.fd);
+	_requestBuffer += Socket::recv(data.fd);
 
-	if (_request.find("\r\n\r\n") == std::string::npos) {
+	std::cout << "Client " << data.fd << " Request:\n" << _requestBuffer << "\n";
+
+	if (_requestBuffer.find("\r\n\r\n") != std::string::npos) {
+		_request += std::move(_requestBuffer);
 		_state = State::PARSING_REQUEST;
 		return;
 	}
 
-	if (_request.empty())
-		throw CloseConnection(data.fd); // replace this with Epoll::Events::Err usage maybe
+	if (_requestBuffer.empty())
+		events = Epoll::Events::RdH;
 
-	if (errno != EAGAIN && errno != EWOULDBLOCK) {
-		events = Epoll::Events::Err;
-		LOGGER(log("recv() error: " + std::string(strerror(errno))));
-		throw CloseConnection(data.fd);
-	}
-
-	std::cout << "Client " << data.fd << " Request:\n" << _request << "\n";
 }
 
 void
@@ -102,7 +100,7 @@ ClientEvent::parseRequest()
 void
 ClientEvent::generateResponse()
 {
-	std::istringstream stream(_request);
+	std::istringstream stream(std::move(_requestBuffer));
 	std::string method, path, version;
 	stream >> method >> path >> version;
 
@@ -140,12 +138,6 @@ ClientEvent::generateResponse()
 void
 ClientEvent::sendResponse()
 {
-	if (_response.toString().empty()) {
-		_state = State::DONE;
-		return;
-	}
-
-	// Send response
 	std::string responseStr = _response.toString();
 	send(data.fd, responseStr.c_str(), responseStr.length(), 0);
 

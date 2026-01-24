@@ -27,6 +27,7 @@ class	Epoll
 			Out	= EPOLL_EVENTS::EPOLLOUT,
 			Err	= EPOLL_EVENTS::EPOLLERR,
 			Hup	= EPOLL_EVENTS::EPOLLHUP,
+			RdH	= EPOLL_EVENTS::EPOLLRDHUP,
 		};
 
 	public:
