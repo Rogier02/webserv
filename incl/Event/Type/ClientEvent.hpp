@@ -4,6 +4,7 @@
 // C++
 # include <iostream>
 // webserv
+# include "Config.hpp"
 # include "EventTypes.hpp"
 # include "HttpResponse.hpp"
 # include "ErrorPages.hpp"
@@ -23,15 +24,17 @@ class ClientEvent : public Event
 		};
 
 	public:
-		ClientEvent(int socketFd, Epoll::Events events);
+		ClientEvent(int socketFd, Config::Server const &config);
 		ClientEvent(ClientEvent const &other) = delete;
 		ClientEvent(ClientEvent &&other) = delete;
 		~ClientEvent();
 
 	private:
-		State		_state;
-		std::string	_requestBuffer;
-		std::string	_request;
+		Config::Server	r_config;
+
+		State			_state;
+		std::string		_requestBuffer;
+		std::string		_request;
 
 		// HttpRequest		_request;
 		// bool			_requestComplete;

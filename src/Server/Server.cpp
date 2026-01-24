@@ -10,7 +10,7 @@ Server::Server(Config &config)
 
 		ListenEvent	&listen =
 			EventTypes::create<ListenEvent>(
-				socketFd, Epoll::Events::In, _epoll);
+				socketFd, Epoll::Events::In, _epoll, listener);
 
 		EasyThrow(_epoll.ctl(Epoll::Ctl::Add, listen));
 	}

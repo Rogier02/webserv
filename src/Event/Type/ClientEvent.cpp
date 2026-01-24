@@ -15,8 +15,9 @@ readFile(const std::string& filePath)
 	return (buffer.str());
 }
 
-ClientEvent::ClientEvent(int socketFd, Epoll::Events events)
-	:	Event(socketFd, events)
+ClientEvent::ClientEvent(int socketFd, Config::Server const &config)
+	:	Event(socketFd, Epoll::Events::In)
+	,	r_config(config)
 	,	_state(State::READING_REQUEST)
 {
 	std::cout << "Client " << data.fd << " Constructed\n";
