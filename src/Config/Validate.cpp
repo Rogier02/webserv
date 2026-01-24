@@ -125,12 +125,24 @@ Validate::validateLocation(const Config::Server::Location &location)
 bool
 Validate::directoryExists(const std::string& path)
 {
+	if (std::filesystem::path(path).is_absolute())
+	{
+		std::string	currentPath = std::filesystem::current_path();
+		std::string fullPath = currentPath + path;
+		return (std::filesystem::is_directory(fullPath));
+	}
 	return (std::filesystem::is_directory(path));
 }
 
 bool
 Validate::fileExists(const std::string& path)
 {
+	if (std::filesystem::path(path).is_absolute())
+	{
+		std::string	currentPath = std::filesystem::current_path();
+		std::string fullPath = currentPath + path;
+		return (std::filesystem::is_regular_file(fullPath));
+	}
 	return (std::filesystem::is_regular_file(path));
 }
 
