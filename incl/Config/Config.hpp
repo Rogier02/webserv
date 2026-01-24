@@ -25,7 +25,7 @@ struct	Config
 			int			redirectStatus = 0;
 			bool		autoindex = false;
 			std::string	uploadDir;
-			std::string	index;
+			std::string	index; //hier doen we nog helemaal niks mee???
 			std::string	cgiEXT;
 			std::string	cgiPath;
 
