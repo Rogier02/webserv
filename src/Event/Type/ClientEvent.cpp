@@ -40,111 +40,145 @@ ClientEvent::~ClientEvent()
 	std::cout << "Client " << data.fd << " Destructed\n";
 }
 
+
+/* 	Client IN should:
+		- read the request (in chunks)
+		- parse the request, determine course of action
+
+	Then the client should:
+		- fulfill the request (GET, POST, CGI?)
+		- make up the response
+
+	Then somehow Client OUT should trigger......
+		- and Socket::send(response);
+*/
+
+
 void
 ClientEvent::_in()
 {
-	switch (_state) {
-		case State::READING_REQUEST:
-			readRequest();
-			break;
-		case State::PARSING_REQUEST:
-			parseRequest();
-			break;
-		case State::GENERATING_RESPONSE:
-			generateResponse();
-			break;
-		case State::SENDING_RESPONSE:
-			sendResponse();
-			break;
-/* 		// case State::EXECUTING_CGI:
-		// 	CGIRequest();
-		// 	break; */
-		default:
-			events = Epoll::Events::RdH;
-	}
-}
 
-void
-ClientEvent::readRequest()
-{
 	_requestBuffer += Socket::recv(data.fd);
-
 	std::cout << "Client " << data.fd << " Request:\n" << _requestBuffer << "\n";
 
-	if (_requestBuffer.find("\r\n\r\n") != std::string::npos) {
-		_request = std::move(_requestBuffer);
-		// _state = State::PARSING_REQUEST;
-		parseRequest();
-		return;
-	}
 
-	if (_requestBuffer.empty())
-		events = Epoll::Events::RdH;
-}
-
-void
-ClientEvent::parseRequest()
-{
-	try {
-		// call HttpRequestParser
-		// _state = State::GENERATING_RESPONSE;
-		generateResponse();
-	} catch (const std::exception& e) {
-		LOGGER(log("Parse error: " + std::string(e.what())));
-		_response.setStatus(400);
+	std::string indexContent = readFile("./defaultPages/index.html");
+	if (indexContent.empty()) {
+		_response.setStatus(404);
 		_response.setContentType("text/html");
-		_response.setBody("<html><body><h1>400 Bad Request</h1></body></html");
-		_state = State::SENDING_RESPONSE;
-	}
-}
-
-void
-ClientEvent::generateResponse()
-{
-	std::istringstream	stream(std::move(_request));
-	std::string			method, path, version;
-	stream >> method >> path >> version;
-
-	if (CGI::isCgiRequest(path)) {
-		// _state = State::EXECUTING_CGI;
-		// _state = State::SENDING_RESPONSE;
-		sendResponse();
-		std::string cgiOutput = CGI::execute(path, method, "", "");
+		_response.setBody(ErrorPages::getErrorPage(404));
+	} else {
 		_response.setStatus(200);
 		_response.setContentType("text/html");
-		_response.setBody(cgiOutput);
-	} else {
-		// Non-CGI request (static files)
-		// Temporary: Return 404 for any path that's not / or /cgi.py
-		if (path == "/") {
-			std::string indexContent = readFile("./defaultPages/index.html");
-			if (indexContent.empty()) {
-				_response.setStatus(404);
-				_response.setContentType("text/html");
-				_response.setBody(ErrorPages::getErrorPage(404));
-			} else {
-				_response.setStatus(200);
-				_response.setContentType("text/html");
-				_response.setBody(indexContent);
-			}
-		} else {
-			// Return 404 error
-			_response.setStatus(404);
-			_response.setContentType("text/html");
-			_response.setBody(ErrorPages::getErrorPage(404));
-		}
-		// _state = State::SENDING_RESPONSE;
-		sendResponse();
+		_response.setBody(indexContent);
 	}
-}
 
-void
-ClientEvent::sendResponse()
-{
 	std::string responseStr = _response.toString();
 	send(data.fd, responseStr.c_str(), responseStr.length(), 0);
-
-	_state = State::DONE;
-	// events = Epoll::Events::RdH;
 	throw CloseConnection(data.fd);
+
+// 	switch (_state) {
+// 		case State::READING_REQUEST:
+// 			readRequest();
+// 			break;
+// 		case State::PARSING_REQUEST:
+// 			parseRequest();
+// 			break;
+// 		case State::GENERATING_RESPONSE:
+// 			generateResponse();
+// 			break;
+// 		case State::SENDING_RESPONSE:
+// 			sendResponse();
+// 			break;
+// /* 		// case State::EXECUTING_CGI:
+// 		// 	CGIRequest();
+// 		// 	break; */
+// 		default:
+// 			events = Epoll::Events::RdH;
+// 	}
 }
+
+// void
+// ClientEvent::readRequest()
+// {
+// 	_requestBuffer += Socket::recv(data.fd);
+
+// 	std::cout << "Client " << data.fd << " Request:\n" << _requestBuffer << "\n";
+
+// 	if (_requestBuffer.find("\r\n\r\n") != std::string::npos) {
+// 		_request = std::move(_requestBuffer);
+// 		// _state = State::PARSING_REQUEST;
+// 		parseRequest();
+// 		return;
+// 	}
+
+// 	if (_requestBuffer.empty())
+// 		events = Epoll::Events::RdH;
+// }
+
+// void
+// ClientEvent::parseRequest()
+// {
+// 	try {
+// 		// call HttpRequestParser
+// 		// _state = State::GENERATING_RESPONSE;
+// 		generateResponse();
+// 	} catch (const std::exception& e) {
+// 		LOGGER(log("Parse error: " + std::string(e.what())));
+// 		_response.setStatus(400);
+// 		_response.setContentType("text/html");
+// 		_response.setBody("<html><body><h1>400 Bad Request</h1></body></html");
+// 		_state = State::SENDING_RESPONSE;
+// 	}
+// }
+
+// void
+// ClientEvent::generateResponse()
+// {
+// 	std::istringstream	stream(std::move(_request));
+// 	std::string			method, path, version;
+// 	stream >> method >> path >> version;
+
+// 	if (CGI::isCgiRequest(path)) {
+// 		// _state = State::EXECUTING_CGI;
+// 		// _state = State::SENDING_RESPONSE;
+// 		sendResponse();
+// 		std::string cgiOutput = CGI::execute(path, method, "", "");
+// 		_response.setStatus(200);
+// 		_response.setContentType("text/html");
+// 		_response.setBody(cgiOutput);
+// 	} else {
+// 		// Non-CGI request (static files)
+// 		// Temporary: Return 404 for any path that's not / or /cgi.py
+// 		if (path == "/") {
+// 			std::string indexContent = readFile("./defaultPages/index.html");
+// 			if (indexContent.empty()) {
+// 				_response.setStatus(404);
+// 				_response.setContentType("text/html");
+// 				_response.setBody(ErrorPages::getErrorPage(404));
+// 			} else {
+// 				_response.setStatus(200);
+// 				_response.setContentType("text/html");
+// 				_response.setBody(indexContent);
+// 			}
+// 		} else {
+// 			// Return 404 error
+// 			_response.setStatus(404);
+// 			_response.setContentType("text/html");
+// 			_response.setBody(ErrorPages::getErrorPage(404));
+// 		}
+// 		// _state = State::SENDING_RESPONSE;
+// 		sendResponse();
+// 	}
+// }
+
+// void
+// ClientEvent::sendResponse()
+// {
+// 	std::string responseStr = _response.toString();
+// 	send(data.fd, responseStr.c_str(), responseStr.length(), 0);
+
+// 	_state = State::DONE;
+// 	// events = Epoll::Events::RdH;
+// 	throw CloseConnection(data.fd);
+// }
