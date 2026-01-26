@@ -14,5 +14,5 @@ ListenEvent::_in()
 			Socket::accept(data.fd), _config);
 	EasyThrow(r_epoll.ctl(Epoll::Ctl::Add, client));
 
-	std::cout << "Client " << client.data.fd << " Successfully Connected.\n";
+	std::cout << "Client " << client.data.fd << " \e[32mSuccessfully Connected.\e[0m\n";
 }

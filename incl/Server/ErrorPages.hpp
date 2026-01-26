@@ -7,29 +7,19 @@
 # include <fstream>
 # include <sstream>
 
-class ErrorPages
+namespace ErrorPages
 {
-	private:
-		struct Page {
-			int			code;
-			std::string	title;
-			std::string	path;
-			std::string	content;
-		};
+	static std::map<int, std::string>	_pages = {
+		{000, "Unknown Error"},
+		{400, "Bad Request"},
+		{404, "Not Found"},
+		{500, "Internal Server Error"},
+		{502, "Bad Gateway"},
+		{503, "Service Unavailable"},
+	};
 
-	public:
-		ErrorPages();
-		~ErrorPages();
-
-	private:
-		static const std::string	_directory;
-		static std::map<int, Page>	_pages;
-
-	public:
-		static std::string getErrorPage(int statusCode);
-
-	private:
-		static Page const	&getPage(int code);
+	std::string getBody(int code);
+	std::string getTitle(int code);
 };
 
 #endif

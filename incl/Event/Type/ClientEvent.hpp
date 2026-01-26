@@ -10,6 +10,7 @@
 # include "ErrorPages.hpp"
 # include "CGI.hpp"
 # include "Logger.hpp"
+# include "IO.hpp"
 
 class ClientEvent : public Event
 {
@@ -44,13 +45,13 @@ class ClientEvent : public Event
 	private:
 		void	_in() override;
 
-	private:
+/* 	private:
 		void	readRequest();
 		void	parseRequest();
 		void	generateResponse();
 		void	sendResponse();
 		void	CGIRequest();
-		// void	CGIRelay();
+		// void	CGIRelay(); */
 };
 
 #endif
