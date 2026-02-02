@@ -5,9 +5,9 @@
 # include <string>
 # include <map>
 // webserv
-# include <Http_v1_0.hpp>
+# include <HttpCommon.hpp>
 
-class HttpRequest
+class	HttpRequest
 {
 	public:
 		HttpRequest() = default;

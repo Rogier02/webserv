@@ -1,8 +1,7 @@
-#ifndef HTTP_v1_0_HPP
-# define HTTP_v1_0_HPP
+#ifndef HTTPCOMMON_HPP
+# define HTTPCOMMON_HPP
 
 # include <string>
-# include <vector>
 # include <map>
 
 namespace Http {
