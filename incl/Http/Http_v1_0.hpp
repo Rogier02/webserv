@@ -10,7 +10,7 @@ namespace Http {
 	constexpr	std::string	SP = " ";
 	constexpr	std::string CRLF = "\r\n";
 
-	std::map<u_int8_t, std::string>	StatusCodes	= {
+	static std::map<u_int8_t, std::string>	StatusCodes	= {
 		{200, "OK"},
 		{201, "Created"},
 		{202, "Accepted"},
@@ -37,6 +37,7 @@ namespace Http {
 
 		public:
 			Message() = default;
+			Message(std::string const &version);
 			Message(Message const &) = delete;
 			Message(Message &&) = delete;
 			virtual ~Message() = default;
@@ -53,11 +54,6 @@ namespace Http {
 				// allow, content-endcoding, content-length, content-type, expires, last-modified
 
 			std::string	_entityBody;
-
-		public:
-			int	setEntityBody(std::string const &content);
-
-			std::string const	&getVersion() const;
 
 		protected:
 			static void	writeHeaders(std::string &dest, HeaderMap const &headerMap);
@@ -82,11 +78,20 @@ namespace Http {
 
 			HeaderMap	_requestHeaders;
 				// authorisation, from, if-modified-since, referer, user-agent
+
+		public:
+			std::string const	&getVersion() const;
+			std::string const	&getMethod() const;
+			std::string const	&getURI() const;
+			std::string const	&getEntityBody() const;
+
+			std::string const	&getGeneralHeaderValue(std::string const &key) const;
+			std::string const	&getEntityHeaderValue(std::string const &key) const;
 	};
 
 	class	Response : public Message {
 		public:
-			Response();
+			Response(std::string const &version = "0.9", u_int8_t statusCode = 200);
 			Response(Response const &) = delete;
 			Response(Response &&) = delete;
 			~Response() = default;
@@ -102,6 +107,14 @@ namespace Http {
 
 			HeaderMap	_responseHeaders;
 				// location, server, www-authenticate
+
+		public:
+			int	setVersion(std::string const &version);
+			int	setStatus(std::string const &status);
+			int	setEntityBody(std::string const &content);
+
+			int	setGeneralHeaderValue(std::string const &key, std::string const &value);
+			int	setEntityHeaderValue(std::string const &key, std::string const &value);
 	};
 }
 

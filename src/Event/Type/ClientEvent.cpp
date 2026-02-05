@@ -26,7 +26,8 @@ ClientEvent::_in()
 		return ; // incomplete request: we'll get em on the next pass
 	}
 
-	_request = std::move(_requestBuffer); // leaves buffer empty
+	// _request = std::move(_requestBuffer); // leaves buffer empty
+	Http::Request HttpRequest(std::move(_requestBuffer));
 
 	// MIDDLE (this should be elsewhere)
 	// use HTTP request construction from buffer instead of simple _request string
@@ -35,20 +36,20 @@ ClientEvent::_in()
 		path? location? redirect? other stuff?
 		Method???
 	} catch (HttpRequest::ParseErrorException const &exception) {
-		_response = std::move(HttpResponse::createErrorPage(400));
+		HttpResponse = std::move(HttpResponse::createErrorPage(400));
 	} */
+
+	Http::Response	HttpResponse("1.0");
 
 	std::string indexContent = readFile("./defaultPages/index.html");
 	/* if (indexContent.empty()) {
-		_response = std::move(HttpResponse::createErrorPage(404));
+		HttpResponse = std::move(HttpResponse::createErrorPage(404));
 	} else  */{
-		_response.setStatus(200);
-		_response.setContentType("text/html");
-		_response.setBody(indexContent);
+		HttpResponse.setEntityBody(indexContent);
 	}
 
 	// OUT
-	Socket::send(data.fd, _response.toString());
+	Socket::send(data.fd, HttpResponse.toString());
 	throw CloseConnection(data.fd);
 }
 
