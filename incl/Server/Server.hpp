@@ -37,8 +37,6 @@ class	Server
 		Epoll						_epoll;
 		std::vector<ListenSocket>	_listenSockets;
 
-		ErrorPages	_errorPageHandler;
-
 	public:
 		void	run();
 
