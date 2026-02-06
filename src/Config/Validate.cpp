@@ -1,8 +1,11 @@
 #include "Validate.hpp"
 #include <algorithm>
 #include <filesystem>
+#include <unordered_set>
 
-Validate::Validate(const Config &config) : _config(config) {}
+Validate::Validate(const Config &config) : _config(config) {
+	validateConfig();
+}
 
 void
 Validate::validateConfig()
@@ -13,8 +16,8 @@ Validate::validateConfig()
 	for (size_t i = 0; i < _config.servers.size(); i++)
 	{
 		validateServer(_config.servers[i]);
-		if (!_validated)
-			log("Config error: something in server is not valid");
+		// if (!_validated)
+		// 	log("Config error: something in server is not valid");
 	}
 	report();
 }
@@ -22,21 +25,21 @@ Validate::validateConfig()
 void
 Validate::validateServer(const Config::Server &server)
 {
+	if (server.name.empty())
+		log("Config error: server name is empty");
 	validateHost(server.host);
 	validatePort(server.port);
-// check if exists:
-		// 	std::string	name;
-		// std::string	host;
-		// std::string	root;
-		// int			port = 0;
-		// size_t		clientMaxBodySize;
-	// check if they are valid.
 
 	for (size_t i = 0; i < server.errorPages.size(); i++)
 		validateErrorPage(server.errorPages[i]);
 
-	for (size_t i = 0; i < server.locations.size(); i++)
+	for (size_t i = 0; i < server.locations.size(); i++){
+		std::unordered_set<std::string>	seen;
+
+		if (!seen.insert(server.locations[i].path).second) //duplicate locations		startup	❌
+			log("Config error: duplicate location");
 		validateLocation(server.locations[i]);
+	}
 }
 void
 Validate::validateHost(const std::string &host)
@@ -78,29 +81,33 @@ Validate::validatePort(int port)
 void
 Validate::validateErrorPage(const Config::Server::Page &errorPage)
 {
-	validErrorCodes.count(errorPage.code);
+	if (!validErrorCodes.count(errorPage.code))
+		log("Config error: " + std::to_string(errorPage.code) + " does not belong to the list of valid errorPages.");
+	// 	error page missing		startup	✅ (warning in terminal)
 	if (errorPage.path.empty())
-		log("Error page path is empty!");
+		std::cout << "Error page path is empty!" << std::endl;
 	else if (!fileExists(errorPage.path))
-		log(errorPage.path + " file doesn't exist.");
-	// check if the file is not empty?? maybe don't check for this in validate.
+		std::cout << errorPage.path << " file doesn't exist." << std::endl;
 }
 
 bool
-isValidMethod(std::string method)
+Validate::isValidMethod(std::string method)
 {
+	// invalid HTTP methods	startup	❌;
 	return (method == "GET" || method == "POST" || method == "DELETE");
 }
 
 void
 Validate::validateLocation(const Config::Server::Location &location)
 {
+	// location root missing	startup	✅ (warning in terminal)
 	if (!location.path.empty() && !directoryExists(location.path))
-		log(location.path + " directory doesn't exist.");
+		std::cout << location.path << " directory doesn't exist." << std::endl;
+	// location root missing	startup	✅ (warning in terminal)
 	if (!location.root.empty() && !directoryExists(location.root))
-		log(location.root + " directory doesn't exist.");
-	if (location.clientMaxBodySize > 104857600 && location.clientMaxBodySize < 1)
-		log("client_max_body_size of " + location.clientMaxBodySize + " is too big. Max: 100m");
+		std::cout << location.root << " directory doesn't exist." << std::endl;
+	if ((location.clientMaxBodySize > 104857600 || location.clientMaxBodySize < 1) && location.clientMaxBodySize != 0)
+		log("client_max_body_size of " + std::to_string(location.clientMaxBodySize) + " is too big. Max: 100m");
 	if (!location.returnURL.path.empty() && !directoryExists(location.returnURL.path))
 		log(location.returnURL.path + " directory doesn't exist.");
 	if (!location.uploadDir.empty() && !directoryExists(location.uploadDir))
@@ -154,8 +161,10 @@ Validate::log(std::string const &message) {
 void
 Validate::report()
 {
-	if (_log.empty())
+	if (_log.empty()){
+		// _validated = true;
 		return ;
+	}
 
 	LOGGER(startBlock("Config File Errors"));
 	for (std::string message : _log)
@@ -166,9 +175,10 @@ Validate::report()
 }
 
 
-void	iAmHere()
+void	iAmHere(std::string string)
 {
 	std::cout << "==========================================\n";
 	std::cout << "=========== This is where I am ===========\n";
-	std::cout << "==========================================" << std::endl;
+	std::cout << "==========================================\n";
+	std::cout << "I am in: " << string << std::endl;
 }
