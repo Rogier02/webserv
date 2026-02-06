@@ -6,7 +6,7 @@
 # include <vector>
 # include <iostream>
 
-struct	Config
+struct	Config //should probably be Server class
 {
 	struct	Server
 	{

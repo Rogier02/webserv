@@ -24,7 +24,7 @@
 
 extern	std::atomic<bool>	_pleaseShutDown;
 
-class	Server
+class	Server //Should be main biggest webserv class thingie
 {
 	public:
 		Server() = delete;
@@ -34,8 +34,9 @@ class	Server
 		~Server() = default;
 
 	private:
+		std::vector<Server>			servers;
 		Epoll						_epoll;
-		std::vector<ListenSocket>	_listenSockets;
+		std::vector<ListenSocket>	_listenSockets;//should be in Server(which is now still Config)
 
 		ErrorPages	_errorPageHandler;
 
