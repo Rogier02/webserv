@@ -6,6 +6,14 @@
 #include <sstream>
 #include <iostream>
 
+// /*
+// -- HTTP1.0 request example --
+// GET /index.html HTTP/1.0
+// Host: www.example.com
+// User-Agent: Mozilla/5.0
+// Accept: text/html
+// */
+
 namespace CGI
 {
 	bool
@@ -74,39 +82,37 @@ namespace CGI
 
 	//TODO: REMOVE SETENV and add own implamentation
 	void
-	setupEnvironment(
-		std::string const &path,
-		std::string const &method,
-		std::string const &query,
-		std::string const &body)
+	setupEnvironment(HttpRequest& request)
 	{
-		// HTTP request method (GET, POST, DELETE, etc.)
-		setenv("REQUEST_METHOD", method.c_str(), 1);
+		std::unordered_map<std::string, std::string> _environmentMap;
 
-		// Path to the CGI script
-		setenv("SCRIPT_NAME", path.c_str(), 1);
+		_environmentMap["REQUEST_METHOD"] = request.getMethod();
+		_environmentMap["QUERY_STRING"] = request.getQueryString();
+		_environmentMap["CONTENT_TYPE"] = request.getContentType();
+		_environmentMap["CONTENT_LENGTH"] = request.getCOntentLength();
+		_environmentMap["SCRIPT_NAME"] = request.getScriptName();
+		_environmentMap["REQUEST_URI"] = request.getUri();
+		_environmentMap["SERVER_PROTOCOL"] = "HTTP/1.1";
+		_environmentMap["GATEWAY_INTERFACE"] = "CGI/1.1";
 
-		// URL query string (after the ? in URL)
-		setenv("QUERY_STRING", query.c_str(), 1);
+		auto headers = request.getHeaders();
+		for (const auto& [headerName, headerValue] : headers) {
+			if (headerName == "Content-Type" || headerName == "Content-Length")
+				continue;
+			
+			std::string cgiVarName = "HTTP_";
+			for (char c : headerName) {
+				if (c == '-')
+					cgiVarName += '_';
+				else
+					cgiVarName += std::toupper(c);
+			}
+			_environmentMap[cgiVarName] = headerValue;
+		}
 
-		// Length of request body in bytes
-		setenv("CONTENT_LENGTH", std::to_string(body.length()).c_str(), 1);
-
-		// MIME type of request body
-		setenv("CONTENT_TYPE", "application/x-www-form-urlencoded", 1);
-
-		// Server hostname
-		setenv("SERVER_NAME", "webserv", 1);
-
-		// Server port
-		setenv("SERVER_PORT", "8080", 1);
-
-		// HTTP version
-		setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
-
-		// CGI gateway interface version
-		setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
 	};
+
+	// TODO: CONVERT MAP TO CHAR **
 
 	std::string
 	executeScript(
