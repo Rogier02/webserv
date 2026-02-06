@@ -28,10 +28,7 @@ namespace	CGI
 
 	std::string	getCgiInterpreter(const std::string& extension);
 
-	void		setupEnvironment(const std::string& path,
-		const std::string& method,
-		const std::string& query,
-		const std::string& body);
+	void		setupEnvironment(HttpRequest& request);
 
 	std::string	executeScript(const std::string& interpreter,
 		const std::string& scriptPath);
