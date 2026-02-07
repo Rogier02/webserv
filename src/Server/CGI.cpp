@@ -17,15 +17,15 @@
 
 bool
 isCgiRequest(std::string const &path)
-	{
+{
 		for(const auto& ext : SupportedExtensions)
 			if (path.find(ext.first) != std::string::npos)
 				return (true);
 		return (false);
 	}
 
-	std::string
-	getCgiExtension(std::string const &path)
+std::string
+getCgiExtension(std::string const &path)
 	{
 		for (const auto& ext : SupportedExtensions)
 			if (path.find(ext.first) != std::string::npos)
@@ -104,7 +104,7 @@ isCgiRequest(std::string const &path)
 			}
 			_environmentMap[cgiVarName] = headerValue;
 		}
-		
+
 	};
 
 	// TODO: CONVERT MAP TO CHAR **

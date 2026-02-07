@@ -15,6 +15,10 @@ class CGI
 	// 		WRITE
 	// 	};
 
+	public:
+		CGI() = default;
+		~CGI();
+
 	private:
 
 		//state state;
