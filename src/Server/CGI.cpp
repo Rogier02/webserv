@@ -14,10 +14,9 @@
 // Accept: text/html
 // */
 
-namespace CGI
-{
-	bool
-	isCgiRequest(std::string const &path)
+
+bool
+isCgiRequest(std::string const &path)
 	{
 		for(const auto& ext : SupportedExtensions)
 			if (path.find(ext.first) != std::string::npos)
@@ -44,11 +43,7 @@ namespace CGI
 	};
 
 	std::string
-	execute(
-		std::string const &path,
-		std::string const &method,
-		std::string const &query,
-		std::string const &body)
+	execute(HttpRequest& request))
 	{
 		std::string extension = getCgiExtension(path);
 		if (extension.empty()) {
@@ -74,7 +69,7 @@ namespace CGI
 		std::string scriptPath = BinDirectory + scriptFilename;
 		// end
 
-		setupEnvironment(path, method, query, body);
+		setupEnvironment(request);
 
 		return (executeScript(interpreter, scriptPath));
 
@@ -109,7 +104,7 @@ namespace CGI
 			}
 			_environmentMap[cgiVarName] = headerValue;
 		}
-
+		
 	};
 
 	// TODO: CONVERT MAP TO CHAR **

@@ -4,34 +4,56 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <HttpRequest.hpp>
 
-namespace	CGI
+class CGI
 {
-	const std::string BinDirectory = "./src/cgi-bin/";
+	// public :
+	// 	enum state {
+	// 		INACTIVE,
+	// 		READ,
+	// 		WRITE
+	// 	};
 
-	const std::map<std::string, std::string> SupportedExtensions = {
-		{".py", "/usr/bin/python3"},
-		{".sh", "/bin/bash"}
-		//{".php", "/usr/bin/php-cgi"},
-		// {".pl", "/usr/bin/perl"}
-	};
+	private:
 
-	bool		isCgiRequest(const std::string& path);
+		//state state;
 
-	std::string	execute(
-		const std::string& path,
-		const std::string& method,
-		const std::string& query,
-		const std::string& body);
+		const HttpRequest& request;
 
-	std::string	getCgiExtension(const std::string& path);
+		std::string buffer;
+		std::string Response;
 
-	std::string	getCgiInterpreter(const std::string& extension);
+		pid_t	pid;
+		int		cgi_stdin;
+		int		cgi_stdout;
 
-	void		setupEnvironment(HttpRequest& request);
 
-	std::string	executeScript(const std::string& interpreter,
-		const std::string& scriptPath);
+	private:
+		
+		const std::string BinDirectory = "./src/cgi-bin/";
+		const std::map<std::string, std::string> SupportedExtensions = {
+			{".py", "/usr/bin/python3"},
+			//{".sh", "/bin/bash"}
+			//{".php", "/usr/bin/php-cgi"},
+			// {".pl", "/usr/bin/perl"}
+		};
+
+	public :
+
+		bool		isCgiRequest(const std::string& path);
+		bool		isCgiRequestSupported(const std::string& path);
+
+		void		captureOutput(std::string &buffer);
+
+		std::string	configureCgiResponse();
+		std::string	execute(HttpRequest& request);
+		
+		//std::string	getCgiInterpreter(const std::string& extension);
+
+		char 		**setupEnvironment(HttpRequest& request);
+		char 		**envMapToArray()
+
 };
 
 #endif
