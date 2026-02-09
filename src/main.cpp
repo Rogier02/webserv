@@ -6,6 +6,7 @@
 #include "Server.hpp"
 #include "Config.hpp"
 #include "Parse.hpp"
+#include "Validate.hpp"
 #include "HttpRequest.hpp"
 
 std::atomic<bool>	_pleaseShutDown(false);
@@ -37,10 +38,10 @@ int	main(int argc, char *argv[])
 	signal(SIGTERM, stopAllServerLoops);
 
 	try {
-		Config	config = Parse(configFilePath).config();
+		Config		config = Parse(configFilePath).config();
 		// std::cout << config;
-
-		Server	server(config);
+		Validate	validation(config);
+		Server		server(config);
 		server.run();
 	} catch (std::exception &exception) {
 		std::cerr << "Fatal Error: " << exception.what() << std::endl;
