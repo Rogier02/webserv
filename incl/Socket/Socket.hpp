@@ -10,10 +10,14 @@
 // webserv
 # include "EasyThrow.hpp"
 
+// this class is weeeeeird
+
 class	Socket
 {
 	public:
 		Socket();
+		Socket(Socket const &) = delete;
+		Socket(Socket &&) = delete;
 		virtual ~Socket();
 
 	public:

@@ -19,8 +19,8 @@ class	Parse
 
 	public:
 		Parse() = delete;
-		Parse(Parse const &other) = delete;
-		Parse(Parse &&other) = delete;
+		Parse(Parse const &) = delete;
+		Parse(Parse &&) = delete;
 		Parse(std::string const &filePath);
 		~Parse() = default;
 

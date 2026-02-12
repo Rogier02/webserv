@@ -8,33 +8,8 @@
 
 class CGI
 {
-	// public :
-	// 	enum state {
-	// 		INACTIVE,
-	// 		READ,
-	// 		WRITE
-	// 	};
-
-	public:
-		CGI() = default;
-		~CGI();
-
 	private:
-
-		//state state;
-
-		const HttpRequest& request;
-
-		std::string buffer;
-		std::string Response;
-
-		pid_t	pid;
-		int		cgi_stdin;
-		int		cgi_stdout;
-
-
-	private:
-		
+			
 		const std::string BinDirectory = "./src/cgi-bin/";
 		const std::map<std::string, std::string> SupportedExtensions = {
 			{".py", "/usr/bin/python3"},
@@ -43,21 +18,25 @@ class CGI
 			// {".pl", "/usr/bin/perl"}
 		};
 
-	public :
+	public:
+		CGI() = default;
+		~CGI() = default;
 
-		bool		isCgiRequest(const std::string& path);
-		bool		isCgiRequestSupported(const std::string& path);
+		bool isCgiRequest(const std::string& path) const;
+		std::string execute(HttpRequest& request);
+	
+	private:
 
-		void		captureOutput(std::string &buffer);
-
-		std::string	configureCgiResponse();
-		std::string	execute(HttpRequest& request);
-		
-		//std::string	getCgiInterpreter(const std::string& extension);
-
+		std::string getCgiExtension(const std::string& path) const;
+		std::string getCgiInterpreter(const std::string& extension) const;
 		char 		**setupEnvironment(HttpRequest& request);
-		char 		**envMapToArray()
+		std::string executescript(
+			const std;:string& interpreter,
+			const std::string& scriptPath,
+			const std::string& requestBody,
+			char **envp);
 
+		std::string	parseCgiResponse(const std::string& rawOutput) const;
 };
 
 #endif

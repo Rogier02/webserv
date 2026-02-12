@@ -32,8 +32,8 @@ class	Epoll
 
 	public:
 		Epoll();
-		Epoll(Epoll const &other) = delete;
-		Epoll(Epoll &&other) = delete;
+		Epoll(Epoll const &) = delete;
+		Epoll(Epoll &&) = delete;
 		~Epoll();
 
 	public:

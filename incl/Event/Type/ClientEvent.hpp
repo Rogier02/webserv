@@ -6,7 +6,7 @@
 // webserv
 # include "Config.hpp"
 # include "EventTypes.hpp"
-# include "HttpResponse.hpp"
+# include "Http_v1_0.hpp"
 # include "ErrorPages.hpp"
 # include "CGI.hpp"
 # include "Logger.hpp"
@@ -25,22 +25,20 @@ class ClientEvent : public Event
 		};
 
 	public:
+		ClientEvent() = default;// delete?
+		ClientEvent(ClientEvent const &) = delete;
+		ClientEvent(ClientEvent &&) = delete;
 		ClientEvent(int socketFd, Config::Server const &config);
-		ClientEvent(ClientEvent const &other) = delete;
-		ClientEvent(ClientEvent &&other) = delete;
 		~ClientEvent();
 
 	private:
-		Config::Server	r_config;
+		Config::Server const	&r_config;
 
 		State			_state;
 		std::string		_requestBuffer;
 		std::string		_request;
 
-		// HttpRequest		_request;
-		// bool			_requestComplete;
-
-		HttpResponse	_response;
+		// bool			_requestComplete;// maybe use response status 0 to mean Incomplete?
 
 	private:
 		void	_in() override;

@@ -7,7 +7,7 @@
 // webserv
 # include "Event.hpp"
 
-class	EventTypes
+class	EventTypes// make this a namespace
 {
 	public:
 		EventTypes() = delete;

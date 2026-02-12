@@ -20,8 +20,8 @@ class	Logger
 
 	private:
 		Logger();
-		Logger(Logger const &other) = delete;
-		Logger(Logger &&other) = delete;
+		Logger(Logger const &) = delete;
+		Logger(Logger &&) = delete;
 		~Logger();
 
 	public:

@@ -28,8 +28,8 @@ class	Server
 {
 	public:
 		Server() = delete;
-		Server(Server const &other) = delete;
-		Server &operator=(Server const &other) = delete;
+		Server(Server const &) = delete;
+		Server(Server &&) = delete;
 		Server(Config &config);
 		~Server() = default;
 
