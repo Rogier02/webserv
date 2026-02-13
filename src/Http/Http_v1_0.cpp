@@ -99,4 +99,51 @@ namespace Http {
 		return (_entityBody);
 	}
 
+	std::string const	&
+	Request::getQueryString()
+	const {
+		std::string	queryString = _URI.substr((_URI.find_first_of("?") + 1), _URI.size());
+		return (queryString);
+	}
+
+	std::string const	&
+	Request::getScriptName()
+	const {
+		std::string	scriptName = _URI.substr(0, _URI.find_first_of("?"));
+		return (scriptName);
+	}
+
+	std::string const	&
+	Request::getHost(std::string const &key)
+	const {
+		std::string	host = getGeneralHeaderValue("Host");
+		if (key == "Port")
+		{
+			std::string	port = host.substr(host.find_first_of(":") + 1, host.size());
+			return (port);
+		}
+		else if (key == "Address")
+		{
+			std::string	address = host.substr(0, host.find_first_of(":"));
+			return (address);
+		}
+	}
+
+	std::string const	&
+	Request::getRequestHeaderValue(std::string const &key)
+	const {
+
+	}
+
+	std::string const	&
+	Request::getGeneralHeaderValue(std::string const &key)
+	const {
+
+	}
+
+	std::string const	&
+	Request::getEntityHeaderValue(std::string const &key)
+	const {
+
+	}
 }

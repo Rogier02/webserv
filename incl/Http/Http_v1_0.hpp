@@ -83,8 +83,12 @@ namespace Http {
 			std::string const	&getVersion() const;
 			std::string const	&getMethod() const;
 			std::string const	&getURI() const;
+			std::string const	&getQueryString() const;
 			std::string const	&getEntityBody() const;
+			std::string const	&getScriptName() const;
+			std::string const	&getHost(std::string const &key) const;
 
+			std::string const	&getRequestHeaderValue(std::string const &key) const;
 			std::string const	&getGeneralHeaderValue(std::string const &key) const;
 			std::string const	&getEntityHeaderValue(std::string const &key) const;
 	};

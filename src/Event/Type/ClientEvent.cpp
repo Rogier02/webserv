@@ -5,6 +5,8 @@ ClientEvent::ClientEvent(int socketFd, Config::Server const &config)
 	,	r_config(config)
 	,	_state(State::READING_REQUEST)
 {
+	std::cout << r_config.name << std::endl; // Dit kan gedelete worden!!
+	std::cout << std::to_string(_state); // kan ook weg.
 	std::cout << "Client " << data.fd << " \e[34mConstructed\e[0m\n";
 }
 

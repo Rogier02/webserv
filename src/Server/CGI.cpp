@@ -1,4 +1,3 @@
-
 #include "CGI.hpp"
 #include <unistd.h>
 #include <sys/wait.h>
@@ -8,34 +7,38 @@
 
 
 bool
-isCgiRequest(std::string const &path)
+CGI::isCgiRequest(std::string const &path) const
 {
 		for(const auto& ext : SupportedExtensions)
+		{
 			if (path.find(ext.first) != std::string::npos)
 				return (true);
+		}
 		return (false);
-	}
+}
 
 std::string
-getCgiExtension(std::string const &path)
+CGI::getCgiExtension(std::string const &path) const
 {
-	for (const auto& ext : SupportedExtensions)
+	for (const auto& ext : SupportedExtensions) 
+	{
 		if (path.find(ext.first) != std::string::npos)
 			return (ext.first);
+	}
 	return ("");
-};
+}
 
 std::string
-getCgiInterpreter(std::string const &extension)
+CGI::getCgiInterpreter(std::string const &extension) const
 {
 	auto it = SupportedExtensions.find(extension);
 	if (it != SupportedExtensions.end())
 		return(it->second);
 	return ("");
-};
+}
 
 std::string
-execute(HttpRequest& request)
+CGI::execute(Http::Request& request)
 {
 	std::string path = request.getURI();
 	std::string extension = getCgiExtension(path);
@@ -70,25 +73,27 @@ execute(HttpRequest& request)
 
 //TODO: REMOVE SETENV and add own implamentation
 char **
-setupEnvironment(HttpRequest& request)
+CGI::setupEnvironment(Http::Request& request)
 {
 	std::vector<std::string> _envVariables;
 
-	_envVariables.push_back("REQUEST_METHOD" + request.getMethod());
-	_envVariables.push_back("QUERY_STRING" + request.getQueryString());
-	_envVariables.push_back("CONTENT_TYPE" + request.getContentType());
-	_envVariables.push_back("CONTENT_LENGTH" + request.getCOntentLength());
-	_envVariables.push_back("SCRIPT_NAME" + request.getScriptName());
-	_envVariables.push_back("REQUEST_URI" + request.getUri());
-	_envVariables.push_back("SERVER_PROTOCOL=HTTP/1.1");
-	_envVariables.push_back("GATEWAY_INTERFACE=CGI/1.1");
-	_envVariables.push_back("SERVER_NAME=webserv");
-	_envVariables.push_back("SERVER_PORT=8080");
+	_envVariables.push_back("REQUEST_METHOD=" + request.getMethod());
+	_envVariables.push_back("CONTENT_TYPE=" + request.getRequestHeaderValue("Content-Type"));
+	_envVariables.push_back("CONTENT_LENGTH=" + request.getRequestHeaderValue("Content-Length"));
+	_envVariables.push_back("SCRIPT_NAME=" + request.getScriptName());
+	_envVariables.push_back("QUERY_STRING=" + request.getQueryString());
+	_envVariables.push_back("REQUEST_URI=" + request.getURI());
+	_envVariables.push_back("SERVER_PROTOCOL=" + request.getVersion()); //check of we 0.9 en 1.0 ook kunnen parsen
+	_envVariables.push_back("GATEWAY_INTERFACE=CGI/1.1"); // wordt dit geparsed uit de httpRequest? of is dit vast?
+	_envVariables.push_back("SERVER_NAME=webserv"); //nog niet duidelijk hoe je hieraan komt.
+	_envVariables.push_back("SERVER_PORT=" + request.getHost("Port"));
+	_envVariables.push_back("SERVER_ADDR=" + request.getHost("Address"));
 
 	// add HTTP headers as CGI variables
-	auto headers = request.getHeaders();
+	
 	for (const auto& [headerName, headerValue] : headers) {
-		if (headerName == "Content-Type" || headerName == "Content-Length")
+		std::string headerValue = request.getRequestHeaderValue(headerName);
+		if (headerName == "Content-Type" || headerName == "Content-Length" || headerName == "Host")
 			continue;
 		
 		std::string cgiVarName = "HTTP_";
@@ -114,10 +119,10 @@ setupEnvironment(HttpRequest& request)
 // TODO: CONVERT MAP TO CHAR **
 
 std::string
-executeScript(
-	std::string const &interpreter,
-	std::string const &scripitPath,
-	std::string const &requestBody,
+CGI::executeScript(
+	const std::string &interpreter,
+	const std::string &scripitPath,
+	const std::string &requestBody,
 	char **env)
 {
 	// Bidirectiona; pipes stdin for child stdout for child
@@ -165,7 +170,7 @@ executeScript(
 
 		// Execute script (replace this process)
 		// If execve returns, it means an error occured
-		execve(interpreter.c_str(), args, environ);
+		execve(interpreter.c_str(), args, env);
 
 		std::cerr << "exec failed for: " << interpreter << std::endl;
 		exit(1);
@@ -191,7 +196,7 @@ executeScript(
 		char buffer[4096];
 		ssize_t nBytes;
 
-		while ((nBytes =  read(stdoutPipe[0], Buffer, sizeof(buffer))) > 0) {
+		while ((nBytes =  read(stdoutPipe[0], buffer, sizeof(buffer))) > 0) {
 			output.append(buffer, nBytes);
 		}
 		close(stdoutPipe[0]);
@@ -210,7 +215,7 @@ executeScript(
 		}
 	}
 	return ("");
-};	
+}
 
 
 // /*
@@ -222,7 +227,7 @@ executeScript(
 // */
 
 std::string
-parseCgiResponse(std::string const &rawOutput)
+CGI::parseCgiResponse(const std::string &rawOutput) const
 {
 	//CGI scripts output headers followed by blank line, then body
 

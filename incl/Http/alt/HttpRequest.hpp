@@ -5,7 +5,7 @@
 # include <string>
 # include <map>
 // webserv
-# include <HttpCommon.hpp>
+# include "Http_v1_0.hpp"
 
 class	HttpRequest
 {
@@ -37,6 +37,15 @@ class	HttpRequest
 		std::string	_entityBody;
 
 	public:
+	// GETTERS
+		std::string getMethod() const;
+		std::string getQueryString() const;
+		std::string getContentType() const;
+		std::string getUri() const;
+		std::string getScriptName() const;
+		std::string getContentLength() const;
+		std::string	getPort() const;
+		std::string getHeader(std::string header) const;
 		// set/get
 };
 

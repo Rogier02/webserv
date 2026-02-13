@@ -12,7 +12,7 @@
 class ListenEvent : public Event
 {
 	public:
-		ListenEvent() = default;// delete?
+		ListenEvent() = delete;
 		ListenEvent(ListenEvent const &) = delete;
 		ListenEvent(ListenEvent &&) = delete;
 		ListenEvent(int socketFd, Epoll::Events events, Epoll &epoll, Config::Server &config);

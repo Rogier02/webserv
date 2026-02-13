@@ -10,7 +10,7 @@ namespace Http {
 		{1.0f, "1.0"},
 	};
 
-	std::map<u_int8_t, std::string>	StatusCodes	= {
+	static std::map<u_int8_t, std::string>	StatusCodes	= {
 		{200, "OK"},
 		{201, "Created"},
 		{202, "Accepted"},

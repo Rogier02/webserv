@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 #include <vector>
-#include <HttpRequest.hpp>
+#include "Http_v1_0.hpp"
 
 class CGI
 {
@@ -23,18 +23,18 @@ class CGI
 		~CGI() = default;
 
 		bool isCgiRequest(const std::string& path) const;
-		std::string execute(HttpRequest& request);
+		std::string execute(Http::Request& request);
 	
 	private:
 
 		std::string getCgiExtension(const std::string& path) const;
 		std::string getCgiInterpreter(const std::string& extension) const;
-		char 		**setupEnvironment(HttpRequest& request);
-		std::string executescript(
-			const std;:string& interpreter,
+		char 		**setupEnvironment(Http::Request& request);
+		std::string executeScript(
+			const std::string& interpreter,
 			const std::string& scriptPath,
 			const std::string& requestBody,
-			char **envp);
+			char **env);
 
 		std::string	parseCgiResponse(const std::string& rawOutput) const;
 };
