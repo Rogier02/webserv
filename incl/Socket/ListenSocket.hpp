@@ -19,8 +19,8 @@ class	ListenSocket : public Socket
 
 	public:
 		ListenSocket() = delete;
-		ListenSocket(ListenSocket const &other) = delete;
-		ListenSocket(ListenSocket &&other) = delete;
+		ListenSocket(ListenSocket const &) = delete;
+		ListenSocket(ListenSocket &&) = delete;
 		ListenSocket(int port);
 		~ListenSocket() = default;
 };

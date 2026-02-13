@@ -28,8 +28,8 @@ class	Server //Should be main biggest webserv class thingie
 {
 	public:
 		Server() = delete;
-		Server(Server const &other) = delete;
-		Server &operator=(Server const &other) = delete;
+		Server(Server const &) = delete;
+		Server(Server &&) = delete;
 		Server(Config &config);
 		~Server() = default;
 
@@ -37,8 +37,6 @@ class	Server //Should be main biggest webserv class thingie
 		std::vector<Server>			servers;
 		Epoll						_epoll;
 		std::vector<ListenSocket>	_listenSockets;//should be in Server(which is now still Config)
-
-		ErrorPages	_errorPageHandler;
 
 	public:
 		void	run();

@@ -6,8 +6,6 @@
 #include "Server.hpp"
 #include "Config.hpp"
 #include "Parse.hpp"
-#include "Validate.hpp"
-#include "HttpRequest.hpp"
 
 std::atomic<bool>	_pleaseShutDown(false);
 

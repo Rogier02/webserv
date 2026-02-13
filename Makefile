@@ -29,8 +29,7 @@ EVENTTYPE_FILES	=	ClientEvent.cpp		\
 					ListenEvent.cpp		\
 
 HTTP_MODULE		=	Http
-HTTP_FILES		=	HttpRequest.cpp		\
-					HttpResponse.cpp	\
+HTTP_FILES		=	Http_v1_0.cpp		\
 
 SERVER_MODULE	=	Server
 SERVER_FILES	=	CGI.cpp				\
@@ -44,6 +43,7 @@ SOCKET_FILES	=	ListenSocket.cpp	\
 
 UTILS_MODULE	=	Util
 UTILS_FILES		=	Logger.cpp			\
+					IO.cpp				\
 
 ALL_MODULES		:=	$(CONFIG_MODULE)	\
 					$(EVENTBASE_MODULE)	\

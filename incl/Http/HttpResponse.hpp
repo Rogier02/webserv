@@ -9,6 +9,8 @@ class	HttpResponse
 {
 	public:
 		HttpResponse(int statusCode = 200);
+		HttpResponse(HttpResponse const &) = delete;
+		HttpResponse(HttpResponse &&) = delete;
 		~HttpResponse() = default;
 
 	private:
