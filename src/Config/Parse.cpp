@@ -101,7 +101,10 @@ Parse::single(int& dest)
 		expect(";");
 	}
 	else
+	{
 		log(unexpectedTokenCount("3", tokensFound));
+		_ts.advanceLine();
+	}
 }
 
 void
@@ -116,7 +119,10 @@ Parse::multiple(std::vector<std::string>& dest)
 		expect(";");
 	}
 	else
+	{
 		log(unexpectedTokenCount("3 or more", tokensFound));
+		_ts.advanceLine();
+	}
 }
 
 void
@@ -129,7 +135,10 @@ Parse::page(Config::Server::Page &page)
 		expect(";");
 	}
 	else
+	{
 		log(unexpectedTokenCount("4", tokensFound));
+		_ts.advanceLine();
+	}
 }
 
 Config::Server::Page
@@ -166,7 +175,10 @@ Parse::clientMaxBodySize(size_t &clientMaxBodySize)
 		expect(";");
 	}
 	else
+	{
 		log(unexpectedTokenCount("3", tokensFound));
+		_ts.advanceLine();
+	}
 }
 
 void
@@ -185,7 +197,10 @@ Parse::listen(std::string& host, int& port)
 		expect(";");
 	}
 	else
+	{
 		log(unexpectedTokenCount("3", tokensFound));
+		_ts.advanceLine();
+	}
 }
 
 void Parse::autoIndex(bool& autoIndex)
@@ -204,7 +219,10 @@ void Parse::autoIndex(bool& autoIndex)
 		expect(";");
 	}
 	else
+	{
 		log(unexpectedTokenCount("3", tokensFound));
+		_ts.advanceLine();
+	}
 }
 
 void

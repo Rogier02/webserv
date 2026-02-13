@@ -67,7 +67,7 @@ Validate::validateHost(const std::string &host)
 	}
 	if (count > 4) // 12.52.192.168.1 (not 4 parts)
 		log("Host IP too big, format: 0.0.0.0");
-	if (count != 4) // 192.168.1 (not 4 parts)
+	else if (count < 4) // 192.168.1 (not 4 parts)
 		log("Host IP too small, format: 0.0.0.0");
 }
 
