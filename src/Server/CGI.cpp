@@ -6,191 +6,241 @@
 #include <sstream>
 #include <iostream>
 
-namespace CGI
+
+bool
+isCgiRequest(std::string const &path)
 {
-	bool
-	isCgiRequest(std::string const &path)
-	{
 		for(const auto& ext : SupportedExtensions)
 			if (path.find(ext.first) != std::string::npos)
 				return (true);
 		return (false);
 	}
 
-	std::string
-	getCgiExtension(std::string const &path)
-	{
-		for (const auto& ext : SupportedExtensions)
-			if (path.find(ext.first) != std::string::npos)
-				return (ext.first);
-		return ("");
-	};
+std::string
+getCgiExtension(std::string const &path)
+{
+	for (const auto& ext : SupportedExtensions)
+		if (path.find(ext.first) != std::string::npos)
+			return (ext.first);
+	return ("");
+};
 
-	std::string
-	getCgiInterpreter(std::string const &extension)
-	{
-		auto it = SupportedExtensions.find(extension);
-		if (it != SupportedExtensions.end())
-			return(it->second);
-		return ("");
-	};
+std::string
+getCgiInterpreter(std::string const &extension)
+{
+	auto it = SupportedExtensions.find(extension);
+	if (it != SupportedExtensions.end())
+		return(it->second);
+	return ("");
+};
 
-	std::string
-	execute(
-		std::string const &path,
-		std::string const &method,
-		std::string const &query,
-		std::string const &body)
-	{
-		std::string extension = getCgiExtension(path);
-		if (extension.empty()) {
-			return("<html><body><h1>500 Internal Server Error</h1>"
-					"<p>Unknown CGI extension</p></body></html>");
+std::string
+execute(HttpRequest& request)
+{
+	std::string path = request.getURI();
+	std::string extension = getCgiExtension(path);
+	if (extension.empty()) {
+		return("<html><body><h1>500 Internal Server Error</h1>"
+				"<p>Unknown CGI extension</p></body></html>");
+	}
+
+	std::string interpreter = getCgiInterpreter(extension);
+	if (interpreter.empty()) {
+		return ("<html><body><h1>500 Internal Server Error</h1>"
+				"<p>Unknown CGI extension</p></body></html>");
+	}
+
+	size_t lastSlash = path.find_last_of("/");
+	std::string scriptFilename;
+
+	if (lastSlash != std::string::npos)
+		scriptFilename = path.substr(lastSlash + 1);
+	else
+		scriptFilename = path;
+
+	std::string scriptPath = BinDirectory + scriptFilename;
+
+	char **env = setupEnvironment(request);
+	std::string output = executeScript(interpreter, scriptPath, request.getEntityBody(), env);
+
+	// Write funciton to clean up env
+	return (output);
+
+};
+
+//TODO: REMOVE SETENV and add own implamentation
+char **
+setupEnvironment(HttpRequest& request)
+{
+	std::vector<std::string> _envVariables;
+
+	_envVariables.push_back("REQUEST_METHOD" + request.getMethod());
+	_envVariables.push_back("QUERY_STRING" + request.getQueryString());
+	_envVariables.push_back("CONTENT_TYPE" + request.getContentType());
+	_envVariables.push_back("CONTENT_LENGTH" + request.getCOntentLength());
+	_envVariables.push_back("SCRIPT_NAME" + request.getScriptName());
+	_envVariables.push_back("REQUEST_URI" + request.getUri());
+	_envVariables.push_back("SERVER_PROTOCOL=HTTP/1.1");
+	_envVariables.push_back("GATEWAY_INTERFACE=CGI/1.1");
+	_envVariables.push_back("SERVER_NAME=webserv");
+	_envVariables.push_back("SERVER_PORT=8080");
+
+	// add HTTP headers as CGI variables
+	auto headers = request.getHeaders();
+	for (const auto& [headerName, headerValue] : headers) {
+		if (headerName == "Content-Type" || headerName == "Content-Length")
+			continue;
+		
+		std::string cgiVarName = "HTTP_";
+		for (char c : headerName) {
+			if (c == '-')
+				cgiVarName += '_';
+			else
+				cgiVarName += std::toupper(c);
 		}
+		_envVariables.push_back(cgiVarName + "=" + headerValue);
+	}
 
-		std::string interpreter = getCgiInterpreter(extension);
-		if (interpreter.empty()) {
-			return ("<html><body><h1>500 Internal Server Error</h1>"
-					"<p>Unknown CGI extension</p></body></html>");
-		}
+	char **env = new char*[_envVariables.size() + 1];
+	for (size_t i = 0; i < _envVariables.size(); i++) {
+		env[i] = new char[_envVariables[i].length() + 1];
+		std::strcpy(env[i], _envVariables[i].c_str());
+	}
+	env[_envVariables.size()] = NULL;
 
-		size_t lastSlash = path.find_last_of("/");
-		std::string scriptFilename;
+	return (env);
+};
 
-		// filename extraction why? start
-		if (lastSlash != std::string::npos)
-			scriptFilename = path.substr(lastSlash + 1);
-		else
-			scriptFilename = path;
+// TODO: CONVERT MAP TO CHAR **
 
-		std::string scriptPath = BinDirectory + scriptFilename;
-		// end
+std::string
+executeScript(
+	std::string const &interpreter,
+	std::string const &scripitPath,
+	std::string const &requestBody,
+	char **env)
+{
+	// Bidirectiona; pipes stdin for child stdout for child
+	int stdinPipe[2]; // Parent writes, child reads
+	int stdoutPipe[2]; // Child writes, parent reads
 
-		setupEnvironment(path, method, query, body);
-
-		return (executeScript(interpreter, scriptPath));
-
-	};
-
-	//TODO: REMOVE SETENV and add own implamentation
-	void
-	setupEnvironment(
-		std::string const &path,
-		std::string const &method,
-		std::string const &query,
-		std::string const &body)
-	{
-		// HTTP request method (GET, POST, DELETE, etc.)
-		setenv("REQUEST_METHOD", method.c_str(), 1);
-
-		// Path to the CGI script
-		setenv("SCRIPT_NAME", path.c_str(), 1);
-
-		// URL query string (after the ? in URL)
-		setenv("QUERY_STRING", query.c_str(), 1);
-
-		// Length of request body in bytes
-		setenv("CONTENT_LENGTH", std::to_string(body.length()).c_str(), 1);
-
-		// MIME type of request body
-		setenv("CONTENT_TYPE", "application/x-www-form-urlencoded", 1);
-
-		// Server hostname
-		setenv("SERVER_NAME", "webserv", 1);
-
-		// Server port
-		setenv("SERVER_PORT", "8080", 1);
-
-		// HTTP version
-		setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
-
-		// CGI gateway interface version
-		setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
-	};
-
-	std::string
-	executeScript(
-		std::string const &interpreter,
-		std::string const &scripitPath)
-	{
-		// piping
-		int pipefd[2]; // {read, write};
-		if (pipe(pipefd) == -1) {
-			return ("<html><body><h1>500 Internal Server Error</h1>"
-					"<p>Pipe creation failed</p></body></html>");
-		}
-
-		// forking
-		pid_t pid = fork();
-		if (pid == -1) {
-			close(pipefd[0]);
-			close(pipefd[1]);
-			return ("<html><body><h1>500 Internal Server Error</h1>"
+	if (pipe(stdinPipe) == -1 || pipe(stdoutPipe) == -1) {
+		return ("<html><body><h1>500 Internal Server Error</h1>"
+				"<p>Pipe creation failed</p></body></html>");
+	}
+	
+	// forking
+	pid_t pid = fork();
+	if (pid == -1) {
+		close(stdinPipe[0]);
+		close(stdinPipe[1]);
+		close(stdoutPipe[0]);
+		close(stdoutPipe[1]);
+		return ("<html><body><h1>500 Internal Server Error</h1>"
 					"<p>Fork failed</p></body></html>");
-		}
+	}
+	// ===== CHILD =====
+	if (pid == 0) {
+		
+		close(stdinPipe[1]); // close write end of stdin pipe
+		close(stdoutPipe[0]); // close read end of stdout pipe
 
-		// ===== CHILD =====
-		if (pid == 0) {
+		// Redirect stdint to read from pipe
+		dup2(stdinPipe[0], STDIN_FILENO);
+		close(stdinPipe[0]);
 
-			// close read end
-			close(pipefd[0]);
+		// Redirect stdout to write to pipe
+		dup2(stdoutPipe[1], STDOUT_FILENO);
+		// Redirect stderr to stdout (so errors appear in response)
+		dup2(stdoutPipe[1], STDERR_FILENO);
+		close(stdoutPipe[1]);
 
-			// Redirect stdout to pipe
-			dup2(pipefd[1], STDOUT_FILENO);
+		// Execute the script with the interpreter
+		// Format: Interpreter(c string) scriptPath(c string) (required formating for execve)
+		char *args[] = {
+			(char *)interpreter.c_str(), // Progam to run
+			(char *)scripitPath.c_str(), // First argument (script file)
+			NULL,						 // NULL-terminated argument list
+		};
 
-			// Redirect stderr to pipe (so errors appear in output)
-			dup2(pipefd[1], STDERR_FILENO);
+		// Execute script (replace this process)
+		// If execve returns, it means an error occured
+		execve(interpreter.c_str(), args, environ);
 
-			close(pipefd[1]);
+		std::cerr << "exec failed for: " << interpreter << std::endl;
+		exit(1);
+	}
 
-			// Execute the script with the interpreter
-			// Format: Interpreter(c string) scriptPath(c string) (required formating for execve)
-			char *args[] = {
-				(char *)interpreter.c_str(), // Progam to run
-				(char *)scripitPath.c_str(), // First argument (script file)
-				NULL,						 // NULL-terminated argument list
-			};
+	// ===== PARENT PROCESS =====
+	else {
+		// Close unused ends
+		close(stdinPipe[0]);
+		close(stdoutPipe[1]);
 
-			// Execute script (replace this process)
-			// If execve returns, it means an error occured
-			execve(interpreter.c_str(), args, environ);
-		}
-
-		// ===== PARENT PROCESS =====
-		else {
-
-			//Close write end (parent only reads)
-			close(pipefd[1]);
-
-			// Buffer for reading script output
-			std::string output;
-			char buffer[4096]; //Read in 4kb chunks
-			ssize_t nBytes;
-
-			// Read all output from child process
-			while ((nBytes = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
-				// Append bytes to output string
-				output.append(buffer, nBytes);
+		// Write request body to childs stdin (for POST request)
+		if (!requestBody.empty()) {
+			ssize_t bytesWritten = write(stdinPipe[1], requestBody.c_str(), requestBody.length());
+			if (bytesWritten == -1) {
+				std::cerr << "Failed to write to CGI stdin" << std::endl;
 			}
-
-			// Close read end
-			close(pipefd[0]);
-
-			// Wait for child precess to complete and get exit status
-			int status;
-			waitpid(pid, &status, 0);
-
-			//Check if child exited normally and with uccess
-			if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
-				// Success - return script outpu
-				return (output);
-			} else {
-				//Script execution failed
-				return ("<html><body><h1>500 Internal Server Error</h1>"
-						"<p>CGI script execution failed</p></body></html>");
-			}
-
 		}
-		return ("");
-	};
-}	// namepspace CGI
+		close(stdinPipe[1]); // Close write end after writing
+
+		// Read all output form child process
+		std::string output;
+		char buffer[4096];
+		ssize_t nBytes;
+
+		while ((nBytes =  read(stdoutPipe[0], Buffer, sizeof(buffer))) > 0) {
+			output.append(buffer, nBytes);
+		}
+		close(stdoutPipe[0]);
+
+		// Wait for child process to complete
+		int status;
+		waitpid(pid, &status, 0);
+
+		// Check if child exited normally
+		if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+			// Success - parse and return CGI response
+			return (parseCgiResponse(output));
+		} else {
+			return ("<html><body><h1>500 Internal Server Error</h1>"
+                    "<p>CGI script execution failed</p></body></html>");
+		}
+	}
+	return ("");
+};	
+
+
+// /*
+// -- HTTP1.0 request example --
+// GET /index.html HTTP/1.0
+// Host: www.example.com
+// User-Agent: Mozilla/5.0
+// Accept: text/html
+// */
+
+std::string
+parseCgiResponse(std::string const &rawOutput)
+{
+	//CGI scripts output headers followed by blank line, then body
+
+	size_t headerEndPos = rawOutput.find("\r\n\r\n");
+	if (headerEndPos = std::string::npos) {
+		// No headers found, treats entire output as body
+		return (rawOutput);
+	}
+
+	std::string headers = rawOutput.substr(0, headerEndPos);
+	std::string body = rawOutput.substr(headerEndPos + 4);
+
+	  // TODO: Parse headers and add them to HTTP response
+    // For now, just return the body
+    // In a complete implementation, you would:
+    // 1. Parse Status header (e.g., "Status: 200 OK")
+    // 2. Extract other CGI headers
+    // 3. Build proper HTTP response with these headers
+
+	return body
+}

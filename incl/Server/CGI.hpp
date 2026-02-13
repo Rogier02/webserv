@@ -4,37 +4,39 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <HttpRequest.hpp>
 
-namespace	CGI
+class CGI
 {
-	const std::string BinDirectory = "./src/cgi-bin/";
+	private:
+			
+		const std::string BinDirectory = "./src/cgi-bin/";
+		const std::map<std::string, std::string> SupportedExtensions = {
+			{".py", "/usr/bin/python3"},
+			//{".sh", "/bin/bash"}
+			//{".php", "/usr/bin/php-cgi"},
+			// {".pl", "/usr/bin/perl"}
+		};
 
-	const std::map<std::string, std::string> SupportedExtensions = {
-		{".py", "/usr/bin/python3"},
-		{".sh", "/bin/bash"}
-		//{".php", "/usr/bin/php-cgi"},
-		// {".pl", "/usr/bin/perl"}
-	};
+	public:
+		CGI() = default;
+		~CGI() = default;
 
-	bool		isCgiRequest(const std::string& path);
+		bool isCgiRequest(const std::string& path) const;
+		std::string execute(HttpRequest& request);
+	
+	private:
 
-	std::string	execute(
-		const std::string& path,
-		const std::string& method,
-		const std::string& query,
-		const std::string& body);
+		std::string getCgiExtension(const std::string& path) const;
+		std::string getCgiInterpreter(const std::string& extension) const;
+		char 		**setupEnvironment(HttpRequest& request);
+		std::string executescript(
+			const std;:string& interpreter,
+			const std::string& scriptPath,
+			const std::string& requestBody,
+			char **envp);
 
-	std::string	getCgiExtension(const std::string& path);
-
-	std::string	getCgiInterpreter(const std::string& extension);
-
-	void		setupEnvironment(const std::string& path,
-		const std::string& method,
-		const std::string& query,
-		const std::string& body);
-
-	std::string	executeScript(const std::string& interpreter,
-		const std::string& scriptPath);
+		std::string	parseCgiResponse(const std::string& rawOutput) const;
 };
 
 #endif
