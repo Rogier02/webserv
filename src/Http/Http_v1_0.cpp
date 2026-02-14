@@ -152,4 +152,36 @@ namespace Http {
 	const {
 		return (_entityHeaders.at(key));
 	}
+
+	//Rogier
+
+	Request::HeaderMap const &
+	Request::getRequestHeaders() const {
+		return (_requestHeaders);
+	}
+
+	Request::HeaderMap const &
+	Request::getGeneralHeaders() const {
+		return (_generalHeaders);
+	}
+
+	Request::HeaderMap const &
+	Request::getEntityHeaders() const {
+		return (_entityHeaders);
+	}
+
+	int
+	Response::setResponseHeaderValue(std::string const &key, std::string const &value) {
+		_responseHeaders[key] = value;
+		return (0);
+	}
+
+	int
+	Response::setStatuscode(u_int8_t statusCode) {
+		_statusCode = statusCode;
+		if (StatusCodes.find(statusCode) != StatusCodes.end())
+			_reasonPhrase = StatusCodes[statusCode];
+		return (0);
+	}
 }
+

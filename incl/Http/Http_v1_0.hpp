@@ -123,6 +123,10 @@ namespace Http {
 
 			int	setGeneralHeaderValue(std::string const &key, std::string const &value);
 			int	setEntityHeaderValue(std::string const &key, std::string const &value);
+
+			//Rogier
+			int setResponseHeaderValue(std::string const &key, std::string const &value);
+			int setStatuscode(u_int8_t statusCode);
 	};
 }
 
