@@ -129,12 +129,6 @@ namespace Http {
 		}
 	}
 
-	Http::HeaderMap const &
-	Request::getRequestHeaders()
-	const {
-		return (_requestHeaders);
-	}
-
 	std::string const	&
 	Request::getRequestHeaderValue(std::string const &key)
 	const {
@@ -155,18 +149,21 @@ namespace Http {
 
 	//Rogier
 
-	Request::HeaderMap const &
-	Request::getRequestHeaders() const {
+	Http::HeaderMap const &
+	Request::getRequestHeaders()
+	const {
 		return (_requestHeaders);
 	}
 
-	Request::HeaderMap const &
-	Request::getGeneralHeaders() const {
+	Http::HeaderMap const &
+	Request::getGeneralHeaders()
+	const {
 		return (_generalHeaders);
 	}
 
-	Request::HeaderMap const &
-	Request::getEntityHeaders() const {
+	Http::HeaderMap const &
+	Request::getEntityHeaders()
+	const {
 		return (_entityHeaders);
 	}
 

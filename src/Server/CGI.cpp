@@ -247,7 +247,7 @@ CGI::parseCgiResponse(const std::string &rawOutput) const
 	std::istringstream headerStream(headerSection);
 	std::string headerLine;
 	std::string statusCode = "200";
-	Http::Response::HeaderMap cgiHeaders;
+	Http::HeaderMap cgiHeaders;
 
 	while(std::getline(headerStream, headerLine)) {
 		if (!headerLine.empty() && headerLine.back() == "\r")
