@@ -10,6 +10,8 @@ namespace Http {
 	constexpr	std::string	SP = " ";
 	constexpr	std::string CRLF = "\r\n";
 
+	using	HeaderMap = std::map<std::string, std::string>;
+
 	static std::map<u_int8_t, std::string>	StatusCodes	= {
 		{200, "OK"},
 		{201, "Created"},
@@ -33,7 +35,7 @@ namespace Http {
 
 	class	Message {
 		protected:
-			using	HeaderMap = std::map<std::string, std::string>;
+			// using	HeaderMap = std::map<std::string, std::string>;
 
 		public:
 			Message() = default;
@@ -57,6 +59,9 @@ namespace Http {
 
 		protected:
 			static void	writeHeaders(std::string &dest, HeaderMap const &headerMap);
+
+			std::string const	&getGeneralHeaderValue(std::string const &key) const;
+			std::string const	&getEntityHeaderValue(std::string const &key) const;
 	};
 
 	class	Request : public Message {
@@ -82,15 +87,14 @@ namespace Http {
 		public:
 			std::string const	&getVersion() const;
 			std::string const	&getMethod() const;
-			std::string const	&getURI() const;
-			std::string const	&getQueryString() const;
 			std::string const	&getEntityBody() const;
-			std::string const	&getScriptName() const;
-			std::string const	&getHost(std::string const &key) const;
+			std::string getURI() const;
+			std::string getQueryString() const;
+			std::string getScriptName() const;
+			std::string getHost(std::string const &key) const;
 
-			std::string const	&getRequestHeaderValue(std::string const &key) const;
-			std::string const	&getGeneralHeaderValue(std::string const &key) const;
-			std::string const	&getEntityHeaderValue(std::string const &key) const;
+			Http::HeaderMap const	&getRequestHeaders() const;
+			std::string const		&getRequestHeaderValue(std::string const &key) const;
 	};
 
 	class	Response : public Message {

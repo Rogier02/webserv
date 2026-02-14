@@ -1,4 +1,5 @@
 #include "CGI.hpp"
+#include "Http_v1_0.hpp"
 #include <unistd.h>
 #include <sys/wait.h>
 #include <cstring>
@@ -90,12 +91,15 @@ CGI::setupEnvironment(Http::Request& request)
 	_envVariables.push_back("SERVER_ADDR=" + request.getHost("Address"));
 
 	// add HTTP headers as CGI variables
-	
-	for (const auto& [headerName, headerValue] : headers) {
-		std::string headerValue = request.getRequestHeaderValue(headerName);
+
+	const Http::HeaderMap	&headers = request.getRequestHeaders();
+	for (Http::HeaderMap::const_iterator it = headers.begin(); it != headers.end(); ++it)
+{
+	const std::string& headerName  = it->first;
+	const std::string& headerValue = it->second;
 		if (headerName == "Content-Type" || headerName == "Content-Length" || headerName == "Host")
 			continue;
-		
+
 		std::string cgiVarName = "HTTP_";
 		for (char c : headerName) {
 			if (c == '-')
@@ -232,7 +236,7 @@ CGI::parseCgiResponse(const std::string &rawOutput) const
 	//CGI scripts output headers followed by blank line, then body
 
 	size_t headerEndPos = rawOutput.find("\r\n\r\n");
-	if (headerEndPos = std::string::npos) {
+	if (headerEndPos == std::string::npos) {
 		// No headers found, treats entire output as body
 		return (rawOutput);
 	}
@@ -247,5 +251,5 @@ CGI::parseCgiResponse(const std::string &rawOutput) const
     // 2. Extract other CGI headers
     // 3. Build proper HTTP response with these headers
 
-	return body
+	return (body);
 }
