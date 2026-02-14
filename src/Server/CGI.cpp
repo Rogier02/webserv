@@ -116,7 +116,6 @@ CGI::setupEnvironment(Http::Request& request)
 	return (env);
 };
 
-// TODO: CONVERT MAP TO CHAR **
 
 std::string
 CGI::executeScript(
@@ -237,9 +236,53 @@ CGI::parseCgiResponse(const std::string &rawOutput) const
 		return (rawOutput);
 	}
 
-	std::string headers = rawOutput.substr(0, headerEndPos);
+	std::string headerSection = rawOutput.substr(0, headerEndPos);
 	std::string body = rawOutput.substr(headerEndPos + 4);
 
+
+	std::istringstream headerStream(headerSection);
+	std::string headerLine;
+	std::string statusCode = "200";
+	Http::Response::HeaderMap cgiHeaders;
+
+	while(std::getline(headerStream, headerLine)) {
+		if (!headerLine.empty() && headerLine.back() == "\r")
+			headerLine.pop_back();
+
+		if (headerLine.empty())
+			continue;
+
+		size_t colonPos = headerLine.find(':');
+		if(colonPos == std::string::npos)
+			continue;
+
+		std::string key = headerLine.substr(0, colonPos);
+		std::string value = headerLine.substr(colonPos + 1);
+
+		size_t firstNonSpace = value.find_first_not_of(" \t");
+		if (firstNonSpace != std::string::npos)
+			value = value.substr(firstNonSpace);
+		
+		if (key == "Status") {
+			size_t spacePos = value.find(' ');
+			statusCode = (spacePos != std::string::npos)
+				? value.substr(0, spacePos)
+				: value;
+		} else if (key == "Location") {
+			cgiHeaders["Location"] = value;
+		} else if (key != "Content-Type" && key != "Content-Length") {
+			cgiHeaders[key] = value;
+		}
+	}
+
+	// Build Response
+
+	Http::Response response("1.1", std::stoi(statusCode));
+	for (const auto& [key, val] : cgiHeaders)
+		response.setResponseHeaderValue(key, val);
+	response.setEntityBody(body);
+
+	return(response.toString());
 	  // TODO: Parse headers and add them to HTTP response
     // For now, just return the body
     // In a complete implementation, you would:
@@ -249,3 +292,4 @@ CGI::parseCgiResponse(const std::string &rawOutput) const
 
 	return body
 }
+
