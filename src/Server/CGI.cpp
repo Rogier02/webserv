@@ -250,7 +250,7 @@ CGI::parseCgiResponse(const std::string &rawOutput) const
 	Http::HeaderMap cgiHeaders;
 
 	while(std::getline(headerStream, headerLine)) {
-		if (!headerLine.empty() && headerLine.back() == "\r")
+		if (!headerLine.empty() && headerLine.back() == '\r')
 			headerLine.pop_back();
 
 		if (headerLine.empty())

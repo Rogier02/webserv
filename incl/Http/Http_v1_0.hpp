@@ -93,8 +93,7 @@ namespace Http {
 			std::string getScriptName() const;
 			std::string getHost(std::string const &key) const;
 
-						//Rogier
-			HeaderMap const &getRequestHeaders() const;
+			//Rogier
 			HeaderMap const &getGeneralHeaders() const;
 			HeaderMap const &getEntityHeaders() const;
 			HeaderMap const	&getRequestHeaders() const;
