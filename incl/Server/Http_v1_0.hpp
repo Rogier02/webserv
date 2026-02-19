@@ -1,16 +1,19 @@
 #ifndef HTTP_v1_0_HPP
 # define HTTP_v1_0_HPP
 
+// CPP
 # include <string>
 # include <map>
-
 # include <functional>
+
+// webserv
+# include "ErrorPages.hpp"
 
 namespace Http {
 	constexpr	std::string	SP = " ";
 	constexpr	std::string CRLF = "\r\n";
 
-	static std::map<u_int8_t, std::string>	StatusCodes	= {
+	static std::map<u_int16_t, std::string>	Statuses	= {
 		{200, "OK"},
 		{201, "Created"},
 		{202, "Accepted"},
@@ -61,14 +64,15 @@ namespace Http {
 
 	class	Request : public Message {
 		public:
-			Request() = delete;
+			Request() = default;
 			Request(Request const &) = delete;
 			Request(Request &&) = delete;
-			Request(std::string const &request);
 			~Request() = default;
 
 		public:
 			std::string	toString() const override;
+
+			int	parse(std::string request);
 
 		private:
 			std::string	_method;
@@ -91,7 +95,7 @@ namespace Http {
 
 	class	Response : public Message {
 		public:
-			Response(std::string const &version = "0.9", u_int8_t statusCode = 200);
+			Response();
 			Response(Response const &) = delete;
 			Response(Response &&) = delete;
 			~Response() = default;
@@ -99,8 +103,10 @@ namespace Http {
 		public:
 			std::string toString() const override;
 
+			int	err(u_int16_t statusCode);
+
 		private:
-			u_int8_t	_statusCode;
+			u_int16_t	_statusCode;
 				// 2xx, 3xx, 4xx, 5xx
 			std::string	_reasonPhrase;
 				// "OK", "Not Found" etc.
@@ -110,7 +116,7 @@ namespace Http {
 
 		public:
 			int	setVersion(std::string const &version);
-			int	setStatus(std::string const &status);
+			int	setStatus(u_int16_t	statusCode);
 			int	setEntityBody(std::string const &content);
 
 			int	setGeneralHeaderValue(std::string const &key, std::string const &value);

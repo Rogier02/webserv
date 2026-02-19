@@ -2,14 +2,14 @@
 
 std::ostream	&operator<<(std::ostream &os, Config const &config)
 {
-	if (config.servers.empty())
+	if (config.listeners.empty())
 		return (os);
 
 	os << "==== CONFIG ====\n";
-	for (size_t i = 0; i < config.servers.size(); ++i)
+	for (size_t i = 0; i < config.listeners.size(); ++i)
 	{
-		const Config::Server& srv = config.servers[i];
-		os << "\n--- Server " << i << " ---\n";
+		const Config::Listener& srv = config.listeners[i];
+		os << "\n--- Listener " << i << " ---\n";
 		os << "name: " << srv.name << "\n";
 		os << "host: " << srv.host << "\n";
 		os << "root: " << srv.root << "\n";
@@ -29,7 +29,7 @@ std::ostream	&operator<<(std::ostream &os, Config const &config)
 		os << "Locations:\n";
 		for (size_t l = 0; l < srv.locations.size(); ++l)
 		{
-			const Config::Server::Location& loc = srv.locations[l];
+			const Config::Listener::Location& loc = srv.locations[l];
 			os << "  --- Location " << l << " ---\n";
 			os << "  path: " << loc.path << "\n";
 			os << "  root: " << loc.root << "\n";

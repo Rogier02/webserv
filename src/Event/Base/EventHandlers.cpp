@@ -1,9 +1,9 @@
-#include "EventTypes.hpp"
+#include "EventHandlers.hpp"
 
-std::map<int, std::unique_ptr<Event>>	EventTypes::_handlers;
+std::map<int, std::unique_ptr<Event>>	EventHandlers::_handlers;
 
 Event*
-EventTypes::get(int fd)
+EventHandlers::get(int fd)
 {
 	std::map<int, std::unique_ptr<Event>>::iterator it = _handlers.find(fd);
 	if (it == _handlers.end())
@@ -11,7 +11,7 @@ EventTypes::get(int fd)
 	return (it->second.get());
 }
 
-// void	EventTypes::destroy(int fd) {
+// void	EventHandlers::destroy(int fd) {
 // 	_handlers.erase(fd);
 // 	std::cout << "Event " << fd << " destroyed\n";
 // }

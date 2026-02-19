@@ -12,9 +12,8 @@
 # include <map>
 // webserv
 # include "Config.hpp"
-# include "ListenSocket.hpp"
 # include "Epoll.hpp"
-# include "EventTypes.hpp"
+# include "EventHandlers.hpp"
 # include "EasyThrow.hpp"
 # include "EasyPrint.hpp"
 # include "Logger.hpp"
@@ -34,14 +33,15 @@ class	Server
 		~Server() = default;
 
 	private:
-		Epoll						_epoll;
-		std::vector<ListenSocket>	_listenSockets;
+		Epoll				_epoll;
+		std::vector<int>	_listenSockets;
 
 	public:
 		void	run();
 
 	private:
 		void	_closeConnection(int fd);
+		void	_readyToSend(int fd);
 };
 
 #endif

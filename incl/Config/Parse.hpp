@@ -28,9 +28,9 @@ class	Parse
 		Config	config();
 
 	private:
-		Config::Server				server();
-		Config::Server::Location	location();
-		Config::Server::Page		page();
+		Config::Listener			listener();
+		Config::Listener::Location	location();
+		Config::Listener::Page		page();
 
 		// get simple value(s)
 		void	single(std::string &dest);
@@ -38,7 +38,7 @@ class	Parse
 		void	multiple(std::vector<std::string> &dest);
 
 		// get complex directive value(s)
-		void	page(Config::Server::Page &page);
+		void	page(Config::Listener::Page &page);
 		void	clientMaxBodySize(size_t &clientMaxBodySize);
 		void	listen(std::string &host, int &port);
 		void	autoIndex(bool &autoIndex);
@@ -56,64 +56,64 @@ class	Parse
 		std::string	unexpectedTokenCount(std::string expected, size_t found);
 
 	private:
-		using	ServerDirective = std::function<void (Config::Server &)>;
-		std::map<std::string, ServerDirective>
-		serverDirectives = {
+		using	ListenerDirective = std::function<void (Config::Listener &)>;
+		std::map<std::string, ListenerDirective>
+		listenerDirectives = {
 			{"server_name",
-				[this](Config::Server& s)
+				[this](Config::Listener& s)
 				{ single(s.name); }},
 			{"listen",
-				[this](Config::Server& s)
+				[this](Config::Listener& s)
 				{ listen(s.host, s.port); }},
 			{"client_max_body_size",
-				[this](Config::Server& s)
+				[this](Config::Listener& s)
 				{ clientMaxBodySize(s.clientMaxBodySize); }},
 			{"root",
-				[this](Config::Server& s)
+				[this](Config::Listener& s)
 				{ single(s.root); }},
 			{"error_page",
-				[this](Config::Server& s)
+				[this](Config::Listener& s)
 				{ s.errorPages.push_back(page()); }},
 			{"location",
-				[this](Config::Server& s)
+				[this](Config::Listener& s)
 				{ s.locations.push_back(location()); }},
 		};
 
-		using	LocationDirective = std::function<void (Config::Server::Location &)>;
+		using	LocationDirective = std::function<void (Config::Listener::Location &)>;
 		std::map<std::string, LocationDirective>
 		locationDirectives = {
 			{"root",
-				[this](Config::Server::Location& l)
+				[this](Config::Listener::Location& l)
 				{ single(l.root); }},
 			{"client_max_body_size",
-				[this](Config::Server::Location& l)
+				[this](Config::Listener::Location& l)
 				{ clientMaxBodySize(l.clientMaxBodySize); }},
 			{"return",
-				[this](Config::Server::Location& l)
+				[this](Config::Listener::Location& l)
 				{ page(l.returnURL); }},
 			{"redirectStatus",
-				[this](Config::Server::Location& l)
+				[this](Config::Listener::Location& l)
 				{ single(l.redirectStatus); }},
 			{"autoindex",
-				[this](Config::Server::Location& l)
+				[this](Config::Listener::Location& l)
 				{ autoIndex(l.autoindex); }},
 			{"upload_dir",
-				[this](Config::Server::Location& l)
+				[this](Config::Listener::Location& l)
 				{ single(l.uploadDir); }},
 			{"index",
-				[this](Config::Server::Location& l)
+				[this](Config::Listener::Location& l)
 				{ single(l.index); }},
 			{"cgi_ext",
-				[this](Config::Server::Location& l)
+				[this](Config::Listener::Location& l)
 				{ single(l.cgiEXT); }},
 			{"cgi_path",
-				[this](Config::Server::Location& l)
+				[this](Config::Listener::Location& l)
 				{ single(l.cgiPath); }},
 			{"allowed_methods",
-				[this](Config::Server::Location& l)
+				[this](Config::Listener::Location& l)
 				{ multiple(l.allowedMethods); }},
 			{"index_files",
-				[this](Config::Server::Location& l)
+				[this](Config::Listener::Location& l)
 				{ multiple(l.indexFiles); }},
 		};
 		template <typename D>

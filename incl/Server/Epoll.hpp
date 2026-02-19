@@ -10,7 +10,6 @@
 # include <vector>
 // webserv
 # include "Socket.hpp"
-# include "ListenSocket.hpp"
 # include "EasyThrow.hpp"
 # include "EasyPrint.hpp"
 
@@ -22,7 +21,7 @@ class	Epoll
 			Del	= EPOLL_CTL_DEL,
 			Mod	= EPOLL_CTL_MOD,
 		};
-		enum	Events : uint32_t {
+		enum	Events : u_int32_t {
 			In	= EPOLL_EVENTS::EPOLLIN,
 			Out	= EPOLL_EVENTS::EPOLLOUT,
 			Err	= EPOLL_EVENTS::EPOLLERR,

@@ -8,7 +8,7 @@
 
 struct	Config
 {
-	struct	Server
+	struct	Listener
 	{
 		struct Page
 		{
@@ -43,7 +43,7 @@ struct	Config
 		std::vector<Location>	locations;
 	};
 
-	std::vector<Server>	servers;
+	std::vector<Listener>	listeners;
 };
 
 std::ostream	&operator<<(std::ostream &os, Config const &config);

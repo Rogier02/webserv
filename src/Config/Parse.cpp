@@ -13,7 +13,7 @@ Config Parse::config()
 		std::string directive = _ts.consume();
 
 		if (directive == "Server")
-			config.servers.push_back(server());
+			config.listeners.push_back(listener());
 		else {
 			log(unknownDirective(directive));
 			_ts.advanceTillBracket();
@@ -24,19 +24,19 @@ Config Parse::config()
 	return (config);
 }
 
-Config::Server
-Parse::server()
+Config::Listener
+Parse::listener()
 {
-	Config::Server	server;
+	Config::Listener	listener;
 
 	expect("{");
 	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
 		std::string directive = _ts.consume();
 
-		DirectiveMapIterator<ServerDirective> it = serverDirectives.find(directive);
-		if (it != serverDirectives.end())
-			it->second(server);
+		DirectiveMapIterator<ListenerDirective> it = listenerDirectives.find(directive);
+		if (it != listenerDirectives.end())
+			it->second(listener);
 		else {
 			log(unknownDirective(directive));
 			_ts.advanceLine();
@@ -44,13 +44,13 @@ Parse::server()
 	}
 	expect("}");
 
-	return (server);
+	return (listener);
 }
 
-Config::Server::Location
+Config::Listener::Location
 Parse::location()
 {
-	Config::Server::Location	location;
+	Config::Listener::Location	location;
 	size_t						tokensFound = _ts.tokensOnLine();
 
 	if (tokensFound == 3){
@@ -64,7 +64,7 @@ Parse::location()
 
 	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
-		// Hier moet eigenlijk ook elke keer een tokenCount worden gedaan om te checken of er wel genoeg tokens in de line zitten, 
+		// Hier moet eigenlijk ook elke keer een tokenCount worden gedaan om te checken of er wel genoeg tokens in de line zitten,
 		std::string	directive = _ts.consume();
 
 		DirectiveMapIterator<LocationDirective> it = locationDirectives.find(directive);
@@ -112,7 +112,7 @@ Parse::multiple(std::vector<std::string>& dest)
 	if (tokensFound >= 3) {
 		while (_ts.current() != lineEnd && _ts.peek().text != ";")
 			dest.push_back(_ts.consume());
-	
+
 		expect(";");
 	}
 	else
@@ -120,7 +120,7 @@ Parse::multiple(std::vector<std::string>& dest)
 }
 
 void
-Parse::page(Config::Server::Page &page)
+Parse::page(Config::Listener::Page &page)
 {
 	size_t	tokensFound = _ts.tokensOnLine();
 	if (tokensFound == 4) {
@@ -132,10 +132,10 @@ Parse::page(Config::Server::Page &page)
 		log(unexpectedTokenCount("4", tokensFound));
 }
 
-Config::Server::Page
+Config::Listener::Page
 Parse::page()
 {
-	Config::Server::Page	object;
+	Config::Listener::Page	object;
 
 	page(object);
 	return (object);

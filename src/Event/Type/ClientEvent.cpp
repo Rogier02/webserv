@@ -1,9 +1,8 @@
 #include "ClientEvent.hpp"
 
-ClientEvent::ClientEvent(int socketFd, Config::Server const &config)
+ClientEvent::ClientEvent(int socketFd, Config::Listener const &config)
 	:	Event(socketFd, Epoll::Events::In)
 	,	r_config(config)
-	,	_state(State::READING_REQUEST)
 {
 	std::cout << "Client " << data.fd << " \e[34mConstructed\e[0m\n";
 }
@@ -16,41 +15,51 @@ ClientEvent::~ClientEvent()
 void
 ClientEvent::_in()
 {
-	// IN
-	_requestBuffer += Socket::recv(data.fd);
+	ssize_t	recieved = Socket::recv(data.fd, _requestBuffer);
+
+	if (recieved == 0)
+		throw CloseConnection(data.fd);
+
+	if (_requestBuffer.find("\r\n\r\n") == std::string::npos)
+		return;
+
+	// if content-length given, wait to recv whole request body (maybe start time-out clock?)
+
 	std::cout << "Client " << data.fd << " Request:\n" << _requestBuffer << "\n";
 
-	if (_requestBuffer.find("\r\n\r\n") == std::string::npos) {
-		if (_requestBuffer.empty())
-			throw CloseConnection(data.fd);
-		return ; // incomplete request: we'll get em on the next pass
-	}
+	_request.parse(std::move(_requestBuffer)); // leaves buffer empty
 
-	// _request = std::move(_requestBuffer); // leaves buffer empty
-	Http::Request HttpRequest(std::move(_requestBuffer));
-
-	// MIDDLE (this should be elsewhere)
-	// use HTTP request construction from buffer instead of simple _request string
-/* 	try {
-		HttpRequest(_requestBuffer);
-		path? location? redirect? other stuff?
-		Method???
-	} catch (HttpRequest::ParseErrorException const &exception) {
-		HttpResponse = std::move(HttpResponse::createErrorPage(400));
-	} */
-
-	Http::Response	HttpResponse("1.0");
+	// MIDDLE request processing placeholder
+	if (_request.getVersion() != "0.9")
+		_response.setVersion("1.0");
 
 	std::string indexContent = readFile("./defaultPages/index.html");
-	/* if (indexContent.empty()) {
-		HttpResponse = std::move(HttpResponse::createErrorPage(404));
-	} else  */{
-		HttpResponse.setEntityBody(indexContent);
+	if (indexContent.empty()) {
+		_response.err(404);
+	} else {
+		_response.setEntityBody(indexContent);
 	}
 
-	// OUT
-	Socket::send(data.fd, HttpResponse.toString());
-	throw CloseConnection(data.fd);
+	_responseBuffer = _response.toString();
+
+	throw ReadyToSend(data.fd);
+}
+
+void
+ClientEvent::_out()
+{
+	ssize_t	sent = Socket::send(data.fd, _responseBuffer);
+
+	if (sent == -1) {
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			return; // try again later
+		else throw CloseConnection(data.fd);
+	}
+
+	_responseBuffer.erase(0, sent);
+
+	if (_responseBuffer.empty())
+		throw CloseConnection(data.fd);
 }
 
 /* void

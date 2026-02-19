@@ -21,23 +21,17 @@ CONFIG_FILES	=	Config.cpp			\
 
 EVENTBASE_MODULE=	Event/Base
 EVENTBASE_FILES	=	Event.cpp			\
-					EventTypes.cpp		\
+					EventHandlers.cpp	\
 
 EVENTTYPE_MODULE=	Event/Type
 EVENTTYPE_FILES	=	ClientEvent.cpp		\
 					ListenEvent.cpp		\
 
-HTTP_MODULE		=	Http
-HTTP_FILES		=	Http_v1_0.cpp		\
-
 SERVER_MODULE	=	Server
 SERVER_FILES	=	CGI.cpp				\
 					Epoll.cpp			\
-					ErrorPages.cpp		\
+					Http_v1_0.cpp		\
 					Server.cpp			\
-
-SOCKET_MODULE  =	Socket
-SOCKET_FILES	=	ListenSocket.cpp	\
 					Socket.cpp			\
 
 UTILS_MODULE	=	Util
