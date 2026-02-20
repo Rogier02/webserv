@@ -41,23 +41,40 @@ Cookie: sessionId=abc123xyz; theme=dark
 	Request::Request(
 		std::string const &request
 	) {
-		std::string *line = getline(request);
-		std::vector<std::string> parts = split(line, ' ');
-		_method = parseMethod(parts[0]);
-		_URI = parts[1];
-		_version = parts[2];
-		while (line != CRLF){
-			ssize_t bytesread = getline(line, 0, request);
-			std::string	key = line.substr(0, line.find_first_of(":", 0));
-			std::string value = line.substr(line.find_first_of(" ") + 1, line.length() - line.find_first_of(" "));
-			_requestHeaders.insert(key, value);
+		std::istringstream stream(request);
+		std::string line;
+		std::getline(stream, line);
+		if (!line.empty() && line[line.size() - 1] == '\r')
+			line.erase(line.size() - 1);
+		// Parse request line
+		size_t a = line.find(' ');
+		size_t b = line.find(' ', a + 1);
+
+		_method = parseMethod(line.substr(0, a));
+		_URI = line.substr(a + 1, b - a - 1);
+		_version = line.substr(b + 1);
+		// Parse request headers
+		while (std::getline(stream, line))
+		{
+			if (!line.empty() && line[line.size() - 1] == '\r')
+			line.erase(line.size() - 1);
+
+			if (line.empty())
+				break;
+
+			size_t colon = line.find(':');
+			std::string	key = line.substr(0, colon);
+			std::string value = line.substr(colon + 1);
+			_requestHeaders.insert(std::make_pair(key, value));
 		}
+		// Parse body
 		std::map<std::string, std::string>::iterator it = _requestHeaders.find("Content-Length");
 		if (it != _requestHeaders.end())
 		{
-			int	contentLength = std::atoi(it->second.c_str());
-			for (int i = 0; i < contentLength; i++)
-				_entityBody +=
+			int	contentLength = std::stoi(it->second.c_str());
+			char buffer[10000];
+			stream.read(buffer, contentLength);
+			_entityBody.assign(buffer, stream.gcount());
 		}
 		// parse request line for method, URI, version, otherwise v0.9
 	}
