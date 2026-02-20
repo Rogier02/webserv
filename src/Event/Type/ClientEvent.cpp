@@ -30,6 +30,7 @@ ClientEvent::_in()
 
 	// _request = std::move(_requestBuffer); // leaves buffer empty
 	Http::Request HttpRequest(std::move(_requestBuffer));
+	std::cout << "-------------PARSED HTTP REQUEST-------------\n" << HttpRequest.toString() << "-------------PARSED HTTP REQUEST-------------\n" << std::endl;
 
 	// MIDDLE (this should be elsewhere)
 	// use HTTP request construction from buffer instead of simple _request string
