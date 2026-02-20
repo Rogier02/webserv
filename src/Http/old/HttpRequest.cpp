@@ -24,7 +24,7 @@ HttpRequest::parseHttpRequest(){
 
 	method = parseMethod(parts[0]);
 	target = parts[1];
-	version = paseVersion(parts[2]);
+	version = parseVersion(parts[2]);
 
 
 	std::vector<Token> httpTokens;
@@ -44,15 +44,3 @@ HttpRequest::parseMethod(std::string method){
 		LOG("[HTTP Request Error] invalid method: " << method << "\n");
 }
 
-Version
-HttpRequest::parseVersion(std::string version){
-	Version	httpVersion;
-
-	std::string::size_type slash = version.find('/');
-	std::string::size_type dot = version.find('.');
-
-	version.httpMajorVersion = std::stoi(version.substr(slash + 1, 1));
-	version.httpMinorVersion = std::stoi(version.substr(dot + 1, 1));
-
-	return (httpVersion);
-}

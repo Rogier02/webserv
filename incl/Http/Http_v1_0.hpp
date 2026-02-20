@@ -3,7 +3,10 @@
 
 # include <string>
 # include <map>
-
+# include <vector>
+# include <fstream>
+# include <sstream>
+# include <iostream>
 # include <functional>
 
 namespace Http {
@@ -77,7 +80,7 @@ namespace Http {
 
 		private:
 			std::string	_method;
-				// "GET", "HEAD", "POST"
+				// "GET", "POST", "DELETE"
 			std::string	_URI;
 				// "/relative/path/to/resource"
 
@@ -85,6 +88,7 @@ namespace Http {
 				// authorisation, from, if-modified-since, referer, user-agent
 
 		public:
+			std::string	parseMethod(std::string method);
 			std::string const	&getVersion() const;
 			std::string const	&getMethod() const;
 			std::string const	&getEntityBody() const;

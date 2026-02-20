@@ -15,11 +15,61 @@ namespace Http {
 			dest += header.first + ": " + header.second + CRLF;
 	}
 
+/*
+POST /api/login HTTP/1.1
+Host: example.com
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+Accept: application/json, text/plain
+Accept-Language: en-US,en;q=0.9
+Accept-Encoding: gzip, deflate, br
+Content-Type: application/json
+Content-Length: 52
+Connection: keep-alive
+Origin: https://example.com
+Referer: https://example.com/login
+Cookie: sessionId=abc123xyz; theme=dark
+
+{
+  "username": "john_doe",
+  "password": "mypassword"
+}
+*/
+
+//1. read first line --> split into method, path, version
+//2. read header lines until empty line
+//3. if content-length exists --> read that many bytes for the body
 	Request::Request(
 		std::string const &request
 	) {
-		(void)request;
+		std::string *line = getline(request);
+		std::vector<std::string> parts = split(line, ' ');
+		_method = parseMethod(parts[0]);
+		_URI = parts[1];
+		_version = parts[2];
+		while (line != CRLF){
+			ssize_t bytesread = getline(line, 0, request);
+			std::string	key = line.substr(0, line.find_first_of(":", 0));
+			std::string value = line.substr(line.find_first_of(" ") + 1, line.length() - line.find_first_of(" "));
+			_requestHeaders.insert(key, value);
+		}
+		std::map<std::string, std::string>::iterator it = _requestHeaders.find("Content-Length");
+		if (it != _requestHeaders.end())
+		{
+			int	contentLength = std::atoi(it->second.c_str());
+			for (int i = 0; i < contentLength; i++)
+				_entityBody +=
+		}
 		// parse request line for method, URI, version, otherwise v0.9
+	}
+
+	std::string
+	Request::parseMethod(
+		std::string method
+	) {
+		if (method == "GET" || method == "POST" || method == "DELETE")
+			return (method);
+		else
+			return (NULL); //throw error maybe here??
 	}
 
 	Response::Response(
