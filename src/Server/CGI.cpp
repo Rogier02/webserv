@@ -36,7 +36,7 @@ namespace CGI
 	};
 
 	std::string
-	CGI::execute(Http::Request& request)
+	execute(Http::Request& request)
 	{
 		std::string path = request.getURI();
 		std::string extension = getCgiExtension(path);
@@ -70,7 +70,7 @@ namespace CGI
 
 	//TODO: REMOVE SETENV and add own implementation
 	char **
-	CGI::setupEnvironment(Http::Request& request)
+	setupEnvironment(Http::Request& request)
 	{
 		std::vector<std::string> _envVariables;
 
@@ -117,7 +117,7 @@ namespace CGI
 	};
 
 	std::string
-	CGI::executeScript(
+	executeScript(
 		const std::string &interpreter,
 		const std::string &scripitPath,
 		const std::string &requestBody,
@@ -216,7 +216,7 @@ namespace CGI
 	}
 
 	std::string
-	CGI::parseCgiResponse(const std::string &rawOutput)
+	parseCgiResponse(const std::string &rawOutput)
 	{
 		//CGI scripts output headers followed by blank line, then body
 

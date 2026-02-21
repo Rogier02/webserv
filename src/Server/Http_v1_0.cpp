@@ -60,8 +60,46 @@ namespace Http {
 	int
 	Request::parse(std::string request)
 	{
-		(void)request;
-		// parse request line for method, URI, version
+		std::istringstream stream(request);
+		std::string line;
+
+		std::getline(stream, line);
+		if (!line.empty() && line[line.size() - 1] == '\r')
+			line.erase(line.size() - 1);
+
+		// Parse request line for method, URI, version, otherwise v0.9
+		size_t i = line.find(' ');
+		size_t k = line.find(' ', i + 1);
+
+		_method = line.substr(0, i);
+		_URI = line.substr(i + 1, k - i - 1);
+		_version = line.substr(k + 1);// 0.9?
+
+		// Parse request headers
+		while (std::getline(stream, line))
+		{
+			if (!line.empty() && line[line.size() - 1] == '\r')
+			line.erase(line.size() - 1);
+
+			if (line.empty())
+				break;
+
+			size_t colon = line.find(':');
+			std::string	key = line.substr(0, colon);
+			std::string value = line.substr(colon + 1);
+			_requestHeaders.insert(std::make_pair(key, value));
+		}
+
+		// Parse body
+		std::map<std::string, std::string>::iterator it = _requestHeaders.find("Content-Length");
+		if (it != _requestHeaders.end())
+		{
+			int	contentLength = std::stoi(it->second.c_str());
+			char buffer[contentLength];
+			stream.read(buffer, contentLength);
+			_entityBody.assign(buffer, stream.gcount());
+		}
+
 		return (0);
 	}
 
