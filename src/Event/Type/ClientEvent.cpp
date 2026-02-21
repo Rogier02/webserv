@@ -15,7 +15,7 @@ ClientEvent::~ClientEvent()
 
 /* 	Client IN should:
 		- read the request (in chunks)
-		- parse the request, determine course of action
+		- parse the request? maybe server can hold request and response instead
 
 	Then the Server should:
 		- fulfill the request (GET, POST, CGI?)
