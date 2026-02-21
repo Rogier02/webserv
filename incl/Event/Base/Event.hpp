@@ -16,7 +16,7 @@ class	Event : public epoll_event
 		Event() = default;
 		Event(Event const &) = default;
 		Event(Event &&) = default;
-		Event(int fd, Epoll::Events eventTypes);
+		Event(int fd, u_int32_t eventTypes);
 		virtual ~Event() = default;
 
 	public:
@@ -30,6 +30,14 @@ class	Event : public epoll_event
 		class	CloseConnection : public std::runtime_error {
 			public:
 				CloseConnection(int fd);
+				int	fd();
+			private:
+				int	_fd;
+		};
+
+		class	ReadyToSend : public std::exception {
+			public:
+				ReadyToSend(int fd);
 				int	fd();
 			private:
 				int	_fd;

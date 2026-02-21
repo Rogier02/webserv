@@ -1,6 +1,6 @@
 #include "ListenEvent.hpp"
 
-ListenEvent::ListenEvent(int socketFd, Epoll::Events events, Epoll &epoll, Config::Server &config)
+ListenEvent::ListenEvent(int socketFd, Epoll::Events events, Epoll &epoll, Config::Listener &config)
 	:	Event(socketFd, events)
 	,	r_epoll(epoll)
 	,	_config(config)
@@ -10,7 +10,7 @@ void
 ListenEvent::_in()
 {
 	ClientEvent	&client =
-		EventTypes::create<ClientEvent>(
+		EventHandlers::create<ClientEvent>(
 			Socket::accept(data.fd), _config);
 	EasyThrow(r_epoll.ctl(Epoll::Ctl::Add, client));
 

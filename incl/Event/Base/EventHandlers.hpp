@@ -1,5 +1,5 @@
-#ifndef EVENTTYPES_HPP
-# define EVENTTYPES_HPP
+#ifndef EVENTHANDLERS_HPP
+# define EVENTHANDLERS_HPP
 
 // C++
 # include <memory>
@@ -7,10 +7,10 @@
 // webserv
 # include "Event.hpp"
 
-class	EventTypes
+class	EventHandlers// make this a namespace
 {
 	public:
-		EventTypes() = delete;
+		EventHandlers() = delete;
 
 	private:
 		static std::map<int, std::unique_ptr<Event>>	_handlers;
@@ -25,6 +25,6 @@ class	EventTypes
 		// static void		destroy(int fd);
 };
 
-# include "EventTypes.tpp"
+# include "EventHandlers.tpp"
 
 #endif

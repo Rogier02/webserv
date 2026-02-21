@@ -5,19 +5,23 @@
 # include <iostream>
 // webserv
 # include "Config.hpp"
-# include "EventTypes.hpp"
+# include "EventHandlers.hpp"
 # include "ClientEvent.hpp"
 # include "Epoll.hpp"
 
 class ListenEvent : public Event
 {
 	public:
-		ListenEvent(int socketFd, Epoll::Events events, Epoll &epoll, Config::Server &config);
+		ListenEvent() = default;// delete?
+		ListenEvent(ListenEvent const &) = delete;
+		ListenEvent(ListenEvent &&) = delete;
+		ListenEvent(int socketFd, Epoll::Events events, Epoll &epoll, Config::Listener &config);
+		~ListenEvent() = default;
 
 	private:
-		Epoll			&r_epoll;
+		Epoll	&r_epoll;
 
-		Config::Server	_config;
+		Config::Listener	_config;
 
 	private:
 		void	_in() override;

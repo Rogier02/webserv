@@ -2,19 +2,26 @@
 
 Server::Server(Config &config)
 {
-	for (Config::Server &listener : config.servers)
+	for (Config::Listener &listener : config.listeners)
 	{
-		int	socketFd = ListenSocket(listener.port);
+		int	socketFd = Socket::create(listener.port);
+		_listenSockets.push_back(socketFd);
 		EasyPrint(socketFd);
 		EasyPrint(listener.port);
 
 		ListenEvent	&listen =
-			EventTypes::create<ListenEvent>(
+			EventHandlers::create<ListenEvent>(
 				socketFd, Epoll::Events::In, _epoll, listener);
 
 		EasyThrow(_epoll.ctl(Epoll::Ctl::Add, listen));
 	}
 }
+
+// Server::~Server()
+// {
+// 	for (int fd : _listenSockets)
+// 		close(fd);
+// }
 
 void
 Server::run()
@@ -28,7 +35,10 @@ Server::run()
 				if (unknown.events & (Epoll::Events::Err | Epoll::Events::Hup | Epoll::Events::RdH))
 					_closeConnection(unknown.data.fd);
 				else try {
-					EventTypes::get(unknown.data.fd)->handle();
+					// EventHandlers::get(unknown.data.fd);// add active Event to queue
+					EventHandlers::get(unknown.data.fd)->handle();
+				} catch (Event::ReadyToSend &completedEvent) {
+					_readyToSend(completedEvent.fd());// this is weird and will be removed when request processing happens in Server rather than ClientHandler
 				} catch (Event::CloseConnection &badEvent) {
 					_closeConnection(badEvent.fd());
 				}
@@ -51,6 +61,17 @@ Server::run()
 	}
 	LOGGER(log("Controlled Server Shutdown\n"));
 	std::cout << "Server shutting down...\n";
+}
+
+void
+Server::_readyToSend(int fd)
+{
+	Event	*event	= EventHandlers::get(fd);
+	event->events	= Epoll::Events::In | Epoll::Events::Out;
+
+	EasyThrow(_epoll.ctl(Epoll::Ctl::Mod, *event));
+
+	std::cout << "Client " << fd << " \e[33mSuccessfully Registered For Sending\e[0m\n";
 }
 
 void
