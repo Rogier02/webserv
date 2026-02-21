@@ -17,7 +17,7 @@ ClientEvent::~ClientEvent()
 		- read the request (in chunks)
 		- parse the request, determine course of action
 
-	Then the client should:
+	Then the Server should:
 		- fulfill the request (GET, POST, CGI?)
 		- make up the response
 
@@ -39,19 +39,26 @@ ClientEvent::_in()
 
 	// if content-length given, wait to recv whole request body (maybe start time-out clock?)
 
-	std::cout << "Client " << data.fd << " Request:\n" << _requestBuffer << "\n";
-
 	_request.parse(std::move(_requestBuffer)); // leaves buffer empty
+	std::cout << "\n\n" << _request.toString() << "\n";
 
 	// MIDDLE request processing placeholder
+
 	if (_request.getVersion() != "0.9")
 		_response.setVersion("1.0");
 
-	std::string indexContent = readFile("./www/index.html");
-	if (indexContent.empty()) {
-		_response.err(404);
-	} else {
-		_response.setEntityBody(indexContent);
+	if(CGI::isCgiRequest(_request.getURI()))
+	{
+		_response.setEntityBody(CGI::execute(_request));
+	}
+	else
+	{
+		std::string indexContent = readFile("./www/index.html");
+		if (indexContent.empty()) {
+			_response.err(404);
+		} else {
+			_response.setEntityBody(indexContent);
+		}
 	}
 
 	_responseBuffer = _response.toString();
@@ -75,67 +82,3 @@ ClientEvent::_out()
 	if (_responseBuffer.empty())
 		throw CloseConnection(data.fd);
 }
-
-/* void
-ClientEvent::parseRequest()
-{
-	try {
-		// call HttpRequestParser
-		// _state = State::GENERATING_RESPONSE;
-		generateResponse();
-	} catch (const std::exception& e) {
-		LOGGER(log("Parse error: " + std::string(e.what())));
-		_response.setStatus(400);
-		_response.setContentType("text/html");
-		_response.setBody("<html><body><h1>400 Bad Request</h1></body></html");
-		_state = State::SENDING_RESPONSE;
-	}
-} */
-
-/* void
-ClientEvent::generateResponse()
-{
-	std::istringstream	stream(std::move(_request));
-	std::string			method, path, version;
-	stream >> method >> path >> version;
-
-	if (CGI::isCgiRequest(path)) {
-		// _state = State::EXECUTING_CGI;
-		// _state = State::SENDING_RESPONSE;
-		sendResponse();
-		std::string cgiOutput = CGI::execute(path, method, "", "");
-		_response.setStatus(200);
-		_response.setContentType("text/html");
-		_response.setBody(cgiOutput);
-	} else {
-		// Non-CGI request (static files)
-		// Temporary: Return 404 for any path that's not / or /cgi.py
-		if (path == "/") {
-			std::string indexContent = readFile("./defaultPages/index.html");
-			if (indexContent.empty()) {
-				_response.setStatus(404);
-				_response.setContentType("text/html");
-				_response.setBody(ErrorPages::getBody(404));
-			} else {
-				_response.setStatus(200);
-				_response.setContentType("text/html");
-				_response.setBody(indexContent);
-			}
-		} else {
-			// Return 404 error
-			_response.setStatus(404);
-			_response.setContentType("text/html");
-			_response.setBody(ErrorPages::getBody(404));
-		}
-		// _state = State::SENDING_RESPONSE;
-		sendResponse();
-	}
-} */
-
-/* void
-ClientEvent::sendResponse()
-{
-	Socket::send(data.fd, _response.toString());
-
-	throw CloseConnection(data.fd);
-} */

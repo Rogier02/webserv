@@ -12,7 +12,7 @@ namespace Http {
 		HeaderMap const	&headerMap)
 	{
 		for (std::pair<const std::string, std::string> const &header : headerMap)
-			dest += header.first + ": " + header.second + CRLF;
+			dest += header.first + ":" + header.second + CRLF;
 	}
 
 	Response::Response()
@@ -219,19 +219,31 @@ namespace Http {
 	std::string const	&
 	Request::getRequestHeaderValue(std::string const &key)
 	const {
-		return (_requestHeaders.at(key));
+		HeaderMap::const_iterator it = _requestHeaders.find(key);
+		if (it != _requestHeaders.end())
+			return (it->second);
+		else
+			return (SP);
 	}
 
 	std::string const	&
 	Request::getGeneralHeaderValue(std::string const &key)
 	const {
-		return (_generalHeaders.at(key));
+		HeaderMap::const_iterator it = _generalHeaders.find(key);
+		if (it != _generalHeaders.end())
+			return (it->second);
+		else
+			return (SP);
 	}
 
 	std::string const	&
 	Request::getEntityHeaderValue(std::string const &key)
 	const {
-		return (_entityHeaders.at(key));
+		HeaderMap::const_iterator it = _entityHeaders.find(key);
+		if (it != _entityHeaders.end())
+			return (it->second);
+		else
+			return (SP);
 	}
 
 	Http::HeaderMap const &

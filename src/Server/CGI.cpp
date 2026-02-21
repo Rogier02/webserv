@@ -38,7 +38,7 @@ namespace CGI
 	std::string
 	execute(Http::Request& request)
 	{
-		std::string path = request.getURI();
+		std::string path = "www" + request.getURI();
 		std::string extension = getCgiExtension(path);
 		if (extension.empty()) {
 			return("<html><body><h1>500 Internal Server Error</h1>"
@@ -51,18 +51,8 @@ namespace CGI
 					"<p>Unknown CGI extension</p></body></html>");
 		}
 
-		size_t lastSlash = path.find_last_of("/");
-		std::string scriptFilename;
-
-		if (lastSlash != std::string::npos)
-			scriptFilename = path.substr(lastSlash + 1);
-		else
-			scriptFilename = path;
-
-		std::string scriptPath = BinDirectory + scriptFilename;
-
 		char **env = setupEnvironment(request);
-		std::string output = executeScript(interpreter, scriptPath, request.getEntityBody(), env);
+		std::string output = executeScript(interpreter, path, request.getEntityBody(), env);
 
 		// Write function to clean up env
 		return (output);
@@ -202,6 +192,7 @@ namespace CGI
 			// Wait for child process to complete
 			int status;
 			waitpid(pid, &status, 0);
+				return (parseCgiResponse(output));
 
 			// Check if child exited normally
 			if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
