@@ -1,9 +1,12 @@
 #ifndef	CGI_HPP
 # define CGI_HPP
 
+// C++
 #include <string>
 #include <map>
 #include <vector>
+// webserv
+#include "Http_v1_0.hpp"
 
 namespace	CGI
 {
@@ -17,24 +20,21 @@ namespace	CGI
 	};
 
 	bool		isCgiRequest(const std::string& path);
-
-	std::string	execute(
-		const std::string& path,
-		const std::string& method,
-		const std::string& query,
-		const std::string& body);
+	std::string execute(Http::Request& request);
 
 	std::string	getCgiExtension(const std::string& path);
 
 	std::string	getCgiInterpreter(const std::string& extension);
 
-	void		setupEnvironment(const std::string& path,
-		const std::string& method,
-		const std::string& query,
-		const std::string& body);
+	char 		**setupEnvironment(Http::Request& request);
 
-	std::string	executeScript(const std::string& interpreter,
-		const std::string& scriptPath);
+	std::string	executeScript(
+		const std::string& interpreter,
+		const std::string& scriptPath,
+		const std::string& requestBody,
+		char **env);
+
+	std::string	parseCgiResponse(const std::string& rawOutput);
 };
 
 #endif

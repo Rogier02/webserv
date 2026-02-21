@@ -13,6 +13,8 @@ namespace Http {
 	constexpr	std::string	SP = " ";
 	constexpr	std::string CRLF = "\r\n";
 
+	using	HeaderMap = std::map<std::string, std::string>;
+
 	static std::map<u_int16_t, std::string>	Statuses	= {
 		{200, "OK"},
 		{201, "Created"},
@@ -35,9 +37,6 @@ namespace Http {
 	};// maybe move this into Response class?
 
 	class	Message {
-		protected:
-			using	HeaderMap = std::map<std::string, std::string>;
-
 		public:
 			Message() = default;
 			Message(std::string const &version);
@@ -47,6 +46,9 @@ namespace Http {
 
 		public:
 			virtual std::string	toString() const = 0;
+
+			HeaderMap const		&getGeneralHeaders() const;
+			HeaderMap const		&getEntityHeaders() const;
 
 		protected:
 			std::string	_version;
@@ -88,6 +90,12 @@ namespace Http {
 			std::string const	&getMethod() const;
 			std::string const	&getURI() const;
 			std::string const	&getEntityBody() const;
+			std::string getQueryString() const;
+			std::string getScriptName() const;
+			std::string getHost(std::string const &key) const;
+
+			HeaderMap const		&getRequestHeaders() const;
+			std::string const	&getRequestHeaderValue(std::string const &key) const;
 
 			std::string const	&getGeneralHeaderValue(std::string const &key) const;
 			std::string const	&getEntityHeaderValue(std::string const &key) const;
@@ -121,6 +129,9 @@ namespace Http {
 
 			int	setGeneralHeaderValue(std::string const &key, std::string const &value);
 			int	setEntityHeaderValue(std::string const &key, std::string const &value);
+
+			int setResponseHeaderValue(std::string const &key, std::string const &value);
+			int setStatuscode(u_int8_t statusCode);
 	};
 }
 

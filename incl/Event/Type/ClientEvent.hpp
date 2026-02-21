@@ -15,7 +15,6 @@
 class ClientEvent : public Event
 {
 	public:
-		ClientEvent() = default;// delete?
 		ClientEvent(ClientEvent const &) = delete;
 		ClientEvent(ClientEvent &&) = delete;
 		ClientEvent(int socketFd, Config::Listener const &config);

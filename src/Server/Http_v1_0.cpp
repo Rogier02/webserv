@@ -83,6 +83,18 @@ namespace Http {
 		return (0);
 	}
 
+	Http::HeaderMap const &
+	Message::getGeneralHeaders()
+	const {
+		return (_generalHeaders);
+	}
+
+	Http::HeaderMap const &
+	Message::getEntityHeaders()
+	const {
+		return (_entityHeaders);
+	}
+
 	int
 	Response::setVersion(
 		std::string const &version)
@@ -136,4 +148,63 @@ namespace Http {
 		return (_entityBody);
 	}
 
+	std::string
+	Request::getQueryString()
+	const {
+		std::string	queryString = _URI.substr((_URI.find_first_of("?") + 1), _URI.size());
+		return (queryString);
+	}
+
+	std::string
+	Request::getScriptName()
+	const {
+		std::string	scriptName = _URI.substr(0, _URI.find_first_of("?"));
+		return (scriptName);
+	}
+
+	std::string
+	Request::getHost(std::string const &key)
+	const {
+		std::string	host = getGeneralHeaderValue("Host");
+		if (key == "Port")
+		{
+			std::string	port = host.substr(host.find_first_of(":") + 1, host.size());
+			return (port);
+		}
+		else
+		{
+			std::string	address = host.substr(0, host.find_first_of(":"));
+			return (address);
+		}
+	}
+
+	std::string const	&
+	Request::getRequestHeaderValue(std::string const &key)
+	const {
+		return (_requestHeaders.at(key));
+	}
+
+	std::string const	&
+	Request::getGeneralHeaderValue(std::string const &key)
+	const {
+		return (_generalHeaders.at(key));
+	}
+
+	std::string const	&
+	Request::getEntityHeaderValue(std::string const &key)
+	const {
+		return (_entityHeaders.at(key));
+	}
+
+	Http::HeaderMap const &
+	Request::getRequestHeaders()
+	const {
+		return (_requestHeaders);
+	}
+
+	int
+	Response::setResponseHeaderValue(std::string const &key, std::string const &value) {
+		_responseHeaders[key] = value;
+		return (0);
+	}
 }
