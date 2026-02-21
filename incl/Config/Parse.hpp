@@ -28,7 +28,7 @@ class	Parse
 		Config	config();
 
 	private:
-		Config::Listener			listener();
+		Config::Listener				server();
 		Config::Listener::Location	location();
 		Config::Listener::Page		page();
 
@@ -56,9 +56,9 @@ class	Parse
 		std::string	unexpectedTokenCount(std::string expected, size_t found);
 
 	private:
-		using	ListenerDirective = std::function<void (Config::Listener &)>;
-		std::map<std::string, ListenerDirective>
-		listenerDirectives = {
+		using	ServerDirective = std::function<void (Config::Listener &)>;
+		std::map<std::string, ServerDirective>
+		serverDirectives = {
 			{"server_name",
 				[this](Config::Listener& s)
 				{ single(s.name); }},

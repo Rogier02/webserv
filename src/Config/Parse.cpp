@@ -13,7 +13,7 @@ Config Parse::config()
 		std::string directive = _ts.consume();
 
 		if (directive == "Server")
-			config.listeners.push_back(listener());
+			config.listeners.push_back(server());
 		else {
 			log(unknownDirective(directive));
 			_ts.advanceTillBracket();
@@ -25,18 +25,18 @@ Config Parse::config()
 }
 
 Config::Listener
-Parse::listener()
+Parse::server()
 {
-	Config::Listener	listener;
+	Config::Listener	server;
 
 	expect("{");
 	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
 		std::string directive = _ts.consume();
 
-		DirectiveMapIterator<ListenerDirective> it = listenerDirectives.find(directive);
-		if (it != listenerDirectives.end())
-			it->second(listener);
+		DirectiveMapIterator<ServerDirective> it = serverDirectives.find(directive);
+		if (it != serverDirectives.end())
+			it->second(server);
 		else {
 			log(unknownDirective(directive));
 			_ts.advanceLine();
@@ -44,7 +44,7 @@ Parse::listener()
 	}
 	expect("}");
 
-	return (listener);
+	return (server);
 }
 
 Config::Listener::Location
@@ -101,7 +101,10 @@ Parse::single(int& dest)
 		expect(";");
 	}
 	else
+	{
 		log(unexpectedTokenCount("3", tokensFound));
+		_ts.advanceLine();
+	}
 }
 
 void
@@ -116,7 +119,10 @@ Parse::multiple(std::vector<std::string>& dest)
 		expect(";");
 	}
 	else
+	{
 		log(unexpectedTokenCount("3 or more", tokensFound));
+		_ts.advanceLine();
+	}
 }
 
 void
@@ -129,7 +135,10 @@ Parse::page(Config::Listener::Page &page)
 		expect(";");
 	}
 	else
+	{
 		log(unexpectedTokenCount("4", tokensFound));
+		_ts.advanceLine();
+	}
 }
 
 Config::Listener::Page
@@ -166,7 +175,10 @@ Parse::clientMaxBodySize(size_t &clientMaxBodySize)
 		expect(";");
 	}
 	else
+	{
 		log(unexpectedTokenCount("3", tokensFound));
+		_ts.advanceLine();
+	}
 }
 
 void
@@ -185,7 +197,10 @@ Parse::listen(std::string& host, int& port)
 		expect(";");
 	}
 	else
+	{
 		log(unexpectedTokenCount("3", tokensFound));
+		_ts.advanceLine();
+	}
 }
 
 void Parse::autoIndex(bool& autoIndex)
@@ -204,7 +219,10 @@ void Parse::autoIndex(bool& autoIndex)
 		expect(";");
 	}
 	else
+	{
 		log(unexpectedTokenCount("3", tokensFound));
+		_ts.advanceLine();
+	}
 }
 
 void

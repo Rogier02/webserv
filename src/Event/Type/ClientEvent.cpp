@@ -47,7 +47,7 @@ ClientEvent::_in()
 	if (_request.getVersion() != "0.9")
 		_response.setVersion("1.0");
 
-	std::string indexContent = readFile("./defaultPages/index.html");
+	std::string indexContent = readFile("./www/index.html");
 	if (indexContent.empty()) {
 		_response.err(404);
 	} else {
