@@ -4,43 +4,36 @@
 // C++
 # include <string>
 # include <vector>
+# include <map>
 # include <iostream>
 
 struct	Config //should probably be Server class
 {
+
 	struct	Listener
 	{
-		struct Page
-		{
-			int			code = 0;
-			std::string	path;
-		};
-
 		struct Location
 		{
-			std::string	path;
-			std::string	root;
-			size_t		clientMaxBodySize = 0;
-			Page		returnURL;
-			int			redirectStatus = 0;
-			bool		autoindex = false;
+			std::string	root; // if directive is missing, enter Listener root + location path
+			std::string	index;
+			std::string	allowedMethods;
 			std::string	uploadDir;
-			std::string	index; //hier doen we nog helemaal niks mee???
+			size_t		clientMaxBodySize = 0;
+			u_int16_t	redirectStatus = 0;
+			std::string	returnURL;
 			std::string	cgiEXT;
 			std::string	cgiPath;
-
-			std::vector<std::string>	allowedMethods;
-			std::vector<std::string>	indexFiles;
+			bool		autoindex = false;
 		};
 
 		std::string	name;
-		std::string	host;
 		std::string	root;
-		int			port = 0;
+		std::string	host;
+		int			port = 8080;
 		size_t		clientMaxBodySize;
 
-		std::vector<Page>		errorPages;
-		std::vector<Location>	locations;
+		std::map<u_int16_t, std::string>	errorPages;
+		std::map<std::string, Location>		locations;
 	};
 
 	std::vector<Listener>	listeners;

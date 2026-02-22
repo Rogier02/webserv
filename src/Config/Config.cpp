@@ -18,23 +18,22 @@ std::ostream	&operator<<(std::ostream &os, Config const &config)
 
 		// Error pages
 		os << "Error Pages:\n";
-		for (size_t e = 0; e < srv.errorPages.size(); ++e)
+		for (std::pair<u_int16_t, std::string> const &errorPage : srv.errorPages)
 		{
-			const auto& ep = srv.errorPages[e];
-			os << "  [" << e << "] "
-					<< ep.code << " -> " << ep.path << "\n";
+			os << "  [" << errorPage.first << "] " << errorPage.second << "\n";
 		}
 
 		// Locations
 		os << "Locations:\n";
-		for (size_t l = 0; l < srv.locations.size(); ++l)
+		for (std::pair<std::string, Config::Listener::Location> const &location : srv.locations)
 		{
-			const Config::Listener::Location& loc = srv.locations[l];
-			os << "  --- Location " << l << " ---\n";
-			os << "  path: " << loc.path << "\n";
+			std::string const					&path	= location.first;
+			Config::Listener::Location const	&loc	= location.second;
+
+			os << "  --- Location " << path << " ---\n";
 			os << "  root: " << loc.root << "\n";
 			os << "  clientMaxBodySize: " << loc.clientMaxBodySize << "\n";
-			os << "  returnURL: " << loc.returnURL.path << "\n";
+			os << "  returnURL: " << loc.returnURL << "\n";
 			os << "  redirectStatus: " << loc.redirectStatus << "\n";
 			os << "  autoindex: " << (loc.autoindex ? "true" : "false") << "\n";
 			os << "  uploadDir: " << loc.uploadDir << "\n";

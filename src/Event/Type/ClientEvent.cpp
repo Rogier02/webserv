@@ -28,7 +28,6 @@ ClientEvent::_in()
 	_request.parse(std::move(_requestBuffer)); // leaves buffer empty
 	std::cout << "\n\n" << _request.toString() << "\n";
 
-
 	// Process request, just don't block by waiting for IO like CGI
 	/*
 		method function table: GET, POST, DELETE
@@ -38,6 +37,18 @@ ClientEvent::_in()
 
 		then signal write
 	*/
+
+
+	// TODO: get location struct
+
+	std::string const	&method = _request.getMethod();
+	if (method == "GET")
+		_get();
+	if (method == "POST")
+		_post();
+	if (method == "DELETE")
+		_delete();
+
 
 	// placeholder: return the cgi output or index page
 	{
@@ -81,4 +92,41 @@ ClientEvent::_out()
 		std::cout << "Client " << data.fd << " \e[32mCompleted Request.\e[0m\n";
 		_signal = Signal::Close;
 	}
+}
+
+void
+ClientEvent::_get()
+{
+	std::string	const	&URI 			= _request.getURI();
+	LocationMap::const_iterator	entry	= _findLocation(URI);
+
+	if (entry == r_config.locations.end())
+		return _response.err(404);
+
+	Config::Listener::Location const	&location	= entry->second;
+
+	if (location.allowedMethods.find("GET") == std::string::npos)
+		return _response.err(403);
+
+	std::string path = URI;
+	if (URI == location.root)
+		path += location.index;
+
+	_response.setEntityBody(IO::readFile(path));
+	_signal = Signal::Write;
+}
+
+void
+ClientEvent::_post()
+{}
+
+void
+ClientEvent::_delete()
+{}
+
+ClientEvent::LocationMap::const_iterator
+ClientEvent::_findLocation(std::string URI)
+{
+	return (r_config.locations.find(URI));
+	// what if file
 }

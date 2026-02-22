@@ -1,7 +1,6 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
-// C
 // C++
 # include <stdbool.h>
 # include <iostream>

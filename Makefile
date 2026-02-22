@@ -24,13 +24,16 @@ EVENTBASE_FILES	=	Event.cpp			\
 					EventHandlers.cpp	\
 
 EVENTTYPE_MODULE=	Event/Type
-EVENTTYPE_FILES	=	ClientEvent.cpp		\
+EVENTTYPE_FILES	=	CGInboxEvent.cpp	\
+					ClientEvent.cpp		\
 					ListenEvent.cpp		\
 
 SERVER_MODULE	=	Server
 SERVER_FILES	=	CGI.cpp				\
 					Epoll.cpp			\
-					Http_v1_0.cpp		\
+					HttpMessage.cpp		\
+					HttpRequest.cpp		\
+					HttpResponse.cpp	\
 					Server.cpp			\
 					Socket.cpp			\
 

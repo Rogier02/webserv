@@ -6,6 +6,8 @@
 # include <fstream>
 # include <sstream>
 
-std::string	readFile(std::string const &path);
+namespace IO {
+	std::string	readFile(std::string const &path);
+}
 
 #endif

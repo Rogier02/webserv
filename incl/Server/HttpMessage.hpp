@@ -5,8 +5,6 @@
 # include <string>
 # include <map>
 
-// webserv
-
 namespace Http {
 	constexpr	std::string	SP = " ";
 	constexpr	std::string CRLF = "\r\n";

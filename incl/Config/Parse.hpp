@@ -28,19 +28,21 @@ class	Parse
 		Config	config();
 
 	private:
-		Config::Listener				server();
-		Config::Listener::Location	location();
-		Config::Listener::Page		page();
+		Config::Listener	server();
+
+		void	errorPage(std::map<u_int16_t, std::string> &dest);
+		void	location(std::map<std::string, Config::Listener::Location> &dest);
 
 		// get simple value(s)
 		void	single(std::string &dest);
-		void	single(int &dest);
+		void	single(u_int16_t &dest);
 		void	multiple(std::vector<std::string> &dest);
+		void	multiple(std::string &dest);
 
 		// get complex directive value(s)
-		void	page(Config::Listener::Page &page);
-		void	clientMaxBodySize(size_t &clientMaxBodySize);
 		void	listen(std::string &host, int &port);
+		void	clientMaxBodySize(size_t &clientMaxBodySize);
+		void	returnPage(u_int16_t &code, std::string &path);
 		void	autoIndex(bool &autoIndex);
 
 		// tools
@@ -73,10 +75,10 @@ class	Parse
 				{ single(s.root); }},
 			{"error_page",
 				[this](Config::Listener& s)
-				{ s.errorPages.push_back(page()); }},
+				{ errorPage(s.errorPages); }},
 			{"location",
 				[this](Config::Listener& s)
-				{ s.locations.push_back(location()); }},
+				{ location(s.locations); }},
 		};
 
 		using	LocationDirective = std::function<void (Config::Listener::Location &)>;
@@ -90,10 +92,7 @@ class	Parse
 				{ clientMaxBodySize(l.clientMaxBodySize); }},
 			{"return",
 				[this](Config::Listener::Location& l)
-				{ page(l.returnURL); }},
-			{"redirectStatus",
-				[this](Config::Listener::Location& l)
-				{ single(l.redirectStatus); }},
+				{ returnPage(l.redirectStatus, l.returnURL); }},
 			{"autoindex",
 				[this](Config::Listener::Location& l)
 				{ autoIndex(l.autoindex); }},
@@ -112,9 +111,6 @@ class	Parse
 			{"allowed_methods",
 				[this](Config::Listener::Location& l)
 				{ multiple(l.allowedMethods); }},
-			{"index_files",
-				[this](Config::Listener::Location& l)
-				{ multiple(l.indexFiles); }},
 		};
 		template <typename D>
 		using	DirectiveMapIterator = typename std::map<std::string, D>::iterator;

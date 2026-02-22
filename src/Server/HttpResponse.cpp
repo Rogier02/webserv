@@ -28,7 +28,8 @@ namespace Http {
 		return (statusLine + headers + CRLF + _entityBody);
 	}
 
-	int
+	// check for custom error page
+	void
 	Response::err(
 		u_int16_t statusCode)
 	{
@@ -42,28 +43,21 @@ namespace Http {
 			"<hr><center>webserv/1.0</center>\n"
 			"</body>\n"
 			"</html>\n";
-
-		return (0);
 	}
 
-	int
-	Response::setVersion(
-		std::string const &version)
-	{
+	void Response::setVersion(std::string const &version) {
 		_version = version;
-		return (0);
 	}
 
-	int
+	void
 	Response::setStatus(
 		u_int16_t statusCode)
 	{
 		_statusCode		= statusCode;
 		_reasonPhrase	= Statuses[statusCode];
-		return (0);
 	}
 
-	int
+	void
 	Response::setEntityBody(
 		std::string const &content)
 	{
@@ -72,12 +66,9 @@ namespace Http {
 		_entityHeaders["content-length"] = std::to_string(content.length());
 		// other entity headers
 
-		return (0);
 	}
 
-	int
-	Response::setResponseHeaderValue(std::string const &key, std::string const &value) {
+	void Response::setResponseHeaderValue(std::string const &key, std::string const &value)	{
 		_responseHeaders[key] = value;
-		return (0);
 	}
 }

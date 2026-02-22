@@ -3,7 +3,6 @@
 
 // CPP
 # include <string>
-
 // webserv
 # include "HttpMessage.hpp"
 
@@ -18,7 +17,7 @@ namespace Http {
 		public:
 			std::string toString() const override;
 
-			int	err(u_int16_t statusCode);
+			void	err(u_int16_t statusCode);
 
 		private:
 			u_int16_t	_statusCode;
@@ -30,15 +29,14 @@ namespace Http {
 				// location, server, www-authenticate
 
 		public:
-			int	setVersion(std::string const &version);
-			int	setStatus(u_int16_t	statusCode);
-			int	setEntityBody(std::string const &content);
+			void	setVersion(std::string const &version);
+			void	setStatus(u_int16_t	statusCode);
+			void	setEntityBody(std::string const &content);
 
-			int	setGeneralHeaderValue(std::string const &key, std::string const &value);
-			int	setEntityHeaderValue(std::string const &key, std::string const &value);
+			void	setResponseHeaderValue(std::string const &key, std::string const &value);
 
-			int setResponseHeaderValue(std::string const &key, std::string const &value);
-			int setStatuscode(u_int8_t statusCode);
+			void	setGeneralHeaderValue(std::string const &key, std::string const &value);
+			void	setEntityHeaderValue(std::string const &key, std::string const &value);
 	};
 }
 

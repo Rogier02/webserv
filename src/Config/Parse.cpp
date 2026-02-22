@@ -47,41 +47,58 @@ Parse::server()
 	return (server);
 }
 
-Config::Listener::Location
-Parse::location()
+void
+Parse::errorPage(std::map<u_int16_t, std::string> &dest)
 {
-	Config::Listener::Location	location;
-	size_t						tokensFound = _ts.tokensOnLine();
+	size_t	tokensFound = _ts.tokensOnLine();
+	if (tokensFound == 4) {
+		u_int16_t	code = std::stoi(_ts.consume());
+		std::string	path = _ts.consume();
+		dest[code] = path;
 
-	if (tokensFound == 3){
-		location.path = _ts.consume();
-		expect("{");
+		expect(";");
 	}
-	else{
-		log(unexpectedTokenCount("3", tokensFound));
+	else
+	{
+		log(unexpectedTokenCount("4", tokensFound));
 		_ts.advanceLine();
 	}
-
-	while (!_ts.atEnd() && _ts.peek().text != "}")
-	{
-		// Hier moet eigenlijk ook elke keer een tokenCount worden gedaan om te checken of er wel genoeg tokens in de line zitten,
-		std::string	directive = _ts.consume();
-
-		DirectiveMapIterator<LocationDirective> it = locationDirectives.find(directive);
-		if (it != locationDirectives.end())
-			it->second(location);
-		else {
-			log(unknownDirective(directive));
-			_ts.advanceLine();
-		}
-	}
-	expect("}");
-
-	return (location);
 }
 
 void
-Parse::single(std::string& dest)
+Parse::location(std::map<std::string, Config::Listener::Location> &dest)
+{
+	size_t	tokensFound = _ts.tokensOnLine();
+	if (tokensFound == 3) {
+		Config::Listener::Location	location;
+		std::string					path = _ts.consume();
+
+		expect("{");
+		while (!_ts.atEnd() && _ts.peek().text != "}")
+		{
+			// Hier moet eigenlijk ook elke keer een tokenCount worden gedaan om te checken of er wel genoeg tokens in de line zitten,
+			std::string	directive = _ts.consume();
+
+			DirectiveMapIterator<LocationDirective> it = locationDirectives.find(directive);
+			if (it != locationDirectives.end())
+				it->second(location);
+			else {
+				log(unknownDirective(directive));
+				_ts.advanceLine();
+			}
+		}
+		dest[path] = location;
+
+		expect("}");
+	}
+	else {
+		log(unexpectedTokenCount("3", tokensFound));
+		_ts.advanceLine();
+	}
+}
+
+void
+Parse::single(std::string &dest)
 {
 	size_t	tokensFound = _ts.tokensOnLine();
 	if (tokensFound == 3) {
@@ -93,7 +110,7 @@ Parse::single(std::string& dest)
 }
 
 void
-Parse::single(int& dest)
+Parse::single(u_int16_t &dest)
 {
 	size_t	tokensFound = _ts.tokensOnLine();
 	if (tokensFound == 3) {
@@ -108,13 +125,15 @@ Parse::single(int& dest)
 }
 
 void
-Parse::multiple(std::vector<std::string>& dest)
+Parse::multiple(std::string &dest)
 {
 	TokenStream::Iterator	lineEnd = _ts.lineEnd();
 	size_t					tokensFound = _ts.tokensOnLine();
 	if (tokensFound >= 3) {
 		while (_ts.current() != lineEnd && _ts.peek().text != ";")
-			dest.push_back(_ts.consume());
+			dest += _ts.consume() + ' ';
+		if (dest.back() == ' ')
+			dest.pop_back();
 
 		expect(";");
 	}
@@ -126,28 +145,25 @@ Parse::multiple(std::vector<std::string>& dest)
 }
 
 void
-Parse::page(Config::Listener::Page &page)
+Parse::listen(std::string &host, int &port)
 {
 	size_t	tokensFound = _ts.tokensOnLine();
-	if (tokensFound == 4) {
-		page.code	= std::stoi(_ts.consume());
-		page.path	= _ts.consume();
+	if (tokensFound == 3) {
+		std::string	hostPort	= _ts.consume();
+		size_t		colonPos	= hostPort.find(':');
+
+		if (colonPos == std::string::npos)
+			log("listen directive requires host:port format");
+
+		host	= hostPort.substr(0, colonPos);
+		port	= std::stoi(hostPort.substr(colonPos + 1));
 		expect(";");
 	}
 	else
 	{
-		log(unexpectedTokenCount("4", tokensFound));
+		log(unexpectedTokenCount("3", tokensFound));
 		_ts.advanceLine();
 	}
-}
-
-Config::Listener::Page
-Parse::page()
-{
-	Config::Listener::Page	object;
-
-	page(object);
-	return (object);
 }
 
 void
@@ -182,28 +198,23 @@ Parse::clientMaxBodySize(size_t &clientMaxBodySize)
 }
 
 void
-Parse::listen(std::string& host, int& port)
+Parse::returnPage(u_int16_t &code, std::string &path)
 {
 	size_t	tokensFound = _ts.tokensOnLine();
-	if (tokensFound == 3) {
-		std::string	hostPort	= _ts.consume();
-		size_t		colonPos	= hostPort.find(':');
+	if (tokensFound == 4) {
+		code = std::stoi(_ts.consume());
+		path = _ts.consume();
 
-		if (colonPos == std::string::npos)
-			log("listen directive requires host:port format");
-
-		host	= hostPort.substr(0, colonPos);
-		port	= std::stoi(hostPort.substr(colonPos + 1));
 		expect(";");
 	}
 	else
 	{
-		log(unexpectedTokenCount("3", tokensFound));
+		log(unexpectedTokenCount("4", tokensFound));
 		_ts.advanceLine();
 	}
 }
 
-void Parse::autoIndex(bool& autoIndex)
+void Parse::autoIndex(bool &autoIndex)
 {
 	size_t	tokensFound = _ts.tokensOnLine();
 	if (tokensFound == 3) {
@@ -255,7 +266,7 @@ void Parse::report()
 }
 
 std::string
-Parse::unknownDirective(const std::string& directive)
+Parse::unknownDirective(const std::string &directive)
 {
 	return("Unknown directive: \"" + directive + "\"" +
 		" on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
