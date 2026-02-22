@@ -5,8 +5,10 @@
 #include <string>
 #include <map>
 #include <vector>
+
 // webserv
-#include "Http_v1_0.hpp"
+# include "HttpRequest.hpp"
+# include "HttpResponse.hpp"
 
 namespace	CGI
 {

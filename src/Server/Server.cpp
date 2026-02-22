@@ -85,8 +85,8 @@ void
 Server::_closeConnection(int fd)
 {
 	EasyThrow(_epoll.ctl(Epoll::Ctl::Del, fd));
-	EasyThrow(close(fd));
 	EventHandlers::erase(fd);
+	EasyThrow(close(fd));
 
 	std::cout << "Client " << fd << " \e[33mSuccessfully Disconnected.\e[0m\n";
 }

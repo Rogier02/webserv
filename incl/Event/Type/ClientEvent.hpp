@@ -6,8 +6,8 @@
 // webserv
 # include "Config.hpp"
 # include "EventHandlers.hpp"
-# include "Http_v1_0.hpp"
-# include "ErrorPages.hpp"
+# include "HttpRequest.hpp"
+# include "HttpResponse.hpp"
 # include "CGI.hpp"
 # include "Logger.hpp"
 # include "IO.hpp"
@@ -15,6 +15,7 @@
 class ClientEvent : public Event
 {
 	public:
+		// ClientEvent() = default;
 		ClientEvent(ClientEvent const &) = delete;
 		ClientEvent(ClientEvent &&) = delete;
 		ClientEvent(int fd, Config::Listener const &config);
