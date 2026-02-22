@@ -12,3 +12,10 @@ Timeout clients
 Receive entity body if content length > 0
 
 new Index page
+
+Laura:	schrijf eigen getline met delim: CRLF
+		validate headers if nodig
+		check of in request line maar 1 SP staat tussen tokens
+
+		validation config checken of gevalidate moet worden of map bestaat etc etc
+		config parser checken of alles werkt (eind project)

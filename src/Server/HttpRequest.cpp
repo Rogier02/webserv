@@ -26,40 +26,95 @@ namespace Http {
 		if (!line.empty() && line[line.size() - 1] == '\r')
 			line.erase(line.size() - 1);
 
-		// Parse request line for method, URI, version, otherwise v0.9
-		size_t i = line.find(' ');
-		size_t k = line.find(' ', i + 1);
+		parseRequestLine(line);
 
-		_method = line.substr(0, i);
-		_URI = line.substr(i + 1, k - i - 1);
-		_version = line.substr(k + 1);// 0.9?
-
-		// Parse request headers
 		while (std::getline(stream, line))
 		{
 			if (!line.empty() && line[line.size() - 1] == '\r')
-			line.erase(line.size() - 1);
-
+				line.erase(line.size() - 1);
 			if (line.empty())
 				break;
 
 			size_t colon = line.find(':');
 			std::string	key = line.substr(0, colon);
 			std::string value = line.substr(colon + 1);
-			_requestHeaders.insert(std::make_pair(key, value));
+			try {
+				HeaderHandlers[key](value);
+			} catch (std::out_of_range const &e) {
+			}
+			
 		}
 
-		// Parse body
-		std::map<std::string, std::string>::iterator it = _requestHeaders.find("Content-Length");
-		if (it != _requestHeaders.end())
-		{
-			int	contentLength = std::stoi(it->second.c_str());
-			char buffer[contentLength];
-			stream.read(buffer, contentLength);
-			_entityBody.assign(buffer, stream.gcount());
-		}
+		parseEntityBody(stream);
 
 		return (0);
+	}
+
+	void
+	Request::parseRequestLine(std::string const &line)
+	{
+		size_t i = line.find(' ');
+		size_t k = line.find(' ', i + 1);
+
+		_method = line.substr(0, i);
+		if (k == std::string::npos) {
+			_URI = line.substr(i + 1);
+			_version = "HTTP/0.9";
+		}
+		else {
+			_URI = line.substr(i + 1, k - i - 1);
+			if (validHTTPVersion(line.substr(k + 1)))
+				_version = "HTTP/1.0";
+			else
+				return ; // Throw error something maybe?? stop parsing?
+		}
+	}
+
+	// Parse headers
+	// General headers: Date, Pragma
+	// Request headers: Authorization, From, If-Modified-Since, Referer, User-Agent
+	// Entity headers: Allow, Content-Encoding, Content-Length, Content-Type, Expires, Last-Modified
+	// void
+	// Request::parseHeaders(std::string const &line)
+	// {
+	// 	size_t colon = line.find(':');
+	// 	std::string	key = line.substr(0, colon);
+	// 	std::string value = line.substr(colon + 1);
+	// 	// trim leading whitespaces
+	// 	_requestHeaders.insert(std::make_pair(key, value));
+	// }
+
+	void
+	Request::parseEntityBody(std::istream &stream)
+	{
+		std::map<std::string, std::string>::iterator it = _requestHeaders.find("Content-Length");
+		if (it == _requestHeaders.end())
+			return ;
+
+		size_t	contentLength = std::stoul(it->second);
+		_entityBody.resize(contentLength);
+		stream.read(_entityBody.data(), contentLength); //data returns pointer to where entityBody is stored
+		if (stream.gcount() != contentLength)
+			throw std::runtime_error("Incomplete body!"); // CHECK IF THIS THROW HAPPENS CORRECT
+	}
+
+	bool
+	Request::validHTTPVersion(const std::string &version)
+	{
+		if (version.find("HTTP/") == std::string::npos)
+			return (false);
+
+		size_t	dot = version.find(".");
+		if (dot == 5 || version.size() <= dot + 5) // returns false if: HTTP/.9 or HTTP/1.
+			return (false);
+
+		for (int i = 5; i < dot; i++)
+			if (!std::isdigit((unsigned char)version[i]))
+				return (false);
+
+		for (int i = dot + 1; i < version.size(); i++)
+			if (!std::isdigit((unsigned char)version[i]))
+				return (false);
 	}
 
 	std::string const &
@@ -101,7 +156,7 @@ namespace Http {
 	}
 
 	std::string
-	Request::getHost(std::string const &key)
+	Request::getHost(std::string const &key) // DEZE INFO VOOR CGI KOMT UIT CONFIG NIET REQUEST!!
 	const {
 		std::string	host = getGeneralHeaderValue("Host");
 		if (key == "Port")
