@@ -11,7 +11,6 @@ EventHandlers::get(int fd)
 	return (it->second.get());
 }
 
-// void	EventHandlers::destroy(int fd) {
-// 	_handlers.erase(fd);
-// 	std::cout << "Event " << fd << " destroyed\n";
-// }
+void	EventHandlers::erase(int fd) {
+	_handlers.erase(fd);
+}

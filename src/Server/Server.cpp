@@ -11,7 +11,7 @@ Server::Server(Config &config)
 
 		ListenEvent	&listen =
 			EventHandlers::create<ListenEvent>(
-				socketFd, Epoll::Events::In, _epoll, listener);
+				socketFd, _epoll, listener);
 
 		EasyThrow(_epoll.ctl(Epoll::Ctl::Add, listen));
 	}
@@ -32,16 +32,21 @@ Server::run()
 		try {
 			for (epoll_event &unknown : _epoll.wait(10000))
 			{
-				if (unknown.events & (Epoll::Events::Err | Epoll::Events::Hup | Epoll::Events::RdH))
-					_closeConnection(unknown.data.fd);
-				else try {
-					// EventHandlers::get(unknown.data.fd);// add active Event to queue
-					EventHandlers::get(unknown.data.fd)->handle();
-				} catch (Event::ReadyToSend &completedEvent) {
-					_readyToSend(completedEvent.fd());// this is weird and will be removed when request processing happens in Server rather than ClientHandler
-				} catch (Event::CloseConnection &badEvent) {
-					_closeConnection(badEvent.fd());
+				int	fd = unknown.data.fd;
+
+				if (unknown.events & (Epoll::Events::Err
+									| Epoll::Events::Hup
+									| Epoll::Events::RdH)) {
+					_closeConnection(fd);
+					continue;
 				}
+
+				Event::Signal	signal = EventHandlers::get(fd)->handle();
+
+				if (signal == Event::Signal::Write)
+					_readyToSend(fd);
+				if (signal == Event::Signal::Close)
+					_closeConnection(fd);
 			}
 		}
 		catch	(std::runtime_error &exception) {
@@ -56,8 +61,9 @@ Server::run()
 		catch (std::exception &exception) {
 			LOGGER(log(exception.what()));
 			std::cerr << "Something unexpected excepted: " << exception.what() << std::endl;
-			throw exception; // throw to main for quick debug, in production the loop should not be broken
+			throw exception;
 		}
+		// TODO: time out requests that haven't sent for a while
 	}
 	LOGGER(log("Controlled Server Shutdown\n"));
 	std::cout << "Server shutting down...\n";
@@ -67,18 +73,20 @@ void
 Server::_readyToSend(int fd)
 {
 	Event	*event	= EventHandlers::get(fd);
-	event->events	= Epoll::Events::In | Epoll::Events::Out;
+	event->events	= Epoll::Events::Out | Epoll::Events::RdH;
 
 	EasyThrow(_epoll.ctl(Epoll::Ctl::Mod, *event));
 
 	std::cout << "Client " << fd << " \e[33mSuccessfully Registered For Sending\e[0m\n";
 }
 
+// closing the connection leaves the pointer to the Event invalid
 void
 Server::_closeConnection(int fd)
 {
 	EasyThrow(_epoll.ctl(Epoll::Ctl::Del, fd));
 	EasyThrow(close(fd));
+	EventHandlers::erase(fd);
 
 	std::cout << "Client " << fd << " \e[33mSuccessfully Disconnected.\e[0m\n";
 }

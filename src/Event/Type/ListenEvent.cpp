@@ -1,7 +1,7 @@
 #include "ListenEvent.hpp"
 
-ListenEvent::ListenEvent(int socketFd, Epoll::Events events, Epoll &epoll, Config::Listener &config)
-	:	Event(socketFd, events)
+ListenEvent::ListenEvent(int socketFd, Epoll &epoll, Config::Listener &config)
+	:	Event(socketFd, Epoll::Events::In | Epoll::Events::RdH)
 	,	r_epoll(epoll)
 	,	_config(config)
 {}
@@ -14,5 +14,5 @@ ListenEvent::_in()
 			Socket::accept(data.fd), _config);
 	EasyThrow(r_epoll.ctl(Epoll::Ctl::Add, client));
 
-	std::cout << "Client " << client.data.fd << " \e[32mSuccessfully Connected.\e[0m\n";
+	std::cout << "Client " << client.data.fd << " \e[33mSuccessfully Connected.\e[0m\n";
 }

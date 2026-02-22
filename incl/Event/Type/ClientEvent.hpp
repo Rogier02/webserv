@@ -17,7 +17,7 @@ class ClientEvent : public Event
 	public:
 		ClientEvent(ClientEvent const &) = delete;
 		ClientEvent(ClientEvent &&) = delete;
-		ClientEvent(int socketFd, Config::Listener const &config);
+		ClientEvent(int fd, Config::Listener const &config);
 		~ClientEvent();
 
 	private:
@@ -29,18 +29,9 @@ class ClientEvent : public Event
 
 		Config::Listener const	&r_config;
 
-
 	private:
 		void	_in() override;
 		void	_out() override;
-
-/* 	private:
-		void	readRequest();
-		void	parseRequest();
-		void	generateResponse();
-		void	sendResponse();
-		void	CGIRequest();
-		// void	CGIRelay(); */
 };
 
 #endif

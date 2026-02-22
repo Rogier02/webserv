@@ -13,6 +13,13 @@
 class	Event : public epoll_event
 {
 	public:
+		enum Signal {
+			OK,
+			Write,
+			Close,
+		};
+
+	public:
 		Event() = default;
 		Event(Event const &) = default;
 		Event(Event &&) = default;
@@ -20,28 +27,14 @@ class	Event : public epoll_event
 		virtual ~Event() = default;
 
 	public:
-		void	handle();
+		Signal	handle();
 
 	private:
 		virtual void	_in();
 		virtual void	_out();
 
-	public:
-		class	CloseConnection : public std::runtime_error {
-			public:
-				CloseConnection(int fd);
-				int	fd();
-			private:
-				int	_fd;
-		};
-
-		class	ReadyToSend : public std::exception {
-			public:
-				ReadyToSend(int fd);
-				int	fd();
-			private:
-				int	_fd;
-		};
+	protected:
+		Signal	_signal;
 };
 
 #endif

@@ -1,9 +1,3 @@
-// template <typename Type>
-// void EventHandlers::specify(Type const &event)
-// {
-// 	_handlers[event.data.fd] = std::make_unique<Type>(event);
-// }
-
 template <typename NewType, typename... Args>
 NewType &
 EventHandlers::create(int fd, Args&&... args)

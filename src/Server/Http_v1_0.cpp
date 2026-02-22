@@ -16,7 +16,7 @@ namespace Http {
 	}
 
 	Response::Response()
-		:	Message("0.9")
+		:	Message("1.0")
 		,	_statusCode(200)
 		,	_reasonPhrase(Statuses[_statusCode])
 	{

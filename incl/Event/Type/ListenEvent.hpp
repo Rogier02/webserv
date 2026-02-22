@@ -14,7 +14,7 @@ class ListenEvent : public Event
 	public:
 		ListenEvent(ListenEvent const &) = delete;
 		ListenEvent(ListenEvent &&) = delete;
-		ListenEvent(int socketFd, Epoll::Events events, Epoll &epoll, Config::Listener &config);
+		ListenEvent(int socketFd, Epoll &epoll, Config::Listener &config);
 		~ListenEvent() = default;
 
 	private:

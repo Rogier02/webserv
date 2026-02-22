@@ -7,7 +7,7 @@
 // webserv
 # include "Event.hpp"
 
-class	EventHandlers// make this a namespace
+class	EventHandlers// TODO: make this a namespace
 {
 	public:
 		EventHandlers() = delete;
@@ -22,7 +22,7 @@ class	EventHandlers// make this a namespace
 		template <typename Type, typename... Args>
 		static Type		&create(int fd, Args&&... args);
 		static Event	*get(int fd);
-		// static void		destroy(int fd);
+		static void		erase(int fd);
 };
 
 # include "EventHandlers.tpp"
