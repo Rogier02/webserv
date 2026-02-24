@@ -22,20 +22,15 @@ namespace Http {
 		std::istringstream stream(request);
 		std::string line;
 
-		std::getline(stream, line);
-		if (!line.empty() && line[line.size() - 1] == '\r')
-			line.erase(line.size() - 1);
+		getlineCRLF(stream, line);
 
 		parseRequestLine(line);
 
-		while (std::getline(stream, line))
+		while (getlineCRLF(stream, line))
 		{
-			if (!line.empty() && line[line.size() - 1] == '\r')
-				line.erase(line.size() - 1);
-			if (line.empty())
-				break;
-
 			size_t colon = line.find(':');
+			if (colon == std::string::npos)
+				throw std::runtime_error("Colon not found"); // MOET HIER RUNTIME ERROR????
 			std::string	key = line.substr(0, colon);
 			std::string value = line.substr(colon + 1);
 			try {
@@ -50,24 +45,35 @@ namespace Http {
 		return (0);
 	}
 
-	void
+	bool
 	Request::parseRequestLine(std::string const &line)
 	{
-		size_t i = line.find(' ');
-		size_t k = line.find(' ', i + 1);
+		size_t sp1 = line.find(' ');
 
-		_method = line.substr(0, i);
-		if (k == std::string::npos) {
-			_URI = line.substr(i + 1);
+		if (sp1 == std::string::npos)
+			return (false);
+
+		_method = line.substr(0, sp1);
+
+		size_t sp2 = line.find(' ', sp1 + 1);
+
+		if (sp2 == std::string::npos)
+		{
+			if (_method != "GET")
+				return (false);
+			_URI = line.substr(sp1 + 1);
 			_version = "HTTP/0.9";
 		}
-		else {
-			_URI = line.substr(i + 1, k - i - 1);
-			if (validHTTPVersion(line.substr(k + 1)))
-				_version = "HTTP/1.0";
-			else
-				return ; // Throw error something maybe?? stop parsing?
+		else
+		{
+			if (line.find(' ', sp2 + 1))
+				return (false);
+			_URI = line.substr(sp1 + 1, sp2 - sp1 - 1);
+			if (!validHTTPVersion(line.substr(sp2 + 1)))
+				return (false);
+			_version = "HTTP/1.0";
 		}
+		return (true);
 	}
 
 	// Parse headers
@@ -84,7 +90,7 @@ namespace Http {
 	// 	_requestHeaders.insert(std::make_pair(key, value));
 	// }
 
-	void
+	bool
 	Request::parseEntityBody(std::istream &stream)
 	{
 		std::map<std::string, std::string>::iterator it = _requestHeaders.find("Content-Length");
@@ -95,9 +101,11 @@ namespace Http {
 		_entityBody.resize(contentLength);
 		stream.read(_entityBody.data(), contentLength); //data returns pointer to where entityBody is stored
 		if (stream.gcount() != contentLength)
-			throw std::runtime_error("Incomplete body!"); // CHECK IF THIS THROW HAPPENS CORRECT
+			return (false);
+		return (true);
 	}
 
+	// Parsing utils //
 	bool
 	Request::validHTTPVersion(const std::string &version)
 	{
@@ -117,6 +125,19 @@ namespace Http {
 				return (false);
 	}
 
+	bool
+	Request::getlineCRLF(std::istream &stream, std::string &line)
+	{
+		if (!std::getline(stream, line))
+			return (false);
+
+		if (!line.empty() && line[line.size() - 1] == '\r')
+				line.erase(line.size() - 1);
+
+		return (true);
+	}
+
+	// Getters //
 	std::string const &
 	Request::getVersion()
 	const {

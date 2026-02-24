@@ -31,9 +31,10 @@ namespace Http {
 
 		public:
 			int		parse(std::string request);
-			void	parseRequestLine(std::string const &line);
-			void	parseEntityBody(std::istream &stream);
+			bool	parseRequestLine(std::string const &line);
+			bool	parseEntityBody(std::istream &stream);
 			bool	validHTTPVersion(std::string const &version);
+			bool	getlineCRLF(std::istream &stream, std::string &line);
 
 		using	HeaderHandler = std::function<void (std::string const &)>;
 		std::map<std::string, HeaderHandler>
