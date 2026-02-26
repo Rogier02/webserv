@@ -73,7 +73,8 @@ namespace Http {
 				return (-1);
 			std::string	key = line.substr(0, colon);
 			for (int i = 0; i < key.size(); i++)
-				std::tolower((unsigned char) key[i]);
+				if (!std::tolower((unsigned char)key[i]))
+					return (-1);
 			std::string value = line.substr(colon + 1);
 			try {
 				HeaderHandlers[key](value);
@@ -87,8 +88,9 @@ namespace Http {
 	Request::parseEntityBody(std::istream &stream)
 	{
 		std::map<std::string, std::string>::iterator it = _requestHeaders.find("Content-Length");
+
 		if (it == _requestHeaders.end())
-			return ;
+			return (0);
 
 		size_t	contentLength = std::stoul(it->second);
 		_entityBody.resize(contentLength);
@@ -116,6 +118,8 @@ namespace Http {
 	int
 	Request::validateHTTPVersion()
 	{
+		if (_version.empty())
+			return (-1);
 		if (_version.find("HTTP/") == std::string::npos)
 			return (-1);
 
@@ -137,15 +141,24 @@ namespace Http {
 	int
 	Request::validateURI()
 	{
+		if (_URI.empty())
+			return (-1);
 		if (_URI[0] != '/' || _URI[0] == ' ')
 			return (-1);
 		if (_URI.size() > 2048)
 			return (-1);
-		for (int i = 0; i < _URI.size(); i++)
+		for (size_t i = 0; i < _URI.size(); i++)
 		{
 			if (_URI[i] <= 31 || _URI[i] == 127)
 				return (-1);
-			if (_URI[i] == '%' && !isHexDigits(_URI[i + 1]) && !isHexDigits(_URI[i + 2]))
+			if (_URI[i] == '%')
+			{
+				if (i + 2 >= _URI.size())
+					return (-1);
+				if (!isHexDigits(_URI[i + 1]) || !isHexDigits(_URI[i + 2]))
+					return (-1);
+				i += 2;
+			}
 				return (-1);
 			if (!isAllowedURICharacter(_URI[i]))
 				return (-1);
@@ -188,6 +201,9 @@ namespace Http {
 	bool
 	Request::isAllDigits(std::string const &str)
 	{
+		if (str.empty())
+			return (false);
+
 		for (int i = 0; i < str.size(); i++)
 			if (!std::isdigit((unsigned char)str[i]))
 				return (false);

@@ -30,7 +30,9 @@ EVENTTYPE_FILES	=	ClientEvent.cpp		\
 SERVER_MODULE	=	Server
 SERVER_FILES	=	CGI.cpp				\
 					Epoll.cpp			\
-					Http_v1_0.cpp		\
+					HttpMessage.cpp		\
+					HttpRequest.cpp		\
+					HttpResponse.cpp	\
 					Server.cpp			\
 					Socket.cpp			\
 
