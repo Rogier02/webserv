@@ -43,7 +43,6 @@ Parse::server()
 		}
 	}
 	expect("}");
-
 	return (server);
 }
 
