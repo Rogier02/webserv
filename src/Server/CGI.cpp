@@ -64,18 +64,27 @@ namespace CGI
 	{
 		std::vector<std::string> _envVariables;
 
+		// Required cgi header - variables
 		_envVariables.push_back("REQUEST_METHOD=" + request.getMethod());
-		_envVariables.push_back("CONTENT_TYPE=" + request.getRequestHeaderValue("Content-Type")); // TODO:: ROGIER :: doublecheck for this
-		_envVariables.push_back("CONTENT_LENGTH=" + request.getRequestHeaderValue("Content-Length"));
 		_envVariables.push_back("SCRIPT_NAME=" + request.getScriptName());
 		_envVariables.push_back("QUERY_STRING=" + request.getQueryString());
 		_envVariables.push_back("REQUEST_URI=" + request.getURI());
 		_envVariables.push_back("SERVER_PROTOCOL=" + request.getVersion()); //check of we 0.9 en 1.0 ook kunnen parsen
 		_envVariables.push_back("GATEWAY_INTERFACE=CGI/1.0"); // wordt dit geparsed uit de httpRequest? of is dit vast?
 		_envVariables.push_back("SERVER_NAME=webserv"); //nog niet duidelijk hoe je hieraan komt.
+		
 		_envVariables.push_back("SERVER_PORT=" + request.getHost("Port"));
 		_envVariables.push_back("SERVER_ADDR=" + request.getHost("Address"));
+		// May be present
 
+		try {
+			std::string contentType = request.getRequestHeaderValue("Content-Type");
+			_envVariables.push_back("CONTENT_TYPE="+ contentType);
+		} catch (const std::out_of_range&) {
+			// Leaves variable blank
+		}
+
+		_envVariables.push_back("CONTENT_LENGTH=" + request.getRequestHeaderValue("Content-Length"));
 		// add HTTP headers as CGI variables
 
 		const Http::HeaderMap	&headers = request.getRequestHeaders();
@@ -83,7 +92,9 @@ namespace CGI
 		{
 			const std::string& headerName  = it->first;
 			const std::string& headerValue = it->second;
-			if (headerName == "Content-Type" || headerName == "Content-Length" || headerName == "Host")
+			if (headerName == "Content-Type" 
+				|| headerName == "Content-Length" 
+				|| headerName == "Host")
 				continue;
 
 			std::string cgiVarName = "HTTP_";
