@@ -3,6 +3,7 @@
 
 // C++
 # include <iostream>
+# include <functional>
 // webserv
 # include "Config.hpp"
 # include "EventHandlers.hpp"
@@ -43,13 +44,32 @@ class ClientEvent : public Event
 		void	_in() override;
 		void	_out() override;
 
-		void	_get();
-		void	_post();
-		void	_delete();
+		void	_processRequest();
+
+		void	_get(std::string const &resourcePath, Config::Listener::Location const &location);
+		void	_post(std::string const &resourcePath, Config::Listener::Location const &location);
+		void	_delete(std::string const &resourcePath, Config::Listener::Location const &location);
 
 		void	_youHaveGotMail(std::string &CGIoutput);
 
-		LocationMap::const_iterator	_findLocation(std::string URI);
+		LocationMap::const_iterator	_URIdentification(std::string &resource);
+
+		using	Method = std::function<void (std::string const &, Config::Listener::Location const &)>;
+		std::map<std::string, Method>
+		Methods = {
+			{"GET",
+				[this](std::string const &resourcePath, Config::Listener::Location const &location)
+				{ _get(resourcePath, location); }},
+			// {"HEAD",
+			// 	[this](std::string const &resourcePath, Config::Listener::Location const &location)
+			// 	{ _head(resourcePath, location); }},
+			{"POST",
+				[this](std::string const &resourcePath, Config::Listener::Location const &location)
+				{ _post(resourcePath, location); }},
+			{"DELETE",
+				[this](std::string const &resourcePath, Config::Listener::Location const &location)
+				{ _delete(resourcePath, location); }},
+		};
 };
 
 #endif
