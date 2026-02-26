@@ -51,7 +51,7 @@ ClientEvent::_in()
 
 
 	// placeholder: return the cgi output or index page
-	{
+/* 	{
 		if (_request.getVersion() == "0.9")
 			_response.setVersion("0.9");
 
@@ -61,18 +61,19 @@ ClientEvent::_in()
 		}
 		else
 		{
-			std::string indexContent = readFile("./www/index.html");
+			std::string indexContent = IO::readFile("./www/index.html");
 			if (indexContent.empty()) {
 				_response.err(404);
 			} else {
 				_response.setEntityBody(indexContent);
 			}
 		}
-
-		_responseBuffer = _response.toString();
-
-		_signal = Signal::Write;
 	}
+ */
+	_responseBuffer = _response.toString();
+	// std::cout << _responseBuffer;
+
+	// _signal = Signal::Write;
 }
 
 void
@@ -100,6 +101,8 @@ ClientEvent::_get()
 	std::string	const	&URI 			= _request.getURI();
 	LocationMap::const_iterator	entry	= _findLocation(URI);
 
+	std::cout << "GET " << URI << " (" << entry->first << ")\n";
+
 	if (entry == r_config.locations.end())
 		return _response.err(404);
 
@@ -108,11 +111,20 @@ ClientEvent::_get()
 	if (location.allowedMethods.find("GET") == std::string::npos)
 		return _response.err(403);
 
-	std::string path = URI;
-	if (URI == location.root)
+	std::string path = "." + location.root;// nein, split URI into location / file, substitute root, keep file
+	if (URI == entry->first)
 		path += location.index;
 
-	_response.setEntityBody(IO::readFile(path));
+	// _response.setEntityBody(IO::readFile(path));
+	std::string indexContent = IO::readFile(path);
+
+	std::cout << "GET FILE <" << path << "> " << ((indexContent.empty()) ? "(empty)" : "") << "\n";
+
+	if (indexContent.empty())
+		_response.err(404);
+	else
+		_response.setEntityBody(indexContent);
+
 	_signal = Signal::Write;
 }
 
@@ -127,6 +139,10 @@ ClientEvent::_delete()
 ClientEvent::LocationMap::const_iterator
 ClientEvent::_findLocation(std::string URI)
 {
-	return (r_config.locations.find(URI));
-	// what if file
+	ClientEvent::LocationMap::const_iterator	it = r_config.locations.find(URI);
+
+	if (it != r_config.locations.end())
+		return (it);
+
+	return (r_config.locations.find(EasyPrint(URI.substr(0, URI.find_last_of('/')))));
 }

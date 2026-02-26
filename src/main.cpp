@@ -37,7 +37,7 @@ int	main(int argc, char *argv[])
 
 	try {
 		Config	config = Parse(configFilePath).config();
-		// std::cout << config;
+		std::cout << config;
 
 		Server	server(config);
 		server.run();

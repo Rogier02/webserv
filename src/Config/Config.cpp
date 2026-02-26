@@ -40,16 +40,7 @@ std::ostream	&operator<<(std::ostream &os, Config const &config)
 			os << "  index: " << loc.index << "\n";
 			os << "  cgiEXT: " << loc.cgiEXT << "\n";
 			os << "  cgiPath: " << loc.cgiPath << "\n";
-
-			os << "  allowedMethods: ";
-			for (const auto& m : loc.allowedMethods)
-				os << m << " ";
-			os << "\n";
-
-			os << "  indexFiles: ";
-			for (const auto& f : loc.indexFiles)
-				os << f << " ";
-			os << "\n";
+			os << "  allowedMethods: " << loc.allowedMethods << "\n";
 		}
 
 		os << "\n";
