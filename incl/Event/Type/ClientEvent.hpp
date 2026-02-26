@@ -1,6 +1,8 @@
 #ifndef CLIENTEVENT_HPP
 # define CLIENTEVENT_HPP
 
+// C
+# include <sys/stat.h>
 // C++
 # include <iostream>
 # include <functional>

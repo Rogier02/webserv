@@ -102,7 +102,6 @@ ClientEvent::_processRequest()
 		return _response.err(403);
 
 	Methods[method](resourcePath, location);
-
 }
 
 ClientEvent::LocationMap::const_iterator
@@ -168,6 +167,14 @@ ClientEvent::_post(
 	std::string const &resourcePath,
 	Config::Listener::Location const &location)
 {
+	std::ofstream	outfile(resourcePath);
+	if (!outfile.is_open())
+		return (_response.err(500));
+
+	outfile << _request.getEntityBody();
+	outfile.close();
+
+	_response.setStatus(201);
 }
 
 void
@@ -175,4 +182,12 @@ ClientEvent::_delete(
 	std::string const &resourcePath,
 	Config::Listener::Location const &location)
 {
+	struct stat		pathInfo;
+
+	stat(resourcePath.c_str(), &pathInfo);
+	if (S_ISDIR(pathInfo.st_mode))
+		return (_response.err(403));
+
+	if (std::remove(resourcePath.c_str()) == -1)
+		return (_response.err(500));
 }
