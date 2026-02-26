@@ -60,8 +60,7 @@ ClientEvent::_out()
 void
 ClientEvent::_processRequest()
 {
-	std::string					resourcePath;
-	LocationMap::const_iterator	locationEntry = _URIdentification(resourcePath);
+	LocationMap::const_iterator	locationEntry = _URIdentification();
 
 	if (locationEntry == r_config.locations.end())
 		return _response.err(404);
@@ -72,11 +71,11 @@ ClientEvent::_processRequest()
 	if (location.allowedMethods.find(method) == std::string::npos)
 		return _response.err(403);
 
-	Methods[method](resourcePath, location);
+	Methods[method](location);
 }
 
 ClientEvent::LocationMap::const_iterator
-ClientEvent::_URIdentification(std::string &resourcePath)
+ClientEvent::_URIdentification()
 {
 	// replace all /////// with /
 	std::function<LocationMap::const_iterator (std::string &path)>
@@ -89,8 +88,6 @@ ClientEvent::_URIdentification(std::string &resourcePath)
 
 	std::string	URI = _request.getURI();
 	LocationMap::const_iterator	it;
-	std::string	root;
-	std::string	file;
 
 	it = searchLocation(URI);
 
@@ -101,30 +98,31 @@ ClientEvent::_URIdentification(std::string &resourcePath)
 		if (it == r_config.locations.end())
 			return (it);
 
-		root	= it->second.root;
-		file	= URI.substr(URI.find_last_of('/'));
+		_resource.root	= it->second.root;
+		_resource.file	= URI.substr(URI.find_last_of('/'));
 	} else {
-		root	= it->second.root;
-		file	= it->second.index;// do this only in GET, leave empty here
+		_resource.root	= it->second.root;
+		_resource.file	= "/";
 	}
 
-	EasyPrint(root);
-	EasyPrint(file);
-
-	resourcePath = "." + root + file;
+	EasyPrint(_resource.root);
+	EasyPrint(_resource.file);
 
 	return (it);
 }
 
 void
 ClientEvent::_get(
-	std::string const &resourcePath,
 	Config::Listener::Location const &location)
 {
-	std::string indexContent = IO::readFile(resourcePath);
+	if (_resource.file == "/")
+		_resource.file = location.index;
+
+	std::string	path			= "." + _resource.root + _resource.file;
+	std::string	indexContent	= IO::readFile(path);
 
 	std::cout	<< "GET " << _request.getURI()
-				<< " <" << resourcePath << "> "
+				<< " <" << path << "> "
 				<< ((indexContent.empty()) ? "(empty)" : "") << "\n";
 
 	if (indexContent.empty())
@@ -136,35 +134,33 @@ ClientEvent::_get(
 
 void
 ClientEvent::_post(
-	std::string const &resourcePath,
 	Config::Listener::Location const &location)
 {
-	if (resourcePath == "." + location.root + location.index)
+	if (_resource.file == "/")
 		return (_response.err(403));
 
-	std::ofstream	outfile(resourcePath);
+	std::string		path = "." + _resource.root + _resource.file;
+	std::ofstream	outfile(path);
 
 	if (!outfile.is_open())
 		return (_response.err(500));
 	_response.setStatus(201);
 
 	EasyPrint(_request.getEntityBody());
-	EasyPrint(resourcePath);
+	EasyPrint(path);
 	outfile << _request.getEntityBody();
 	outfile.close();
 }
 
 void
 ClientEvent::_delete(
-	std::string const &resourcePath,
 	Config::Listener::Location const &location)
 {
-	struct stat	pathInfo;
-
-	stat(resourcePath.c_str(), &pathInfo);
-	if (S_ISDIR(pathInfo.st_mode))
+	if (_resource.file == "/")// probably needs more confirmation that root + file is a directory
 		return (_response.err(403));
 
-	if (std::remove(resourcePath.c_str()) == -1)
+	std::string		path = "." + _resource.root + _resource.file;
+
+	if (std::remove(path.c_str()) == -1)
 		return (_response.err(500));
 }

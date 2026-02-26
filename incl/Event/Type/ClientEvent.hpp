@@ -38,6 +38,11 @@ class ClientEvent : public Event
 		std::string		_requestBuffer;
 		std::string		_responseBuffer;
 
+		struct	Resource	{
+			std::string	root;
+			std::string	file;
+		}				_resource;
+
 		CGInboxEvent	*_CGInbox;
 
 		Config::Listener const	&r_config;
@@ -48,29 +53,29 @@ class ClientEvent : public Event
 
 		void	_processRequest();
 
-		void	_get(std::string const &resourcePath, Config::Listener::Location const &location);
-		void	_post(std::string const &resourcePath, Config::Listener::Location const &location);
-		void	_delete(std::string const &resourcePath, Config::Listener::Location const &location);
+		void	_get(Config::Listener::Location const &location);
+		void	_post(Config::Listener::Location const &location);
+		void	_delete(Config::Listener::Location const &location);
 
 		void	_youHaveGotMail(std::string &CGIoutput);
 
-		LocationMap::const_iterator	_URIdentification(std::string &resource);
+		LocationMap::const_iterator	_URIdentification();
 
-		using	Method = std::function<void (std::string const &, Config::Listener::Location const &)>;
+		using	Method = std::function<void (Config::Listener::Location const &)>;
 		std::map<std::string, Method>
 		Methods = {
 			{"GET",
-				[this](std::string const &resourcePath, Config::Listener::Location const &location)
-				{ _get(resourcePath, location); }},
+				[this](Config::Listener::Location const &location)
+				{ _get(location); }},
 			// {"HEAD",
-			// 	[this](std::string const &resourcePath, Config::Listener::Location const &location)
-			// 	{ _head(resourcePath, location); }},
+			// 	[this](Config::Listener::Location const &location)
+			// 	{ _head(location); }},
 			{"POST",
-				[this](std::string const &resourcePath, Config::Listener::Location const &location)
-				{ _post(resourcePath, location); }},
+				[this](Config::Listener::Location const &location)
+				{ _post(location); }},
 			{"DELETE",
-				[this](std::string const &resourcePath, Config::Listener::Location const &location)
-				{ _delete(resourcePath, location); }},
+				[this](Config::Listener::Location const &location)
+				{ _delete(location); }},
 		};
 };
 
