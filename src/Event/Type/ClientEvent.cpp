@@ -24,6 +24,7 @@ ClientEvent::_in()
 		return;
 
 	// TODO: if content-length given, wait to recv whole request body
+	std::cout << "\n\n" << _requestBuffer << "\n";
 
 	if (_request.parse(std::move(_requestBuffer)) == -1) // leaves buffer empty
 		_response.err(400);
