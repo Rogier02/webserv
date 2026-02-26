@@ -1,6 +1,8 @@
 #include "HttpRequest.hpp"
 #include <iostream>
 
+# include "EasyPrint.hpp"
+
 namespace Http {
 	std::string
 	Request::toString()
@@ -42,14 +44,14 @@ namespace Http {
 	Request::parseRequestLine(std::string const &line)
 	{
 		size_t sp1 = line.find(' ');
-		
+
 		if (sp1 == std::string::npos)
 			return (-1);
 
 		_method = line.substr(0, sp1);
-		
+
 		size_t sp2 = line.find(' ', sp1 + 1);
-		
+
 		if (sp2 == std::string::npos)
 		{
 			if (_method != "GET")
@@ -73,6 +75,11 @@ namespace Http {
 	{
 		while (getlineCRLF(stream, line) == 0)
 		{
+			EasyPrint(line);
+
+			if (line.empty())
+				return (0);
+
 			size_t colon = line.find(':');
 			if (colon == std::string::npos)
 				return (-1);
@@ -91,14 +98,18 @@ namespace Http {
 	int
 	Request::parseEntityBody(std::istream &stream)
 	{
-		std::map<std::string, std::string>::iterator it = _requestHeaders.find("content-length");
+		std::map<std::string, std::string>::iterator it = _entityHeaders.find("content-length");
 
-		if (it == _requestHeaders.end())
+		if (it == _entityHeaders.end())
 			return (0);
 
 		size_t	contentLength = std::stoul(it->second);
 		_entityBody.resize(contentLength);
 		stream.read(_entityBody.data(), contentLength); //data returns pointer to where entityBody is stored
+
+		EasyPrint(contentLength);
+		EasyPrint(_entityBody);
+
 		if (stream.gcount() != contentLength)
 			return (-1);
 		return (0);
@@ -196,8 +207,8 @@ namespace Http {
 		if (!std::getline(stream, line))
 			return (-1);
 
-		if (!line.empty() && line[line.size() - 1] == '\r')
-			line.erase(line.size() - 1);
+		if (!line.empty() && line.back() == '\r')
+			line.pop_back();
 
 		return (0);
 	}

@@ -32,40 +32,10 @@ ClientEvent::_in()
 	std::cout << "\n\n" << _request.toString() << "\n";
 
 	// Process request, just don't block by waiting for IO like CGI
-	/*
-		method function table: GET, POST, DELETE
-		CGI is GET, right?
-
-		then signal write
-	*/
-
 	_processRequest();
-	_signal = Signal::Write;
-	// placeholder: return the cgi output or index page
-/* 	{
-		if (_request.getVersion() == "0.9")
-			_response.setVersion("0.9");
-
-		if(CGI::isCgiRequest(_request.getURI()))
-		{
-			_response.setEntityBody(CGI::execute(_request));
-		}
-		else
-		{
-			std::string indexContent = IO::readFile("./www/index.html");
-			if (indexContent.empty()) {
-				_response.err(404);
-			} else {
-				_response.setEntityBody(indexContent);
-			}
-		}
-		std::cout << _responseBuffer;
-
-		_signal = Signal::Write;
-	}
- */
 
 	_responseBuffer = _response.toString();
+	_signal = Signal::Write;
 }
 
 void
@@ -108,11 +78,12 @@ ClientEvent::_processRequest()
 ClientEvent::LocationMap::const_iterator
 ClientEvent::_URIdentification(std::string &resourcePath)
 {
+	// replace all /////// with /
 	std::function<LocationMap::const_iterator (std::string &path)>
 		searchLocation = [this](std::string &path)->LocationMap::const_iterator {
-			EasyPrint(path);
 			while (path.back() == '/')
 				path.pop_back();
+			EasyPrint(path);
 			return (r_config.locations.find((path.empty()) ? "/" : path));
 		};
 
@@ -134,7 +105,7 @@ ClientEvent::_URIdentification(std::string &resourcePath)
 		file	= URI.substr(URI.find_last_of('/'));
 	} else {
 		root	= it->second.root;
-		file	= it->second.index;
+		file	= it->second.index;// do this only in GET, leave empty here
 	}
 
 	EasyPrint(root);
@@ -168,14 +139,19 @@ ClientEvent::_post(
 	std::string const &resourcePath,
 	Config::Listener::Location const &location)
 {
+	if (resourcePath == "." + location.root + location.index)
+		return (_response.err(403));
+
 	std::ofstream	outfile(resourcePath);
+
 	if (!outfile.is_open())
 		return (_response.err(500));
+	_response.setStatus(201);
 
+	EasyPrint(_request.getEntityBody());
+	EasyPrint(resourcePath);
 	outfile << _request.getEntityBody();
 	outfile.close();
-
-	_response.setStatus(201);
 }
 
 void
@@ -183,7 +159,7 @@ ClientEvent::_delete(
 	std::string const &resourcePath,
 	Config::Listener::Location const &location)
 {
-	struct stat		pathInfo;
+	struct stat	pathInfo;
 
 	stat(resourcePath.c_str(), &pathInfo);
 	if (S_ISDIR(pathInfo.st_mode))
