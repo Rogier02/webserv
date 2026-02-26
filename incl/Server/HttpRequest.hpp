@@ -25,7 +25,9 @@ namespace Http {
 			// "GET", "HEAD", "POST"
 			std::string	_URI;
 			// "/relative/path/to/resource"
-			
+			std::string	_address;
+			std::string	_port;
+
 			HeaderMap	_requestHeaders;
 			// authorisation, from, if-modified-since, referer, user-agent
 
@@ -88,13 +90,16 @@ namespace Http {
 			};
 
 		public:
+			void	setAddressAndPort(std::string const &host);
+
 			std::string const	&getVersion() const;
 			std::string const	&getMethod() const;
 			std::string const	&getURI() const;
 			std::string const	&getEntityBody() const;
-			std::string getQueryString() const;
-			std::string getScriptName() const;
-			std::string getHost(std::string const &key) const;
+			std::string const	&getQueryString() const;
+			std::string const	&getScriptName() const;
+			std::string const	&getAddress() const;
+			std::string const	&getPort() const;
 
 			HeaderMap const		&getRequestHeaders() const;
 			std::string const	&getRequestHeaderValue(std::string const &key) const;

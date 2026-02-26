@@ -81,6 +81,7 @@ namespace Http {
 			} catch (std::out_of_range const &e) {
 			}
 		}
+		setAddressAndPort(getGeneralHeaderValue("host"));
 		return (0);
 	}
 
@@ -232,6 +233,13 @@ namespace Http {
 		}
 	}
 
+	// Setters //
+	void
+	Request::setAddressAndPort(std::string const &host) {
+		_address = host.substr(0, host.find_first_of(":"));
+		_port = host.substr(host.find_first_of(":") + 1, host.size());
+	}
+
 	// Getters //
 	std::string const &
 	Request::getVersion()
@@ -257,34 +265,30 @@ namespace Http {
 		return (_entityBody);
 	}
 
-	std::string
+	std::string const &
 	Request::getQueryString()
 	const {
 		std::string	queryString = _URI.substr((_URI.find_first_of("?") + 1), _URI.size());
 		return (queryString);
 	}
 
-	std::string
+	std::string const &
 	Request::getScriptName()
 	const {
 		std::string	scriptName = _URI.substr(0, _URI.find_first_of("?"));
 		return (scriptName);
 	}
 
-	std::string
-	Request::getHost(std::string const &key) // DEZE INFO VOOR CGI KOMT UIT CONFIG NIET REQUEST!!
+	std::string const &
+	Request::getAddress()
 	const {
-		std::string	host = getGeneralHeaderValue("Host");
-		if (key == "Port")
-		{
-			std::string	port = host.substr(host.find_first_of(":") + 1, host.size());
-			return (port);
-		}
-		else
-		{
-			std::string	address = host.substr(0, host.find_first_of(":"));
-			return (address);
-		}
+			return (_address);
+	}
+
+	std::string const &
+	Request::getPort()
+	const {
+			return (_port);
 	}
 
 	std::string const	&

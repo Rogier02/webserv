@@ -4,6 +4,9 @@ namespace Http {
 	Message::Message(
 		std::string const &version)
 		:	_version(version)
+		,	_entityHeaders{
+				{"content-length", "0"}
+			}
 	{}
 
 	void
