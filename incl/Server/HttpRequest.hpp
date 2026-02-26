@@ -96,8 +96,8 @@ namespace Http {
 			std::string const	&getMethod() const;
 			std::string const	&getURI() const;
 			std::string const	&getEntityBody() const;
-			std::string const	&getQueryString() const;
-			std::string const	&getScriptName() const;
+			std::string 		getQueryString() const; //check of dit niet const & moet zijn?
+			std::string 		getScriptName() const;
 			std::string const	&getAddress() const;
 			std::string const	&getPort() const;
 

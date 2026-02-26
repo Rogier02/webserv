@@ -88,7 +88,7 @@ namespace Http {
 	int
 	Request::parseEntityBody(std::istream &stream)
 	{
-		std::map<std::string, std::string>::iterator it = _requestHeaders.find("Content-Length");
+		std::map<std::string, std::string>::iterator it = _requestHeaders.find("content-length");
 
 		if (it == _requestHeaders.end())
 			return (0);
@@ -265,14 +265,14 @@ namespace Http {
 		return (_entityBody);
 	}
 
-	std::string const &
+	std::string
 	Request::getQueryString()
 	const {
 		std::string	queryString = _URI.substr((_URI.find_first_of("?") + 1), _URI.size());
 		return (queryString);
 	}
 
-	std::string const &
+	std::string
 	Request::getScriptName()
 	const {
 		std::string	scriptName = _URI.substr(0, _URI.find_first_of("?"));
