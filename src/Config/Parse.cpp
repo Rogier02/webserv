@@ -43,12 +43,11 @@ Parse::server()
 		}
 	}
 	expect("}");
-
 	return (server);
 }
 
 Config::Listener::Location
-Parse::location()
+Parse::location(std::string const &root)
 {
 	Config::Listener::Location	location;
 	size_t						tokensFound = _ts.tokensOnLine();
@@ -76,7 +75,8 @@ Parse::location()
 		}
 	}
 	expect("}");
-
+	if (location.root.empty())
+		location.root = root;
 	return (location);
 }
 

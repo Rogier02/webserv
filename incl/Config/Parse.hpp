@@ -28,8 +28,8 @@ class	Parse
 		Config	config();
 
 	private:
-		Config::Listener				server();
-		Config::Listener::Location	location();
+		Config::Listener			server();
+		Config::Listener::Location	location(std::string const &root);
 		Config::Listener::Page		page();
 
 		// get simple value(s)
@@ -76,7 +76,7 @@ class	Parse
 				{ s.errorPages.push_back(page()); }},
 			{"location",
 				[this](Config::Listener& s)
-				{ s.locations.push_back(location()); }},
+				{ s.locations.push_back(location(s.root)); }},
 		};
 
 		using	LocationDirective = std::function<void (Config::Listener::Location &)>;

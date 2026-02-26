@@ -42,6 +42,8 @@ namespace Http {
 
 		parseEntityBody(stream);
 
+		validateParseRequest();
+
 		return (0);
 	}
 
@@ -60,7 +62,7 @@ namespace Http {
 		if (sp2 == std::string::npos)
 		{
 			if (_method != "GET")
-				return (false);
+				return (false); // Give error that HTTP/0.9 can only use GET method
 			_URI = line.substr(sp1 + 1);
 			_version = "HTTP/0.9";
 		}
@@ -69,26 +71,10 @@ namespace Http {
 			if (line.find(' ', sp2 + 1))
 				return (false);
 			_URI = line.substr(sp1 + 1, sp2 - sp1 - 1);
-			if (!validHTTPVersion(line.substr(sp2 + 1)))
-				return (false);
-			_version = "HTTP/1.0";
+			_version = line.substr(sp2 + 1);
 		}
 		return (true);
 	}
-
-	// Parse headers
-	// General headers: Date, Pragma
-	// Request headers: Authorization, From, If-Modified-Since, Referer, User-Agent
-	// Entity headers: Allow, Content-Encoding, Content-Length, Content-Type, Expires, Last-Modified
-	// void
-	// Request::parseHeaders(std::string const &line)
-	// {
-	// 	size_t colon = line.find(':');
-	// 	std::string	key = line.substr(0, colon);
-	// 	std::string value = line.substr(colon + 1);
-	// 	// trim leading whitespaces
-	// 	_requestHeaders.insert(std::make_pair(key, value));
-	// }
 
 	bool
 	Request::parseEntityBody(std::istream &stream)
@@ -105,24 +91,25 @@ namespace Http {
 		return (true);
 	}
 
-	// Parsing utils //
+	// Utils //
 	bool
-	Request::validHTTPVersion(const std::string &version)
+	Request::validateHTTPVersion()
 	{
-		if (version.find("HTTP/") == std::string::npos)
+		if (_version.find("HTTP/") == std::string::npos)
 			return (false);
 
-		size_t	dot = version.find(".");
-		if (dot == 5 || version.size() <= dot + 5) // returns false if: HTTP/.9 or HTTP/1.
+		size_t	dot = _version.find(".");
+		if (dot == 5 || _version.size() <= dot + 5) // returns false if: HTTP/.9 or HTTP/1.
 			return (false);
 
-		for (int i = 5; i < dot; i++)
-			if (!std::isdigit((unsigned char)version[i]))
-				return (false);
+		std::string	major = _version.substr(5, dot);
+		std::string	minor = _version.substr(dot + 1, _version.size());
+		if (!isAllDigits(major) || !isAllDigits(minor))
+			return (false); // give error: 400 Bad Request????
 
-		for (int i = dot + 1; i < version.size(); i++)
-			if (!std::isdigit((unsigned char)version[i]))
-				return (false);
+		if ((std::stoi(major) >= 1 && std::stoi(minor) > 0) || (std::stoi(major) == 0 && std::stoi(minor) != 9))
+
+		return (true);
 	}
 
 	bool
@@ -135,6 +122,34 @@ namespace Http {
 				line.erase(line.size() - 1);
 
 		return (true);
+	}
+
+	bool
+	Request::isAllDigits(std::string const &str)
+	{
+		for (int i = 0; i < str.size(); i++)
+			if (!std::isdigit((unsigned char)str[i]))
+				return (false);
+
+		return (true);
+	}
+
+	// Validation parse request //
+	bool
+	Request::validateParseRequest()
+	{
+		if (_method != "GET" || _method != "POST" || _method != "DELETE")
+			return (false); // give error 405
+		
+		
+		return (true);
+	}
+
+	bool
+	Request::validateURI()
+	{
+		if (_URI[0] != '/')
+			return (false);
 	}
 
 	// Getters //

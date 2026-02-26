@@ -16,6 +16,6 @@ new Index page
 Laura:	schrijf eigen getline met delim: CRLF
 		validate headers if nodig
 		check of in request line maar 1 SP staat tussen tokens
-
+		if no root dan location root is algemene root, else gebruik location root
 		validation config checken of gevalidate moet worden of map bestaat etc etc
 		config parser checken of alles werkt (eind project)
