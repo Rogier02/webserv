@@ -31,56 +31,58 @@ namespace Http {
 
 		public:
 			int		parse(std::string request);
-			bool	parseRequestLine(std::string const &line);
-			bool	parseEntityBody(std::istream &stream);
-			bool	getlineCRLF(std::istream &stream, std::string &line);
-			bool	validateParseRequest();
-			bool	validateHTTPVersion();
-			bool	validateURI();
+			int		parseRequestLine(std::string const &line);
+			int		parseEntityBody(std::istream &stream);
+			int		getlineCRLF(std::istream &stream, std::string &line);
+			int		validateParseRequest();
+			int		validateHTTPVersion();
+			int		validateURI();
 			bool	isAllDigits(std::string const &str);
+			bool	isHexDigits(char c);
+			bool	isAllowedURICharacter(char c);
 			
 		using	HeaderHandler = std::function<void (std::string const &)>;
 		std::map<std::string, HeaderHandler>
 		HeaderHandlers = {
-			{"Date",
+			{"date",
 				[this](std::string const &value)
-				{ _generalHeaders["Date"] = value; }},
-			{"Pragma",
+				{ _generalHeaders["date"] = value; }},
+			{"pragma",
 				[this](std::string const &value)
-				{ _generalHeaders["Pragma"] = value; }},
-			{"Authorization",
+				{ _generalHeaders["pragma"] = value; }},
+			{"authorization",
 				[this](std::string const &value)
-				{ _requestHeaders["Authorization"] = value; }},
-			{"From",
+				{ _requestHeaders["authorization"] = value; }},
+			{"from",
 				[this](std::string const &value)
-				{ _requestHeaders["From"] = value; }},
-			{"If-Modified-Since",
+				{ _requestHeaders["from"] = value; }},
+			{"if-modified-since",
 				[this](std::string const &value)
-				{ _requestHeaders["If-Modified-Since"] = value; }},
-			{"Referer",
+				{ _requestHeaders["if-modified-since"] = value; }},
+			{"referer",
 				[this](std::string const &value)
-				{ _requestHeaders["Referer"] = value; }},
-			{"User-Agent",
+				{ _requestHeaders["referer"] = value; }},
+			{"user-agent",
 				[this](std::string const &value)
-				{ _requestHeaders["User-Agent"] = value; }},
-			{"Allow",
+				{ _requestHeaders["user-agent"] = value; }},
+			{"allow",
 				[this](std::string const &value)
-				{ _entityHeaders["Allow"] = value; }},
-			{"Content-Encoding",
+				{ _entityHeaders["allow"] = value; }},
+			{"content-encoding",
 				[this](std::string const &value)
-				{ _entityHeaders["Content-Encoding"] = value; }},
-			{"Content-Length",
+				{ _entityHeaders["content-encoding"] = value; }},
+			{"content-length",
 				[this](std::string const &value)
-				{ _entityHeaders["Content-Length"] = value; }},
-			{"Content-Type",
+				{ _entityHeaders["content-length"] = value; }},
+			{"content-type",
 				[this](std::string const &value)
-				{ _entityHeaders["Content-Type"] = value; }},
-			{"Expires",
+				{ _entityHeaders["content-type"] = value; }},
+			{"expires",
 				[this](std::string const &value)
-				{ _entityHeaders["Expires"] = value; }},
-			{"Last-Modified",
+				{ _entityHeaders["expires"] = value; }},
+			{"last-modified",
 				[this](std::string const &value)
-				{ _entityHeaders["Last-Modified"] = value; }},
+				{ _entityHeaders["last-modified"] = value; }},
 			};
 
 		public:
