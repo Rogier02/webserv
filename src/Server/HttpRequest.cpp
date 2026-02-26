@@ -23,24 +23,9 @@ namespace Http {
 		std::string line;
 
 		getlineCRLF(stream, line);
-
 		parseRequestLine(line);
 
-		while (getlineCRLF(stream, line))
-		{
-			size_t colon = line.find(':');
-			if (colon == std::string::npos)
-				return (-1);
-			std::string	key = line.substr(0, colon);
-			for (int i = 0; i < key.size(); i++)
-				std::tolower((unsigned char) key[i]);
-			std::string value = line.substr(colon + 1);
-			try {
-				HeaderHandlers[key](value);
-			} catch (std::out_of_range const &e) {
-			}
-			
-		}
+		parseHeaders(stream, line);
 
 		parseEntityBody(stream);
 
@@ -79,6 +64,26 @@ namespace Http {
 	}
 
 	int
+	Request::parseHeaders(std::istream &stream, std::string &line)
+	{
+		while (getlineCRLF(stream, line))
+		{
+			size_t colon = line.find(':');
+			if (colon == std::string::npos)
+				return (-1);
+			std::string	key = line.substr(0, colon);
+			for (int i = 0; i < key.size(); i++)
+				std::tolower((unsigned char) key[i]);
+			std::string value = line.substr(colon + 1);
+			try {
+				HeaderHandlers[key](value);
+			} catch (std::out_of_range const &e) {
+			}
+		}
+		return (0);
+	}
+
+	int
 	Request::parseEntityBody(std::istream &stream)
 	{
 		std::map<std::string, std::string>::iterator it = _requestHeaders.find("Content-Length");
@@ -103,7 +108,8 @@ namespace Http {
 			return (-1);
 		if (!validateURI())
 			return (-1);
-		
+		if (!validateHeaders())
+			return (-1);
 		return (0);
 	}
 
@@ -144,6 +150,24 @@ namespace Http {
 			if (!isAllowedURICharacter(_URI[i]))
 				return (-1);
 		}
+
+		return (0);
+	}
+
+	int
+	Request::validateHeaders()
+	{
+		std::map<std::string, std::string>::iterator it;
+
+		for (it = _generalHeaders.begin(); it != _generalHeaders.end(); ++it)
+			if (!it->second.empty() && it->second[0] == ' ')
+				return (-1);
+		for (it = _requestHeaders.begin(); it != _requestHeaders.end(); ++it)
+			if (!it->second.empty() && it->second[0] == ' ')
+				return (-1);
+		for (it = _entityHeaders.begin(); it != _entityHeaders.end(); ++it)
+			if (!it->second.empty() && it->second[0] == ' ')
+				return (-1);
 
 		return (0);
 	}
