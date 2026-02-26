@@ -1,4 +1,5 @@
 #include "HttpRequest.hpp"
+#include <iostream>
 
 namespace Http {
 	std::string
@@ -23,13 +24,16 @@ namespace Http {
 		std::string line;
 
 		getlineCRLF(stream, line);
-		parseRequestLine(line);
+		if (parseRequestLine(line) == -1)
+			return (-1);
+		if (parseHeaders(stream, line) == -1)
+			return (-1);
 
-		parseHeaders(stream, line);
+		if (parseEntityBody(stream) == -1)
+			return (-1);
 
-		parseEntityBody(stream);
-
-		validateParseRequest();
+		if (validateParseRequest() == -1)
+			return (-1);
 
 		return (0);
 	}
@@ -38,14 +42,14 @@ namespace Http {
 	Request::parseRequestLine(std::string const &line)
 	{
 		size_t sp1 = line.find(' ');
-
+		
 		if (sp1 == std::string::npos)
 			return (-1);
 
 		_method = line.substr(0, sp1);
-
+		
 		size_t sp2 = line.find(' ', sp1 + 1);
-
+		
 		if (sp2 == std::string::npos)
 		{
 			if (_method != "GET")
@@ -55,33 +59,32 @@ namespace Http {
 		}
 		else
 		{
-			if (line.find(' ', sp2 + 1))
+			if (line.find(' ', sp2 + 1) != std::string::npos)
 				return (-1);
 			_URI = line.substr(sp1 + 1, sp2 - sp1 - 1);
 			_version = line.substr(sp2 + 1);
 		}
+
 		return (0);
 	}
 
 	int
 	Request::parseHeaders(std::istream &stream, std::string &line)
 	{
-		while (getlineCRLF(stream, line))
+		while (getlineCRLF(stream, line) == 0)
 		{
 			size_t colon = line.find(':');
 			if (colon == std::string::npos)
 				return (-1);
 			std::string	key = line.substr(0, colon);
 			for (int i = 0; i < key.size(); i++)
-				if (!std::tolower((unsigned char)key[i]))
-					return (-1);
+				key[i] = std::tolower((unsigned char)key[i]);
 			std::string value = line.substr(colon + 1);
-			try {
-				HeaderHandlers[key](value);
-			} catch (std::out_of_range const &e) {
-			}
+			std::map<std::string, HeaderHandler>::const_iterator it = HeaderHandlers.find(key);
+			if (it == HeaderHandlers.end())
+				continue;
+			it->second(value);
 		}
-		setAddressAndPort(getGeneralHeaderValue("host"));
 		return (0);
 	}
 
@@ -194,7 +197,7 @@ namespace Http {
 			return (-1);
 
 		if (!line.empty() && line[line.size() - 1] == '\r')
-				line.erase(line.size() - 1);
+			line.erase(line.size() - 1);
 
 		return (0);
 	}
@@ -231,13 +234,6 @@ namespace Http {
 			default:
 				return false;
 		}
-	}
-
-	// Setters //
-	void
-	Request::setAddressAndPort(std::string const &host) {
-		_address = host.substr(0, host.find_first_of(":"));
-		_port = host.substr(host.find_first_of(":") + 1, host.size());
 	}
 
 	// Getters //
@@ -277,18 +273,6 @@ namespace Http {
 	const {
 		std::string	scriptName = _URI.substr(0, _URI.find_first_of("?"));
 		return (scriptName);
-	}
-
-	std::string const &
-	Request::getAddress()
-	const {
-			return (_address);
-	}
-
-	std::string const &
-	Request::getPort()
-	const {
-			return (_port);
 	}
 
 	std::string const	&

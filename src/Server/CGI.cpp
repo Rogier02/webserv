@@ -73,8 +73,8 @@ namespace CGI
 		_envVariables.push_back("SERVER_PROTOCOL=" + request.getVersion()); //check of we 0.9 en 1.0 ook kunnen parsen
 		_envVariables.push_back("GATEWAY_INTERFACE=CGI/1.0"); // wordt dit geparsed uit de httpRequest? of is dit vast?
 		_envVariables.push_back("SERVER_NAME=webserv"); //nog niet duidelijk hoe je hieraan komt.
-		_envVariables.push_back("SERVER_PORT=" + request.getPort());
-		_envVariables.push_back("SERVER_ADDR=" + request.getAddress());
+		_envVariables.push_back("SERVER_PORT=");
+		_envVariables.push_back("SERVER_ADDR=");
 
 		// add HTTP headers as CGI variables
 
