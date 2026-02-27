@@ -1,4 +1,5 @@
 #include "ClientEvent.hpp"
+#include "HttpResponse.hpp"
 
 ClientEvent::ClientEvent(int fd, Config::Listener const &config)
 	:	Event(fd, Epoll::Events::In | Epoll::Events::RdH)
@@ -51,10 +52,11 @@ ClientEvent::_in()
 		}
 		else
 		{
-			std::string indexContent = readFile("./www/index.html");
+			std::string indexContent = readFile("./www/NewIndex/index.html");
 			if (indexContent.empty()) {
 				_response.err(404);
 			} else {
+				_response.setEntityHeaderValue("content-type", "text/html; charset=UTF-8");
 				_response.setEntityBody(indexContent);
 			}
 		}
