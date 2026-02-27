@@ -78,13 +78,13 @@ namespace CGI
 		// May be present
 
 		try {
-			std::string contentType = request.getRequestHeaderValue("Content-Type");
+			std::string contentType = request.getRequestHeaderValue("content-type");
 			_envVariables.push_back("CONTENT_TYPE="+ contentType);
 		} catch (const std::out_of_range&) {
 			// Leaves variable blank
 		}
 
-		_envVariables.push_back("CONTENT_LENGTH=" + request.getRequestHeaderValue("Content-Length"));
+		_envVariables.push_back("CONTENT_LENGTH=" + request.getRequestHeaderValue("Content-length"));
 		// add HTTP headers as CGI variables
 
 		const Http::HeaderMap	&headers = request.getRequestHeaders();
@@ -92,9 +92,9 @@ namespace CGI
 		{
 			const std::string& headerName  = it->first;
 			const std::string& headerValue = it->second;
-			if (headerName == "Content-Type" 
-				|| headerName == "Content-Length" 
-				|| headerName == "Host")
+			if (headerName == "content-type" 
+				|| headerName == "content-length" 
+				|| headerName == "host")
 				continue;
 
 			std::string cgiVarName = "HTTP_";
