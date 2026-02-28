@@ -75,8 +75,6 @@ namespace Http {
 	{
 		while (getlineCRLF(stream, line) == 0)
 		{
-			EasyPrint(line);
-
 			if (line.empty())
 				return (0);
 
@@ -106,9 +104,6 @@ namespace Http {
 		size_t	contentLength = std::stoul(it->second);
 		_entityBody.resize(contentLength);
 		stream.read(_entityBody.data(), contentLength); //data returns pointer to where entityBody is stored
-
-		EasyPrint(contentLength);
-		EasyPrint(_entityBody);
 
 		if (stream.gcount() != contentLength)
 			return (-1);
@@ -321,5 +316,4 @@ namespace Http {
 	const {
 		return (_requestHeaders);
 	}
-
 }

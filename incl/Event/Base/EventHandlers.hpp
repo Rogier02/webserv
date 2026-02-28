@@ -7,7 +7,7 @@
 // webserv
 # include "Event.hpp"
 
-class	EventHandlers// TODO: make this a namespace
+class	EventHandlers// TODO: put this in Server
 {
 	public:
 		EventHandlers() = delete;

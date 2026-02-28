@@ -2,6 +2,7 @@
 
 namespace	Socket
 {
+	// move this into ListenEvent constructor if possible
 	int
 	create(int port)
 	{

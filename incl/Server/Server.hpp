@@ -32,15 +32,13 @@ class	Server
 		~Server() = default;
 
 	private:
-		Epoll				_epoll;
-		std::vector<int>	_listenSockets;
+		Epoll	_epoll;
 
 	public:
 		void	run();
 
 	private:
 		void	_closeConnection(int fd);
-		void	_readyToSend(int fd);
 };
 
 #endif

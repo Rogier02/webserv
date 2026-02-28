@@ -1,8 +1,7 @@
 #include "ClientEvent.hpp"
 
-ClientEvent::ClientEvent(int fd, Config::Listener const &config)
-	:	Event(fd, Epoll::Events::In | Epoll::Events::RdH)
-	,	r_config(config)
+ClientEvent::ClientEvent(int socketFd, Epoll &epoll, Config::Listener const &config)
+	:	Event(socketFd, Epoll::Events::In | Epoll::Events::RdH, epoll, config)
 {
 	std::cout << "Client " << data.fd << " \e[34mConstructed\e[0m\n";
 }
@@ -17,8 +16,10 @@ ClientEvent::_in()
 {
 	ssize_t	recieved = Socket::recv(data.fd, _requestBuffer);
 
-	if (recieved == 0)
+	if (recieved == 0) {
 		_signal = Signal::Close;
+		return;
+	}
 
 	if (_requestBuffer.find("\r\n\r\n") == std::string::npos)
 		return;
@@ -35,7 +36,7 @@ ClientEvent::_in()
 	_processRequest();
 
 	_responseBuffer = _response.toString();
-	_signal = Signal::Write;
+	_mod(Epoll::Events::Out | Epoll::Events::RdH);
 }
 
 void
@@ -57,68 +58,137 @@ ClientEvent::_out()
 	}
 }
 
+std::string
+ClientEvent::_collapseSlashes(std::string const &rawURI)
+const {
+	std::string	URI		= rawURI;
+	std::size_t	start	= URI.find_first_of('/');
+	std::size_t	end		= URI.find_first_not_of('/', start);
+
+	while (start < URI.length())
+	{
+		if (end - start > 1)
+			URI.replace(start, end - start, "/");
+		start	= URI.find_first_of('/', start + 1);
+		end		= URI.find_first_not_of('/', start);
+	}
+
+	if (URI.length() > 1 && URI.back() == '/')
+		URI.pop_back();
+
+	EasyPrint(rawURI);
+	EasyPrint(URI);
+
+	return (URI);
+}
+
+int
+ClientEvent::_URIdentification()
+{
+	LocationMap	const	&locations = r_config.locations;
+
+	std::string	const URI = _collapseSlashes(_request.getURI());
+
+	if (locations.contains(URI)) {
+		_target.location	= URI;
+		_target.root		= locations.at(URI).root;
+		_target.file		= "/";
+	} else {
+		std::size_t	const	lastSlash = URI.find_last_of('/');
+		std::string const	URIParent = URI.substr(0, lastSlash);
+
+		if (!locations.contains(URIParent))
+			return (-1);
+
+		_target.location	= URIParent;
+		_target.root		= locations.at(URIParent).root;
+		_target.file		= URI.substr(lastSlash);
+	}
+
+	EasyPrint(_target.root);
+	EasyPrint(_target.file);
+
+	return (0);
+}
+
 void
 ClientEvent::_processRequest()
 {
-	LocationMap::const_iterator	locationEntry = _URIdentification();
+	std::string const	&method = _request.getMethod();
 
-	if (locationEntry == r_config.locations.end())
-		return _response.err(404);
+	if (!Methods.contains(method))
+		return (_response.err(501));
 
-	Config::Listener::Location const	&location	= locationEntry->second;
-	std::string const					&method		= _request.getMethod();
+	if (_URIdentification() == -1)
+		return (_response.err(404));
+
+	Config::Listener::Location const	&location = r_config.locations.at(_target.location);
 
 	if (location.allowedMethods.find(method) == std::string::npos)
-		return _response.err(403);
+		return (_response.err(403));
 
-	Methods[method](location);
+	Methods.at(method)(location);
 }
 
-ClientEvent::LocationMap::const_iterator
-ClientEvent::_URIdentification()
+void
+ClientEvent::_cgi(
+	Config::Listener::Location const &location)
 {
-	// replace all /////// with /
-	std::function<LocationMap::const_iterator (std::string &path)>
-		searchLocation = [this](std::string &path)->LocationMap::const_iterator {
-			while (path.back() == '/')
-				path.pop_back();
-			EasyPrint(path);
-			return (r_config.locations.find((path.empty()) ? "/" : path));
-		};
+	std::string	extension = _target.file.substr(_target.file.find('.'));
 
-	std::string	URI = _request.getURI();
-	LocationMap::const_iterator	it;
+	if (location.cgiEXT.find(extension) == std::string::npos)
+		return (_response.err(403));
 
-	it = searchLocation(URI);
+	if (location.cgiPath.empty())
+		return (_response.err(403));
 
-	if (it == r_config.locations.end()) {
-		std::string	URILocation	= URI.substr(0, URI.find_last_of('/'));
+	int		inPipe[2];
+	int		outPipe[2];
+	pid_t	pid;
 
-		it = searchLocation(URILocation);
-		if (it == r_config.locations.end())
-			return (it);
-
-		_resource.root	= it->second.root;
-		_resource.file	= URI.substr(URI.find_last_of('/'));
-	} else {
-		_resource.root	= it->second.root;
-		_resource.file	= "/";
+	if (::pipe(inPipe) == -1)
+		return (_response.err(500));
+	if (::pipe(outPipe) == -1) {
+		close(inPipe[0]);
+		close(inPipe[1]);
+		return (_response.err(500));
 	}
 
-	EasyPrint(_resource.root);
-	EasyPrint(_resource.file);
+	pid = fork();
+	if (pid == -1) {
+		close(inPipe[0]);
+		close(inPipe[1]);
+		close(outPipe[0]);
+		close(outPipe[1]);
+		return (_response.err(500));
+	}
 
-	return (it);
+	if (pid == 0)
+	{
+		close(inPipe[1]);
+		close(outPipe[0]);
+		// cgiexec;
+	}
+
+	close(inPipe[0]);
+	close(outPipe[1]);
+
+	// create CGInbox event for reading from the outPipe
+	// forward entityBody to inPipe
+	// make yougotmail func to probably also waitpid()
 }
 
 void
 ClientEvent::_get(
 	Config::Listener::Location const &location)
 {
-	if (_resource.file == "/")
-		_resource.file = location.index;
+	if (_target.file == "/")
+		_target.file = location.index;
 
-	std::string	path			= "." + _resource.root + _resource.file;
+	if (_target.file.ends_with(".py"))
+		return (_cgi(location));
+
+	std::string	path			= "." + _target.root + _target.file;
 	std::string	indexContent	= IO::readFile(path);
 
 	std::cout	<< "GET " << _request.getURI()
@@ -129,25 +199,22 @@ ClientEvent::_get(
 		_response.err(404);
 	else
 		_response.setEntityBody(indexContent);
-
 }
 
 void
 ClientEvent::_post(
 	Config::Listener::Location const &location)
 {
-	if (_resource.file == "/")
+	if (_target.file == "/")
 		return (_response.err(403));
 
-	std::string		path = "." + _resource.root + _resource.file;
+	std::string		path = "." + _target.root + _target.file;
 	std::ofstream	outfile(path);
 
 	if (!outfile.is_open())
 		return (_response.err(500));
 	_response.setStatus(201);
 
-	EasyPrint(_request.getEntityBody());
-	EasyPrint(path);
 	outfile << _request.getEntityBody();
 	outfile.close();
 }
@@ -156,10 +223,10 @@ void
 ClientEvent::_delete(
 	Config::Listener::Location const &location)
 {
-	if (_resource.file == "/")// probably needs more confirmation that root + file is a directory
+	if (_target.file == "/")// probably needs more confirmation that root + file is a directory
 		return (_response.err(403));
 
-	std::string		path = "." + _resource.root + _resource.file;
+	std::string		path = "." + _target.root + _target.file;
 
 	if (std::remove(path.c_str()) == -1)
 		return (_response.err(500));

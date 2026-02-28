@@ -2,7 +2,7 @@
 
 std::map<int, std::unique_ptr<Event>>	EventHandlers::_handlers;
 
-Event*
+Event *
 EventHandlers::get(int fd)
 {
 	std::map<int, std::unique_ptr<Event>>::iterator it = _handlers.find(fd);

@@ -3,38 +3,34 @@
 
 // C
 # include <stddef.h>
-# include <sys/epoll.h>
 // C++
 # include <iostream>
 // webserv
 # include "Epoll.hpp"
-# include "Socket.hpp"
+# include "Config.hpp"
 
 class	Event : public epoll_event
 {
 	public:
-		enum Signal {
-			OK,
-			Write,
-			Close,
-		};
-
-	public:
 		Event() = default;
 		Event(Event const &) = default;
 		Event(Event &&) = default;
-		Event(int fd, u_int32_t eventTypes);
-		virtual ~Event() = default;
+		Event(int fd, u_int32_t eventTypes, Epoll &epoll, Config::Listener const &config);
+		virtual ~Event();
+
+	protected:
+		Epoll					&r_epoll;
+		Config::Listener const	&r_config;
 
 	public:
-		Signal	handle();
+		void	handle();
 
 	private:
 		virtual void	_in();
 		virtual void	_out();
 
 	protected:
-		Signal	_signal;
+		void	_mod(u_int32_t eventTypes);
 };
 
 #endif

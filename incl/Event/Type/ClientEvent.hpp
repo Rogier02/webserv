@@ -28,7 +28,7 @@ class ClientEvent : public Event
 		// ClientEvent() = default;
 		ClientEvent(ClientEvent const &) = delete;
 		ClientEvent(ClientEvent &&) = delete;
-		ClientEvent(int fd, Config::Listener const &config);
+		ClientEvent(int socketFd, Epoll &epoll, Config::Listener const &config);
 		~ClientEvent();
 
 	private:
@@ -38,14 +38,18 @@ class ClientEvent : public Event
 		std::string		_requestBuffer;
 		std::string		_responseBuffer;
 
-		struct	Resource	{
+		struct	Target	{
+			std::string	location;
 			std::string	root;
 			std::string	file;
-		}				_resource;
+		}				_target;
 
-		CGInboxEvent	*_CGInbox;
+		struct	CGI		{
+			int			in[2];
+			int			out[2];
+		}				_pipes;
 
-		Config::Listener const	&r_config;
+		// CGInboxEvent	*_CGInbox;
 
 	private:
 		void	_in() override;
@@ -56,10 +60,12 @@ class ClientEvent : public Event
 		void	_get(Config::Listener::Location const &location);
 		void	_post(Config::Listener::Location const &location);
 		void	_delete(Config::Listener::Location const &location);
+		void	_cgi(Config::Listener::Location const &location);
 
 		void	_youHaveGotMail(std::string &CGIoutput);
 
-		LocationMap::const_iterator	_URIdentification();
+		int			_URIdentification();
+		std::string	_collapseSlashes(std::string const &rawURI) const;
 
 		using	Method = std::function<void (Config::Listener::Location const &)>;
 		std::map<std::string, Method>

@@ -5,15 +5,13 @@ Server::Server(Config &config)
 	for (Config::Listener &listener : config.listeners)
 	{
 		int	socketFd = Socket::create(listener.port);
-		_listenSockets.push_back(socketFd);
+
 		EasyPrint(socketFd);
 		EasyPrint(listener.port);
 
 		ListenEvent	&listen =
 			EventHandlers::create<ListenEvent>(
 				socketFd, _epoll, listener);
-
-		EasyThrow(_epoll.ctl(Epoll::Ctl::Add, listen));
 	}
 }
 
@@ -34,19 +32,10 @@ Server::run()
 			{
 				int	fd = unknown.data.fd;
 
-				if (unknown.events & (Epoll::Events::Err
-									| Epoll::Events::Hup
-									| Epoll::Events::RdH)) {
+				if (unknown.events & (Epoll::Events::Err | Epoll::Events::Hup | Epoll::Events::RdH))
 					_closeConnection(fd);
-					continue;
-				}
-
-				Event::Signal	signal = EventHandlers::get(fd)->handle();
-
-				if (signal == Event::Signal::Write)
-					_readyToSend(fd);
-				if (signal == Event::Signal::Close)
-					_closeConnection(fd);
+				else
+					EventHandlers::get(fd)->handle();
 			}
 		}
 		catch	(std::runtime_error &exception) {
@@ -70,23 +59,8 @@ Server::run()
 }
 
 void
-Server::_readyToSend(int fd)
-{
-	Event	*event	= EventHandlers::get(fd);
-	event->events	= Epoll::Events::Out | Epoll::Events::RdH;
-
-	EasyThrow(_epoll.ctl(Epoll::Ctl::Mod, *event));
-
-	std::cout << "Client " << fd << " \e[33mSuccessfully Registered For Sending\e[0m\n";
-}
-
-// closing the connection leaves the pointer to the Event invalid
-void
 Server::_closeConnection(int fd)
 {
-	EasyThrow(_epoll.ctl(Epoll::Ctl::Del, fd));
 	EventHandlers::erase(fd);
-	EasyThrow(close(fd));
-
 	std::cout << "Client " << fd << " \e[33mSuccessfully Disconnected.\e[0m\n";
 }
