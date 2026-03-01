@@ -20,7 +20,29 @@ namespace Http {
 	}
 
 	int
-	Request::parse(std::string request)
+	Request::setEntityBody(std::string const &requestEntity)
+	{
+		const std::size_t	entityLength	= requestEntity.length();
+		std::size_t			contentLength	= 0;
+
+		if (_entityHeaders.contains("content-length"))
+			contentLength = std::stoul(_entityHeaders.at("content-length"));
+
+		if (entityLength > contentLength)
+		{
+			EasyPrint(entityLength - contentLength);
+			return (-1);// bad request
+		}
+
+		if (entityLength < contentLength)
+			return (0);// recv more
+
+		_entityBody = requestEntity;
+		return (1);// success
+	}
+
+	int
+	Request::parseHead(std::string const &request)
 	{
 		std::istringstream stream(request);
 		std::string line;
@@ -114,7 +136,10 @@ namespace Http {
 	int
 	Request::validateParseRequest()
 	{
-		if (_method != "GET" || _method != "POST" || _method != "DELETE" || _method != "HEAD")
+		if (_method != "GET"
+		||	_method != "POST"
+		||	_method != "DELETE"
+		||	_method != "HEAD")
 			return (-1);
 		if (!validateHTTPVersion())
 			return (-1);

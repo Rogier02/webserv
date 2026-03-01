@@ -32,7 +32,9 @@ Server::run()
 			{
 				int	fd = unknown.data.fd;
 
-				if (unknown.events & (Epoll::Events::Err | Epoll::Events::Hup | Epoll::Events::RdH))
+				if (unknown.events & (Epoll::Events::Err
+									| Epoll::Events::Hup
+									| Epoll::Events::RdH))
 					_closeConnection(fd);
 				else
 					EventHandlers::get(fd)->handle();
@@ -40,16 +42,19 @@ Server::run()
 		}
 		catch	(std::runtime_error &exception) {
 			LOGGER(log(exception.what()));
-			std::cerr << "'tis but a scratch: " << exception.what() << std::endl;
+			std::cerr << "'tis but a scratch: "
+				<< exception.what() << std::endl;
 		}
 		catch (std::logic_error &exception) {
 			LOGGER(log(exception.what()));
-			std::cerr << "Write better code: " << exception.what() << std::endl;
+			std::cerr << "Write better code: "
+				<< exception.what() << std::endl;
 			break;
 		}
 		catch (std::exception &exception) {
 			LOGGER(log(exception.what()));
-			std::cerr << "Something unexpected excepted: " << exception.what() << std::endl;
+			std::cerr << "Something unexpected excepted: "
+				<< exception.what() << std::endl;
 			throw exception;
 		}
 		// TODO: time out requests that haven't sent for a while

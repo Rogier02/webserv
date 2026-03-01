@@ -38,16 +38,13 @@ class ClientEvent : public Event
 		std::string		_requestBuffer;
 		std::string		_responseBuffer;
 
+		bool			_headersParsed;
+
 		struct	Target	{
 			std::string	location;
 			std::string	root;
 			std::string	file;
 		}				_target;
-
-		struct	CGI		{
-			int			in[2];
-			int			out[2];
-		}				_pipes;
 
 		// CGInboxEvent	*_CGInbox;
 

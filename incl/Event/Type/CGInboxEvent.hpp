@@ -16,7 +16,7 @@ class CGInboxEvent : public Event
 		// CGInboxEvent() = default;
 		CGInboxEvent(CGInboxEvent const &) = delete;
 		CGInboxEvent(CGInboxEvent &&) = delete;
-		CGInboxEvent(int fd, ClientEvent &client);
+		CGInboxEvent(int fd, ClientEvent &client, Epoll &epoll, Config::Listener const &config);
 		~CGInboxEvent();
 
 	private:

@@ -1,7 +1,7 @@
 #include "CGInboxEvent.hpp"
 
-CGInboxEvent::CGInboxEvent(int fd, ClientEvent &client)
-	:	Event(fd, Epoll::Events::In | Epoll::Events::RdH)
+CGInboxEvent::CGInboxEvent(int fd, ClientEvent &client, Epoll &epoll, Config::Listener const &config)
+	:	Event(fd, Epoll::Events::In | Epoll::Events::RdH, epoll, config)
 	,	r_client(client)
 {}
 

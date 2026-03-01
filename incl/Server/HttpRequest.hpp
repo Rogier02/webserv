@@ -30,7 +30,10 @@ namespace Http {
 			// authorisation, from, if-modified-since, referer, user-agent
 
 		public:
-			int		parse(std::string request);
+			int		parseHead(std::string const &requestHead);
+			int		setEntityBody(std::string const &requestEntity);
+
+		private:
 			int		parseRequestLine(std::string const &line);
 			int		parseEntityBody(std::istream &stream);
 			int		parseHeaders(std::istream &stream, std::string &line);

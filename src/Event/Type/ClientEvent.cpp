@@ -2,6 +2,7 @@
 
 ClientEvent::ClientEvent(int socketFd, Epoll &epoll, Config::Listener const &config)
 	:	Event(socketFd, Epoll::Events::In | Epoll::Events::RdH, epoll, config)
+	,	_headersParsed(false)
 {
 	std::cout << "Client " << data.fd << " \e[34mConstructed\e[0m\n";
 }
@@ -14,27 +15,35 @@ ClientEvent::~ClientEvent()
 void
 ClientEvent::_in()
 {
-	ssize_t	recieved = Socket::recv(data.fd, _requestBuffer);
+	const ssize_t	received = Socket::recv(data.fd, _requestBuffer);
 
-	if (recieved == 0) {
-		_signal = Signal::Close;
-		return;
+	if (_headersParsed == false) {
+		const std::size_t	headerEnd = _requestBuffer.find("\r\n\r\n") + 4;
+
+		if (received == 0)
+			return (EventHandlers::erase(data.fd));
+
+		if (headerEnd == std::string::npos)
+			return;
+
+		if (_request.parseHead(_requestBuffer.substr(0, headerEnd)) == -1)
+			_response.err(400);
+		_requestBuffer.erase(0, headerEnd);
+		_headersParsed = true;
 	}
-
-	if (_requestBuffer.find("\r\n\r\n") == std::string::npos)
-		return;
-
-	// TODO: if content-length given, wait to recv whole request body
-	std::cout << "\n\n" << _requestBuffer << "\n";
-
-	if (_request.parse(std::move(_requestBuffer)) == -1) // leaves buffer empty
-		_response.err(400);
-
-	std::cout << "\n\n" << _request.toString() << "\n";
-
-	// Process request, just don't block by waiting for IO like CGI
-	_processRequest();
-
+	if (_headersParsed == true) {
+		switch (EasyPrint(_request.setEntityBody(_requestBuffer))) {
+			case -1:
+				_response.err(400);
+				break;
+			case 0:
+				return;
+			default:
+				// std::cout << "\n\n" << _requestBuffer << "\n";
+				std::cout << "\n\n" << _request.toString() << "\n";
+				_processRequest();
+		}
+	}
 	_responseBuffer = _response.toString();
 	_mod(Epoll::Events::Out | Epoll::Events::RdH);
 }
@@ -46,7 +55,7 @@ ClientEvent::_out()
 
 	if (sent == -1) {
 		if (!(errno == EAGAIN || errno == EWOULDBLOCK))
-			_signal = Signal::Close;
+			EventHandlers::erase(data.fd);
 		return;
 	}
 
@@ -54,7 +63,7 @@ ClientEvent::_out()
 
 	if (_responseBuffer.empty()) {
 		std::cout << "Client " << data.fd << " \e[32mCompleted Request.\e[0m\n";
-		_signal = Signal::Close;
+		EventHandlers::erase(data.fd);
 	}
 }
 
@@ -185,7 +194,7 @@ ClientEvent::_get(
 	if (_target.file == "/")
 		_target.file = location.index;
 
-	if (_target.file.ends_with(".py"))
+	if (_target.file.ends_with(".py"))// obviously change this condition
 		return (_cgi(location));
 
 	std::string	path			= "." + _target.root + _target.file;
@@ -206,9 +215,11 @@ ClientEvent::_post(
 	Config::Listener::Location const &location)
 {
 	if (_target.file == "/")
-		return (_response.err(403));
+		return (_response.err(403));// make temporary files instead
 
 	std::string		path = "." + _target.root + _target.file;
+	// overwrite or append existing files?
+
 	std::ofstream	outfile(path);
 
 	if (!outfile.is_open())
@@ -223,10 +234,12 @@ void
 ClientEvent::_delete(
 	Config::Listener::Location const &location)
 {
-	if (_target.file == "/")// probably needs more confirmation that root + file is a directory
+	if (_target.file == "/")
 		return (_response.err(403));
 
 	std::string		path = "." + _target.root + _target.file;
+
+	// forbid removing directories and maybe some other stuff
 
 	if (std::remove(path.c_str()) == -1)
 		return (_response.err(500));

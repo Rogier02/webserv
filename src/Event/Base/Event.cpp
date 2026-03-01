@@ -32,10 +32,7 @@ void	Event::_out() {}
 void
 Event::_mod(u_int32_t eventTypes)
 {
-	epoll_event	event;
+	events	= eventTypes;
 
-	event.data.fd	= data.fd;
-	event.events	= eventTypes;
-
-	EasyThrow(r_epoll.ctl(Epoll::Ctl::Mod, event));
+	EasyThrow(r_epoll.ctl(Epoll::Ctl::Mod, *this));
 }
