@@ -22,7 +22,7 @@ class CGInboxEvent : public Event
 	private:
 		std::string	_outputBuffer;
 
-		ClientEvent const	&r_client;
+		ClientEvent	&r_client;
 
 	private:
 		void	_in() override;

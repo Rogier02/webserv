@@ -9,9 +9,8 @@ ListenEvent::_in()
 {
 	int	socketFd = Socket::accept(data.fd);
 
-	ClientEvent	&client =
-		EventHandlers::create<ClientEvent>(
-			socketFd, r_epoll, r_config);
+	EventHandlers::create<ClientEvent>(
+		socketFd, r_epoll, r_config);
 
-	std::cout << "Client " << client.data.fd << " \e[33mSuccessfully Connected.\e[0m\n";
+	std::cout << "Client " << socketFd << " \e[33mSuccessfully Connected.\e[0m\n";
 }

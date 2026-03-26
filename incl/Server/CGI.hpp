@@ -1,10 +1,12 @@
 #ifndef	CGI_HPP
 # define CGI_HPP
 
+// C
+# include <sys/wait.h>
 // C++
-#include <string>
-#include <map>
-#include <vector>
+# include <string>
+# include <map>
+# include <vector>
 // webserv
 # include "HttpRequest.hpp"
 # include "HttpResponse.hpp"

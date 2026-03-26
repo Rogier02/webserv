@@ -13,7 +13,7 @@ Event::Event(int fd, u_int32_t eventTypes, Epoll &epoll, Config::Listener const 
 Event::~Event()
 {
 	r_epoll.ctl(Epoll::Ctl::Del, data.fd);
-	close(data.fd);
+	::close(data.fd);
 }
 
 void

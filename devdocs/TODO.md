@@ -1,19 +1,21 @@
-CGI error handling
+CGI: error handling
+	- what to do if execve returns
+	- maybe signal handling?
 
-ClientEvent Request Processing
-	GET, POST, DELETE methods
-	headers.....
-
-CGI (parent) Event with pipe read fd
-	sends output directly to ClientEvent so it can build the response and start sending
+CGInbox:
+	- apparently don't use ::recv() on a pipe?
+	- parse CGI output
+	- handle errors, pass them on to ClientEvent
 
 Timeout clients
 
-Receive entity body if content length > 0
+Error Pages: default & given general architecture revision
 
-new Index page
+Index pages: make em pretty and usable
 
-Laura:	
+LOG better: more consistently, more verbosely, less messy
+
+Laura:
 		validate headers if nodig
 		validation config checken of gevalidate moet worden of map bestaat etc etc
 		config parser checken of alles werkt (eind project)

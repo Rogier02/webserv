@@ -11,7 +11,7 @@
 # include "EventHandlers.hpp"
 # include "HttpRequest.hpp"
 # include "HttpResponse.hpp"
-# include "CGI.hpp"
+# include "CGI2.hpp"
 # include "CGInboxEvent.hpp"
 # include "Logger.hpp"
 # include "IO.hpp"
@@ -23,6 +23,12 @@ class ClientEvent : public Event
 	public:
 		using	LocationMap	= std::map<std::string, Config::Listener::Location>;
 		using	PageMap		= std::map<u_int16_t, std::string>;
+		struct	Target	{
+			std::string	location;
+			std::string	root;
+			std::string	file;
+			std::string	extension;
+		};
 
 	public:
 		// ClientEvent() = default;
@@ -40,29 +46,29 @@ class ClientEvent : public Event
 
 		bool			_headersParsed;
 
-		struct	Target	{
-			std::string	location;
-			std::string	root;
-			std::string	file;
-		}				_target;
+		Target			_target;
 
-		// CGInboxEvent	*_CGInbox;
+		pid_t			_cgild;
+
+	public:
+		void	youHaveGotMail(std::string &CGIoutput);
 
 	private:
 		void	_in() override;
 		void	_out() override;
 
 		void	_processRequest();
+		void	_finalise();
 
+		void	_cgi(Config::Listener::Location const &location);
 		void	_get(Config::Listener::Location const &location);
 		void	_post(Config::Listener::Location const &location);
 		void	_delete(Config::Listener::Location const &location);
-		void	_cgi(Config::Listener::Location const &location);
-
-		void	_youHaveGotMail(std::string &CGIoutput);
 
 		int			_URIdentification();
 		std::string	_collapseSlashes(std::string const &rawURI) const;
+
+		char	**setupEnvironment();
 
 		using	Method = std::function<void (Config::Listener::Location const &)>;
 		std::map<std::string, Method>

@@ -9,9 +9,8 @@ Server::Server(Config &config)
 		EasyPrint(socketFd);
 		EasyPrint(listener.port);
 
-		ListenEvent	&listen =
-			EventHandlers::create<ListenEvent>(
-				socketFd, _epoll, listener);
+		EventHandlers::create<ListenEvent>(
+			socketFd, _epoll, listener);
 	}
 }
 

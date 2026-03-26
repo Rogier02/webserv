@@ -6,18 +6,18 @@ namespace	Socket
 	int
 	create(int port)
 	{
-		int	fd = EasyThrow(socket(AddressFamily::Inet, SocketType::Stream, 0));
+		int	fd = EasyThrow(::socket(AddressFamily::Inet, SocketType::Stream, 0));
 
 		int opt = 1;
-		EasyThrow(setsockopt(fd, SocketOptionLevel::Socket, SocketOption::ReuseAddress, &opt, sizeof(opt)));
+		EasyThrow(::setsockopt(fd, SocketOptionLevel::Socket, SocketOption::ReuseAddress, &opt, sizeof(opt)));
 
 		InternetSocketAddress	listenerAddress;
 		listenerAddress.family	= AddressFamily::Inet;
-		listenerAddress.port	= htons(port);
+		listenerAddress.port	= ::htons(port);
 		listenerAddress.address	= InternetAddress::Any;
 
-		EasyThrow(bind(fd, (SocketAddress *)&listenerAddress, sizeof(listenerAddress)));
-		EasyThrow(listen(fd, 5));
+		EasyThrow(::bind(fd, (SocketAddress *)&listenerAddress, sizeof(listenerAddress)));
+		EasyThrow(::listen(fd, 5));
 
 		return (fd);
 	}
@@ -39,14 +39,11 @@ namespace	Socket
 			if (received > 0)
 				dest.append(buffer, received);
 
-			if (received == 0)
+			if (received == -1
+			&&	errno == EAGAIN)
 				return (0);
 
-			if (received == -1) {
-				if (errno == EAGAIN)
-					return (-1);
-				else return (0);
-			}
+			return (received);
 		}
 	}
 

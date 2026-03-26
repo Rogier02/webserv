@@ -3,6 +3,7 @@
 ClientEvent::ClientEvent(int socketFd, Epoll &epoll, Config::Listener const &config)
 	:	Event(socketFd, Epoll::Events::In | Epoll::Events::RdH, epoll, config)
 	,	_headersParsed(false)
+	,	_cgild(-1)
 {
 	std::cout << "Client " << data.fd << " \e[34mConstructed\e[0m\n";
 }
@@ -18,11 +19,10 @@ ClientEvent::_in()
 	const ssize_t	received = Socket::recv(data.fd, _requestBuffer);
 
 	if (_headersParsed == false) {
-		const std::size_t	headerEnd = _requestBuffer.find("\r\n\r\n") + 4;
-
-		if (received == 0)
+		if (received == -1 || _requestBuffer.empty())
 			return (EventHandlers::erase(data.fd));
 
+		const std::size_t headerEnd = _requestBuffer.find("\r\n\r\n") + 4;
 		if (headerEnd == std::string::npos)
 			return;
 
@@ -39,13 +39,13 @@ ClientEvent::_in()
 			case 0:
 				return;
 			default:
-				// std::cout << "\n\n" << _requestBuffer << "\n";
 				std::cout << "\n\n" << _request.toString() << "\n";
 				_processRequest();
+				if (_cgild > 0)// maybe make a 3-way state anyway, headers, entitybody, cgiwait...
+					return;
 		}
+		_finalise();
 	}
-	_responseBuffer = _response.toString();
-	_mod(Epoll::Events::Out | Epoll::Events::RdH);
 }
 
 void
@@ -65,6 +65,13 @@ ClientEvent::_out()
 		std::cout << "Client " << data.fd << " \e[32mCompleted Request.\e[0m\n";
 		EventHandlers::erase(data.fd);
 	}
+}
+
+void
+ClientEvent::_finalise()
+{
+	_responseBuffer = _response.toString();
+	_mod(Epoll::Events::Out | Epoll::Events::RdH);
 }
 
 std::string
@@ -103,7 +110,7 @@ ClientEvent::_URIdentification()
 		_target.root		= locations.at(URI).root;
 		_target.file		= "/";
 	} else {
-		std::size_t	const	lastSlash = URI.find_last_of('/');
+		std::size_t const	lastSlash = URI.find_last_of('/');
 		std::string const	URIParent = URI.substr(0, lastSlash);
 
 		if (!locations.contains(URIParent))
@@ -112,6 +119,10 @@ ClientEvent::_URIdentification()
 		_target.location	= URIParent;
 		_target.root		= locations.at(URIParent).root;
 		_target.file		= URI.substr(lastSlash);
+
+		std::size_t const	dot	= _target.file.find('.');
+		if (dot != std::string::npos)
+			_target.extension	= _target.file.substr(dot);
 	}
 
 	EasyPrint(_target.root);
@@ -139,52 +150,103 @@ ClientEvent::_processRequest()
 	Methods.at(method)(location);
 }
 
+char **
+ClientEvent::setupEnvironment()
+{
+	std::vector<std::string> _envVariables;
+
+	_envVariables.push_back("REQUEST_METHOD=" + _request.getMethod());
+	_envVariables.push_back("CONTENT_TYPE=" + _request.getRequestHeaderValue("Content-Type")); // TODO:: ROGIER :: doublecheck for this
+	_envVariables.push_back("CONTENT_LENGTH=" + _request.getRequestHeaderValue("Content-Length"));
+	_envVariables.push_back("SCRIPT_NAME=" + _request.getScriptName());
+	_envVariables.push_back("QUERY_STRING=" + _request.getQueryString());
+	_envVariables.push_back("REQUEST_URI=" + _request.getURI());
+	_envVariables.push_back("SERVER_PROTOCOL=" + _request.getVersion());
+	_envVariables.push_back("GATEWAY_INTERFACE=CGI/1.0"); // wordt dit geparsed uit de httpRequest? of is dit vast?
+	_envVariables.push_back("SERVER_NAME=" + r_config.name);
+	_envVariables.push_back("SERVER_PORT=" + std::to_string(r_config.port));
+	_envVariables.push_back("SERVER_ADDR=" + r_config.host);
+
+	// add HTTP headers as CGI variables
+
+	const Http::HeaderMap	&headers = _request.getRequestHeaders();
+	for (Http::HeaderMap::const_iterator it = headers.begin(); it != headers.end(); ++it)
+	{
+		const std::string& headerName  = it->first;
+		const std::string& headerValue = it->second;
+		if (headerName == "Content-Type" || headerName == "Content-Length" || headerName == "Host")
+			continue;
+
+		std::string cgiVarName = "HTTP_";
+		for (char c : headerName) {
+			if (c == '-')
+				cgiVarName += '_';
+			else
+				cgiVarName += std::toupper(c);
+		}
+		_envVariables.push_back(cgiVarName + "=" + headerValue);
+	}
+
+	char **env = new char*[_envVariables.size() + 1];
+	for (size_t i = 0; i < _envVariables.size(); i++) {
+		env[i] = new char[_envVariables[i].length() + 1];
+		std::strcpy(env[i], _envVariables[i].c_str());
+	}
+	env[_envVariables.size()] = NULL;
+
+	return (env);
+}
+
 void
 ClientEvent::_cgi(
 	Config::Listener::Location const &location)
 {
-	std::string	extension = _target.file.substr(_target.file.find('.'));
-
-	if (location.cgiEXT.find(extension) == std::string::npos)
+	if (location.cgiEXT.find(_target.extension) == std::string::npos)
 		return (_response.err(403));
+
+	if (CGI2::SupportedExtensions.contains(_target.extension) == false)
+		return (_response.err(501));
 
 	if (location.cgiPath.empty())
 		return (_response.err(403));
 
-	int		inPipe[2];
-	int		outPipe[2];
-	pid_t	pid;
-
-	if (::pipe(inPipe) == -1)
+	int	pipe[2];
+	if (::pipe(pipe) == -1)
 		return (_response.err(500));
-	if (::pipe(outPipe) == -1) {
-		close(inPipe[0]);
-		close(inPipe[1]);
-		return (_response.err(500));
-	}
 
-	pid = fork();
-	if (pid == -1) {
-		close(inPipe[0]);
-		close(inPipe[1]);
-		close(outPipe[0]);
-		close(outPipe[1]);
+	_cgild = fork();
+	if (_cgild == -1) {
+		::close(pipe[0]);
+		::close(pipe[1]);
 		return (_response.err(500));
 	}
 
-	if (pid == 0)
-	{
-		close(inPipe[1]);
-		close(outPipe[0]);
-		// cgiexec;
+	if (_cgild == 0) {
+		::close(pipe[0]);
+		::dup2(pipe[1], STDOUT_FILENO);
+		::dup2(pipe[1], STDERR_FILENO);
+		{
+			std::string	interpreter	= CGI2::SupportedExtensions.at(_target.extension);
+			std::string	path		= "." + _target.root + _target.file;
+
+			char	**env	= setupEnvironment();
+			char	*argv[]	= {
+				(char *)interpreter.c_str(),
+				(char *)path.c_str(),
+				NULL
+			};
+
+			execve(argv[0], argv, env);
+		}
+		exit(0);
+	} else {
+		::close(pipe[1]);
+
+		EventHandlers::create<CGInboxEvent>(
+			pipe[0], *this, r_epoll, r_config);
+
+		std::cout << "CGInbox " << pipe[0] << " \e[33mSuccessfully Created.\e[0m\n";
 	}
-
-	close(inPipe[0]);
-	close(outPipe[1]);
-
-	// create CGInbox event for reading from the outPipe
-	// forward entityBody to inPipe
-	// make yougotmail func to probably also waitpid()
 }
 
 void
@@ -215,7 +277,7 @@ ClientEvent::_post(
 	Config::Listener::Location const &location)
 {
 	if (_target.file == "/")
-		return (_response.err(403));// make temporary files instead
+		return (_response.err(403));// make temporary files instead?
 
 	std::string		path = "." + _target.root + _target.file;
 	// overwrite or append existing files?
@@ -243,4 +305,21 @@ ClientEvent::_delete(
 
 	if (std::remove(path.c_str()) == -1)
 		return (_response.err(500));
+}
+
+void
+ClientEvent::youHaveGotMail(std::string &CGIOutput)
+{
+	// parse CGI output
+
+	EasyPrint(CGIOutput);
+
+	_response.setEntityBody(CGIOutput);
+
+	int	status;
+	waitpid(_cgild, &status, 0);
+	if (WIFEXITED(status) == false || WEXITSTATUS(status) != 0)
+		_response.err(500);
+
+	_finalise();
 }

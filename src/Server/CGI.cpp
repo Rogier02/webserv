@@ -24,7 +24,7 @@ namespace CGI
 			if (path.find(ext.first) != std::string::npos)
 				return (ext.first);
 		return ("");
-	};
+	}
 
 	std::string
 	getCgiInterpreter(std::string const &extension)
@@ -33,7 +33,7 @@ namespace CGI
 		if (it != SupportedExtensions.end())
 			return(it->second);
 		return ("");
-	};
+	}
 
 	std::string
 	execute(Http::Request& request)
@@ -56,7 +56,7 @@ namespace CGI
 
 		// Write function to clean up env
 		return (output);
-	};
+	}
 
 	//TODO: REMOVE SETENV and add own implementation
 	char **
@@ -104,7 +104,7 @@ namespace CGI
 		env[_envVariables.size()] = NULL;
 
 		return (env);
-	};
+	}
 
 	std::string
 	executeScript(
@@ -192,7 +192,6 @@ namespace CGI
 			// Wait for child process to complete
 			int status;
 			waitpid(pid, &status, 0);
-				return (parseCgiResponse(output));
 
 			// Check if child exited normally
 			if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
