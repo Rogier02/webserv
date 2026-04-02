@@ -2,9 +2,7 @@ CGI: error handling
 	- what to do if execve returns
 	- maybe signal handling?
 
-CGInbox:
-	- parse CGI output
-	- handle errors, pass them on to ClientEvent
+Request::parseHead(): investigate odd behaviour
 
 Timeout clients
 

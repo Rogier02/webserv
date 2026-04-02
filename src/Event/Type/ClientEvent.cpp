@@ -176,7 +176,7 @@ ClientEvent::_post(
 {
 	std::string	path = "." + _target.root + _target.file;
 
-	if (_target.file != "/") {
+	if (_target.file == "/") {
 		for (::size_t i = 0; i < 100; ++i)
 		{
 			path = "." + _target.root + "/temp_file_" + std::to_string(i);
@@ -185,6 +185,7 @@ ClientEvent::_post(
 		}
 	}
 
+	EasyPrint(path);
 	std::ofstream	outfile(path);
 
 	if (!outfile.is_open())

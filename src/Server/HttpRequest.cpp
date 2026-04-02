@@ -42,7 +42,7 @@ namespace Http {
 	}
 
 	int
-	Request::parseHead(std::string const &request)
+	Request::parseHead(std::string const &request) // this returns -1 unnecessarily, and parses entitybody why?
 	{
 		std::istringstream stream(request);
 		std::string line;
