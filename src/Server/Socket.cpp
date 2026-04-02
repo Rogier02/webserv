@@ -28,27 +28,21 @@ namespace	Socket
 		return (EasyThrow(::accept(fd, nullptr, nullptr)));
 	}
 
-	ssize_t
+	::ssize_t
 	recv(int fd, std::string &dest)
 	{
-		char	buffer[1024];
+		char	buffer[bufferSize];
 
-		while (true) {
-			ssize_t	received = ::recv(fd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
+		::ssize_t	received = EasyThrow(::recv(fd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT));
 
-			if (received > 0)
-				dest.append(buffer, received);
+		if (received > 0)
+			dest.append(buffer, received);
 
-			if (received == -1
-			&&	errno == EAGAIN)
-				return (0);
-
-			return (received);
-		}
+		return (received);
 	}
 
-	ssize_t
-	send(int fd, const std::string& data)
+	::ssize_t
+	send(int fd, const std::string &data)
 	{
 		return(EasyThrow(::send(fd, data.c_str(), data.length(), 0)));
 	}

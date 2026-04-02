@@ -10,20 +10,22 @@
 
 # include "WrapIn.hpp"
 
-using	SocketType				= WrapIn::SocketType;
-using	SocketOptionLevel		= WrapIn::SocketOptionLevel;
-using	SocketOption			= WrapIn::SocketOption;
-using	SocketAddress			= WrapIn::SocketAddress;
-using	InternetAddress			= WrapIn::InternetAddress;
-using	AddressFamily			= WrapIn::AddressFamily;
-using	InternetSocketAddress	= WrapIn::InternetSocketAddress;
+using SocketType			= WrapIn::SocketType;
+using SocketOptionLevel		= WrapIn::SocketOptionLevel;
+using SocketOption			= WrapIn::SocketOption;
+using SocketAddress			= WrapIn::SocketAddress;
+using InternetAddress		= WrapIn::InternetAddress;
+using AddressFamily			= WrapIn::AddressFamily;
+using InternetSocketAddress	= WrapIn::InternetSocketAddress;
 
 namespace	Socket
 {
+	constexpr std::size_t	bufferSize = 42;
+
 	int			create(int port);
 	int			accept(int fd);
-	ssize_t		recv(int fd, std::string &dest);
-	ssize_t		send(int fd, std::string const &data);
+	::ssize_t	recv(int fd, std::string &dest);
+	::ssize_t	send(int fd, std::string const &data);
 };
 
 #endif

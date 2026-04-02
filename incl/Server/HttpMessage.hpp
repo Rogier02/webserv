@@ -6,8 +6,8 @@
 # include <map>
 
 namespace Http {
-	constexpr	std::string	SP = " ";
-	constexpr	std::string CRLF = "\r\n";
+	constexpr std::string	SP = " ";
+	constexpr std::string	CRLF = "\r\n";
 
 	using	HeaderMap = std::map<std::string, std::string>;
 

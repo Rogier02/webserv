@@ -172,7 +172,7 @@ namespace CGI
 
 			// Write request body to childs stdin (for POST request)
 			if (!requestBody.empty()) {
-				ssize_t bytesWritten = write(stdinPipe[1], requestBody.c_str(), requestBody.length());
+				::ssize_t bytesWritten = write(stdinPipe[1], requestBody.c_str(), requestBody.length());
 				if (bytesWritten == -1) {
 					std::cerr << "Failed to write to CGI stdin" << std::endl;
 				}
@@ -182,7 +182,7 @@ namespace CGI
 			// Read all output form child process
 			std::string output;
 			char buffer[4096];
-			ssize_t nBytes;
+			::ssize_t nBytes;
 
 			while ((nBytes =  read(stdoutPipe[0], buffer, sizeof(buffer))) > 0) {
 				output.append(buffer, nBytes);

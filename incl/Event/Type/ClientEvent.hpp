@@ -21,14 +21,17 @@ class	CGInboxEvent;
 class ClientEvent : public Event
 {
 	public:
-		using	LocationMap	= std::map<std::string, Config::Listener::Location>;
-		using	PageMap		= std::map<u_int16_t, std::string>;
+		using LocationMap	= std::map<std::string, Config::Listener::Location>;
+		using PageMap		= std::map<u_int16_t, std::string>;
 		struct	Target	{
 			std::string	location;
 			std::string	root;
 			std::string	file;
 			std::string	extension;
 		};
+
+	private:
+		static const std::string	HeaderEnd;
 
 	public:
 		// ClientEvent() = default;
@@ -68,7 +71,8 @@ class ClientEvent : public Event
 		int			_URIdentification();
 		std::string	_collapseSlashes(std::string const &rawURI) const;
 
-		char	**setupEnvironment();
+		char	**setupEnvironment() const;
+		void	parseMailHeaders(std::string const &headerStream);
 
 		using	Method = std::function<void (Config::Listener::Location const &)>;
 		std::map<std::string, Method>

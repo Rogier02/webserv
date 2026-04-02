@@ -3,7 +3,6 @@ CGI: error handling
 	- maybe signal handling?
 
 CGInbox:
-	- apparently don't use ::recv() on a pipe?
 	- parse CGI output
 	- handle errors, pass them on to ClientEvent
 

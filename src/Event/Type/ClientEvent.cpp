@@ -1,7 +1,9 @@
 #include "ClientEvent.hpp"
 
+const std::string	ClientEvent::HeaderEnd = Http::CRLF + Http::CRLF;
+
 ClientEvent::ClientEvent(int socketFd, Epoll &epoll, Config::Listener const &config)
-	:	Event(socketFd, Epoll::Events::In | Epoll::Events::RdH, epoll, config)
+	:	Event(socketFd, Epoll::Events::In, epoll, config)
 	,	_headersParsed(false)
 	,	_cgild(-1)
 {
@@ -16,19 +18,17 @@ ClientEvent::~ClientEvent()
 void
 ClientEvent::_in()
 {
-	const ssize_t	received = Socket::recv(data.fd, _requestBuffer);
+	if (Socket::recv(data.fd, _requestBuffer) == 0)
+		return (EventHandlers::erase(data.fd));
 
 	if (_headersParsed == false) {
-		if (received == -1 || _requestBuffer.empty())
-			return (EventHandlers::erase(data.fd));
-
-		const std::size_t headerEnd = _requestBuffer.find("\r\n\r\n") + 4;
-		if (headerEnd == std::string::npos)
+		const std::size_t headerEndPos = _requestBuffer.find(HeaderEnd);
+		if (headerEndPos == std::string::npos)
 			return;
 
-		if (_request.parseHead(_requestBuffer.substr(0, headerEnd)) == -1)
+		if (_request.parseHead(_requestBuffer.substr(0, headerEndPos)) == -1)
 			_response.err(400);
-		_requestBuffer.erase(0, headerEnd);
+		_requestBuffer.erase(0, headerEndPos + HeaderEnd.length());
 		_headersParsed = true;
 	}
 	if (_headersParsed == true) {
@@ -41,8 +41,8 @@ ClientEvent::_in()
 			default:
 				std::cout << "\n\n" << _request.toString() << "\n";
 				_processRequest();
-				if (_cgild > 0)// maybe make a 3-way state anyway, headers, entitybody, cgiwait...
-					return;
+				if (_cgild > 0)
+					return _mod(0);
 		}
 		_finalise();
 	}
@@ -51,13 +51,10 @@ ClientEvent::_in()
 void
 ClientEvent::_out()
 {
-	ssize_t	sent = Socket::send(data.fd, _responseBuffer);
+	::ssize_t	sent = Socket::send(data.fd, _responseBuffer);
 
-	if (sent == -1) {
-		if (!(errno == EAGAIN || errno == EWOULDBLOCK))
-			EventHandlers::erase(data.fd);
+	if (sent == 0)
 		return;
-	}
 
 	_responseBuffer.erase(0, sent);
 
@@ -71,7 +68,7 @@ void
 ClientEvent::_finalise()
 {
 	_responseBuffer = _response.toString();
-	_mod(Epoll::Events::Out | Epoll::Events::RdH);
+	_mod(Epoll::Events::Out);
 }
 
 std::string
@@ -150,9 +147,70 @@ ClientEvent::_processRequest()
 	Methods.at(method)(location);
 }
 
+void
+ClientEvent::_get(
+	Config::Listener::Location const &location)
+{
+	if (_target.file == "/")
+		_target.file = location.index;
+
+	if (CGI2::SupportedExtensions.contains(_target.extension))
+		return (_cgi(location));
+
+	std::string	path			= "." + _target.root + _target.file;
+	std::string	indexContent	= IO::getFileContent(path);
+
+	std::cout	<< "GET " << _request.getURI()
+				<< " <" << path << "> "
+				<< ((indexContent.empty()) ? "(empty)" : "") << "\n";
+
+	if (indexContent.empty())
+		_response.err(404);
+	else
+		_response.setEntityBody(indexContent);
+}
+
+void
+ClientEvent::_post(
+	Config::Listener::Location const &location)
+{
+	std::string	path = "." + _target.root + _target.file;
+
+	if (_target.file != "/") {
+		for (::size_t i = 0; i < 100; ++i)
+		{
+			path = "." + _target.root + "/temp_file_" + std::to_string(i);
+			if (!IO::exists(path))
+				break;
+		}
+	}
+
+	std::ofstream	outfile(path);
+
+	if (!outfile.is_open())
+		return (_response.err(500));
+	_response.setStatus(201);
+
+	outfile << _request.getEntityBody();
+	outfile.close();
+}
+
+void
+ClientEvent::_delete(
+	Config::Listener::Location const &location)
+{
+	if (_target.file == "/")
+		return (_response.err(403));
+
+	std::string		path = "." + _target.root + _target.file;
+
+	if (std::remove(path.c_str()) == -1)
+		return (_response.err(500));
+}
+
 char **
 ClientEvent::setupEnvironment()
-{
+const {
 	std::vector<std::string> _envVariables;
 
 	_envVariables.push_back("REQUEST_METHOD=" + _request.getMethod());
@@ -204,9 +262,6 @@ ClientEvent::_cgi(
 	if (location.cgiEXT.find(_target.extension) == std::string::npos)
 		return (_response.err(403));
 
-	if (CGI2::SupportedExtensions.contains(_target.extension) == false)
-		return (_response.err(501));
-
 	if (location.cgiPath.empty())
 		return (_response.err(403));
 
@@ -215,6 +270,7 @@ ClientEvent::_cgi(
 		return (_response.err(500));
 
 	_cgild = fork();
+EasyPrint(_cgild);
 	if (_cgild == -1) {
 		::close(pipe[0]);
 		::close(pipe[1]);
@@ -222,6 +278,7 @@ ClientEvent::_cgi(
 	}
 
 	if (_cgild == 0) {
+		EasyPrint(_target.file);
 		::close(pipe[0]);
 		::dup2(pipe[1], STDOUT_FILENO);
 		::dup2(pipe[1], STDERR_FILENO);
@@ -250,76 +307,73 @@ ClientEvent::_cgi(
 }
 
 void
-ClientEvent::_get(
-	Config::Listener::Location const &location)
+ClientEvent::parseMailHeaders(std::string const &headers)
 {
-	if (_target.file == "/")
-		_target.file = location.index;
+	std::istringstream	headerStream(headers);
 
-	if (_target.file.ends_with(".py"))// obviously change this condition
-		return (_cgi(location));
+	std::string		headerLine;
+	std::string		statusCode = "200";
+	Http::HeaderMap	cgiHeaders;
 
-	std::string	path			= "." + _target.root + _target.file;
-	std::string	indexContent	= IO::readFile(path);
+	while(std::getline(headerStream, headerLine))
+	{
+		if (!headerLine.empty() && headerLine.back() == '\r')
+			headerLine.pop_back();
 
-	std::cout	<< "GET " << _request.getURI()
-				<< " <" << path << "> "
-				<< ((indexContent.empty()) ? "(empty)" : "") << "\n";
+		if (headerLine.empty())
+			continue;
 
-	if (indexContent.empty())
-		_response.err(404);
-	else
-		_response.setEntityBody(indexContent);
+		size_t colonPos = headerLine.find(':');
+		if(colonPos == std::string::npos)
+			continue;
+
+		std::string key = headerLine.substr(0, colonPos);
+		std::string value = headerLine.substr(colonPos + 1);
+
+		size_t firstNonSpace = value.find_first_not_of(" \t");
+		if (firstNonSpace != std::string::npos)
+			value = value.substr(firstNonSpace);
+
+		if (key == "Status") {
+			size_t spacePos = value.find(' ');
+			statusCode =	(spacePos != std::string::npos)
+							? value.substr(0, spacePos)
+							: value;
+		} else if (key == "Location") {
+			cgiHeaders["Location"] = value;
+		} else if (key != "Content-Type" && key != "Content-Length") {
+			cgiHeaders[key] = value;
+		}
+	}
 }
 
 void
-ClientEvent::_post(
-	Config::Listener::Location const &location)
+ClientEvent::youHaveGotMail(std::string &cgiOutput)
 {
-	if (_target.file == "/")
-		return (_response.err(403));// make temporary files instead?
+	{	int		status;
+		pid_t	pid = waitpid(_cgild, &status, WNOHANG);
+		if (pid == 0)
+			LOGGER(log("cgi child: zombie process now"));
+		if (WIFEXITED(status) == false)
+			LOGGER(log("cgi child: did not exit"));
+		if (WIFEXITED(status) == true)
+			LOGGER(log("cgi child: exited with code " + std::to_string(WEXITSTATUS(status))));
+		if (WIFSIGNALED(status) == true)
+			LOGGER(log("cgi child: signaled " + std::to_string(WTERMSIG(status))));
+	}
 
-	std::string		path = "." + _target.root + _target.file;
-	// overwrite or append existing files?
+	EasyPrint(cgiOutput);
+	LOGGER(startBlock("CGI Output (incl. headers)"));
+	LOGGER(log(cgiOutput));
+	LOGGER(endBlock());
 
-	std::ofstream	outfile(path);
+	size_t	headerEndPos = cgiOutput.find(HeaderEnd);
+	if (headerEndPos != std::string::npos) {
+		parseMailHeaders(cgiOutput.substr(0, headerEndPos));
+		cgiOutput.erase(0, headerEndPos + HeaderEnd.length());
+	}
 
-	if (!outfile.is_open())
-		return (_response.err(500));
-	_response.setStatus(201);
-
-	outfile << _request.getEntityBody();
-	outfile.close();
-}
-
-void
-ClientEvent::_delete(
-	Config::Listener::Location const &location)
-{
-	if (_target.file == "/")
-		return (_response.err(403));
-
-	std::string		path = "." + _target.root + _target.file;
-
-	// forbid removing directories and maybe some other stuff
-
-	if (std::remove(path.c_str()) == -1)
-		return (_response.err(500));
-}
-
-void
-ClientEvent::youHaveGotMail(std::string &CGIOutput)
-{
-	// parse CGI output
-
-	EasyPrint(CGIOutput);
-
-	_response.setEntityBody(CGIOutput);
-
-	int	status;
-	waitpid(_cgild, &status, 0);
-	if (WIFEXITED(status) == false || WEXITSTATUS(status) != 0)
-		_response.err(500);
+	_response.setEntityBody(cgiOutput);
 
 	_finalise();
 }

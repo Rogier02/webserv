@@ -1,7 +1,7 @@
 #include "ListenEvent.hpp"
 
 ListenEvent::ListenEvent(int socketFd, Epoll &epoll, Config::Listener const &config)
-	:	Event(socketFd, Epoll::Events::In | Epoll::Events::RdH, epoll, config)
+	:	Event(socketFd, Epoll::Events::In, epoll, config)
 {}
 
 void
