@@ -256,10 +256,8 @@ void Parse::report()
 	if (_log.empty())
 		return ;
 
-	LOGGER(startBlock("Config File Errors"));
 	for (std::string message : _log)
-		LOGGER(log(message));
-	LOGGER(endBlock());
+		LOG(Info, message);
 
 	throw std::runtime_error(std::string("Config File Errors detected, see \"") + Logger::FileName + "\" for detailed error messages");
 }
@@ -281,5 +279,6 @@ Parse::unexpected(std::string const &expected, std::string const &found)
 std::string
 Parse::unexpectedTokenCount(std::string expected, size_t found)
 {
-	return ("Unexpected token count: " + std::to_string(found) + " (expected: " + expected + ") on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
+	return ("Unexpected token count: " + std::to_string(found) + " (expected: " + expected + ")"
+		+ "on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
 }

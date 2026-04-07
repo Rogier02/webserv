@@ -47,7 +47,7 @@ class ClientEvent : public Event
 		std::string		_requestBuffer;
 		std::string		_responseBuffer;
 
-		bool			_headersParsed;
+		bool			_receivedHead;
 
 		Target			_target;
 
@@ -60,13 +60,17 @@ class ClientEvent : public Event
 		void	_in() override;
 		void	_out() override;
 
-		void	_processRequest();
-		void	_finalise();
-
 		void	_cgi(Config::Listener::Location const &location);
 		void	_get(Config::Listener::Location const &location);
 		void	_post(Config::Listener::Location const &location);
 		void	_delete(Config::Listener::Location const &location);
+
+	private:
+		void	_receiveHead();
+		void	_receiveBody();
+
+		void	_processRequest();
+		void	_finalise();
 
 		int			_URIdentification();
 		std::string	_collapseSlashes(std::string const &rawURI) const;
@@ -74,6 +78,7 @@ class ClientEvent : public Event
 		char	**setupEnvironment() const;
 		void	parseMailHeaders(std::string const &headerStream);
 
+	private:
 		using	Method = std::function<void (Config::Listener::Location const &)>;
 		std::map<std::string, Method>
 		Methods = {
@@ -89,6 +94,21 @@ class ClientEvent : public Event
 			{"DELETE",
 				[this](Config::Listener::Location const &location)
 				{ _delete(location); }},
+		};
+
+	private:
+		class	HttpError : std::exception {
+			public:
+				HttpError(u_int16_t = 0);
+				~HttpError() = default;
+
+			private:
+				u_int16_t	_status;
+				std::string	_what;
+
+			public:
+				u_int16_t	status() const;
+				const char	*what() const noexcept override;
 		};
 };
 

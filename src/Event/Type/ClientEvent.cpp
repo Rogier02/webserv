@@ -4,7 +4,7 @@ const std::string	ClientEvent::HeaderEnd = Http::CRLF + Http::CRLF;
 
 ClientEvent::ClientEvent(int socketFd, Epoll &epoll, Config::Listener const &config)
 	:	Event(socketFd, Epoll::Events::In, epoll, config)
-	,	_headersParsed(false)
+	,	_receivedHead(false)
 	,	_cgild(-1)
 {
 	std::cout << "Client " << data.fd << " \e[34mConstructed\e[0m\n";
@@ -18,33 +18,19 @@ ClientEvent::~ClientEvent()
 void
 ClientEvent::_in()
 {
-	if (Socket::recv(data.fd, _requestBuffer) == 0)
-		return (EventHandlers::erase(data.fd));
-
-	if (_headersParsed == false) {
-		const std::size_t headerEndPos = _requestBuffer.find(HeaderEnd);
-		if (headerEndPos == std::string::npos)
-			return;
-
-		if (_request.parseHead(_requestBuffer.substr(0, headerEndPos)) == -1)
-			_response.err(400);
-		_requestBuffer.erase(0, headerEndPos + HeaderEnd.length());
-		_headersParsed = true;
-	}
-	if (_headersParsed == true) {
-		switch (EasyPrint(_request.setEntityBody(_requestBuffer))) {
-			case -1:
-				_response.err(400);
-				break;
-			case 0:
-				return;
-			default:
-				std::cout << "\n\n" << _request.toString() << "\n";
-				_processRequest();
-				if (_cgild > 0)
-					return _mod(0);
-		}
+	try	{
+		if (Socket::recv(data.fd, _requestBuffer) == 0)
+			return (EventHandlers::erase(data.fd));
+		if (!_receivedHead)
+			_receiveHead();
+		if (_receivedHead)
+			_receiveBody();
+	} catch (HttpError const &e) {
+		std::cerr << "\e[31mError:\e[0m " << e.what() << std::endl;
+		LOG(Error, e.what());
+		_response.err(e.status());
 		_finalise();
+		// return;
 	}
 }
 
@@ -59,9 +45,53 @@ ClientEvent::_out()
 	_responseBuffer.erase(0, sent);
 
 	if (_responseBuffer.empty()) {
-		std::cout << "Client " << data.fd << " \e[32mCompleted Request.\e[0m\n";
+		LOG(Info, "Client " + std::to_string(data.fd) + " Completed Response");
+
+		std::cout << "Client " << data.fd << " \e[32mCompleted Response.\e[0m\n";
 		EventHandlers::erase(data.fd);
 	}
+}
+
+void
+ClientEvent::_receiveHead() {
+	const std::size_t headerEndPos = _requestBuffer.find(HeaderEnd);
+
+	if (headerEndPos == std::string::npos)
+		return;
+
+	_receivedHead = true;
+
+	std::string	head(_requestBuffer.substr(0, headerEndPos));
+	_requestBuffer.erase(0, headerEndPos + HeaderEnd.length());
+
+	if (_request.parseHead(head) == -1)
+		throw HttpError(400);
+
+	LOG(Debug, "Client " + std::to_string(data.fd) + " Received Good Head");
+}
+
+void
+ClientEvent::_receiveBody() {
+	int	bytesSet = _request.setEntityBody(_requestBuffer);
+
+	EasyPrint(bytesSet);
+	if (bytesSet == -1)
+		throw HttpError(400);
+	if (bytesSet == 0)
+		return;
+
+	LOG(Debug, "Client " + std::to_string(data.fd) + " Received Full Body");
+
+	_processRequest();
+
+	EasyPrint(_cgild);
+	(_cgild == -1)
+	?	_finalise()
+	:	_mod(0)
+	;
+
+	LOG(Debug, "Client " + std::to_string(data.fd) + " Processed Request: "
+		+ ((_cgild == -1) ? "ready to send" : "waiting for CGI"));
 }
 
 void
@@ -134,15 +164,15 @@ ClientEvent::_processRequest()
 	std::string const	&method = _request.getMethod();
 
 	if (!Methods.contains(method))
-		return (_response.err(501));
+		throw HttpError(501);
 
 	if (_URIdentification() == -1)
-		return (_response.err(404));
+		throw HttpError(404);
 
 	Config::Listener::Location const	&location = r_config.locations.at(_target.location);
 
 	if (location.allowedMethods.find(method) == std::string::npos)
-		return (_response.err(403));
+		throw HttpError(403);
 
 	Methods.at(method)(location);
 }
@@ -154,8 +184,10 @@ ClientEvent::_get(
 	if (_target.file == "/")
 		_target.file = location.index;
 
-	if (CGI2::SupportedExtensions.contains(_target.extension))
-		return (_cgi(location));
+	if (CGI2::SupportedExtensions.contains(_target.extension)) {
+		_cgi(location);
+		return;
+	}
 
 	std::string	path			= "." + _target.root + _target.file;
 	std::string	indexContent	= IO::getFileContent(path);
@@ -165,7 +197,7 @@ ClientEvent::_get(
 				<< ((indexContent.empty()) ? "(empty)" : "") << "\n";
 
 	if (indexContent.empty())
-		_response.err(404);
+		throw HttpError(404);
 	else
 		_response.setEntityBody(indexContent);
 }
@@ -189,7 +221,7 @@ ClientEvent::_post(
 	std::ofstream	outfile(path);
 
 	if (!outfile.is_open())
-		return (_response.err(500));
+		throw HttpError(500);
 	_response.setStatus(201);
 
 	outfile << _request.getEntityBody();
@@ -201,12 +233,12 @@ ClientEvent::_delete(
 	Config::Listener::Location const &location)
 {
 	if (_target.file == "/")
-		return (_response.err(403));
+		throw HttpError(403);
 
 	std::string		path = "." + _target.root + _target.file;
 
 	if (std::remove(path.c_str()) == -1)
-		return (_response.err(500));
+		throw HttpError(500);
 }
 
 char **
@@ -261,21 +293,21 @@ ClientEvent::_cgi(
 	Config::Listener::Location const &location)
 {
 	if (location.cgiEXT.find(_target.extension) == std::string::npos)
-		return (_response.err(403));
+		throw HttpError(403);
 
 	if (location.cgiPath.empty())
-		return (_response.err(403));
+		throw HttpError(403);
 
 	int	pipe[2];
 	if (::pipe(pipe) == -1)
-		return (_response.err(500));
+		throw HttpError(500);
 
 	_cgild = fork();
-EasyPrint(_cgild);
+	EasyPrint(_cgild);
 	if (_cgild == -1) {
 		::close(pipe[0]);
 		::close(pipe[1]);
-		return (_response.err(500));
+		throw HttpError(500);
 	}
 
 	if (_cgild == 0) {
@@ -354,19 +386,17 @@ ClientEvent::youHaveGotMail(std::string &cgiOutput)
 	{	int		status;
 		pid_t	pid = waitpid(_cgild, &status, WNOHANG);
 		if (pid == 0)
-			LOGGER(log("cgi child: zombie process now"));
+			LOG(Warning, "cgi child: zombie process now");
 		if (WIFEXITED(status) == false)
-			LOGGER(log("cgi child: did not exit"));
+			LOG(Warning, "cgi child: did not exit");
 		if (WIFEXITED(status) == true)
-			LOGGER(log("cgi child: exited with code " + std::to_string(WEXITSTATUS(status))));
+			LOG(Warning, "cgi child: exited with code " + std::to_string(WEXITSTATUS(status)));
 		if (WIFSIGNALED(status) == true)
-			LOGGER(log("cgi child: signaled " + std::to_string(WTERMSIG(status))));
+			LOG(Warning, "cgi child: signaled " + std::to_string(WTERMSIG(status)));
 	}
 
 	EasyPrint(cgiOutput);
-	LOGGER(startBlock("CGI Output (incl. headers)"));
-	LOGGER(log(cgiOutput));
-	LOGGER(endBlock());
+	LOG(Info, cgiOutput);
 
 	size_t	headerEndPos = cgiOutput.find(HeaderEnd);
 	if (headerEndPos != std::string::npos) {
@@ -377,4 +407,25 @@ ClientEvent::youHaveGotMail(std::string &cgiOutput)
 	_response.setEntityBody(cgiOutput);
 
 	_finalise();
+}
+
+ClientEvent::HttpError::HttpError(u_int16_t error)
+	:	_status(500)
+{
+	if (error)
+		_status = error;
+	_what = std::to_string(_status) + " "
+		+ (Http::Statuses.contains(_status)
+		? Http::Statuses.at(_status)
+		: "Unknown Status");
+}
+
+u_int16_t
+ClientEvent::HttpError::status() const {
+	return (_status);
+}
+
+const char *
+ClientEvent::HttpError::what() const noexcept {
+	return (_what.c_str());
 }

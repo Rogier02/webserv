@@ -19,38 +19,29 @@ Logger::~Logger() {
 	_logFile.close();
 }
 
-void Logger::log(std::string const &message) {
-	_logFile << message << "\n";
+void
+Logger::log(Level level, std::string const &message, const char *file, int line)
+{
+	const char *PREFIX[] = {
+		"ERROR",
+		"INFO",
+		"WARNING",
+		"DEBUG",
+	};
+
+	put(PREFIX[level], '\t');
+	put(message, ' ');
+	if (level == Error || level == Debug)
+		put(std::string("(") + file + ":" + std::to_string(line) + ")");
+	putendl();
 }
 
-void
-Logger::startBlock(std::string const &blockName, std::string const &blockDescription)
-{
-	_currentBlock = blockName;
-
-	const std::string	start	= "Start of Block:";
-	const size_t		width	= std::max(_currentBlock.size(), blockDescription.size())
-								+ ((start.size()/4) * 4) + 12;
-
-	log(std::string(width, BlockSeparator));
-	log("\t" + start + "\t" + _currentBlock);
-	if (!blockDescription.empty())
-		log("\t\t" + blockDescription);
-	log(std::string(width, BlockSeparator));
+void Logger::put(std::string const &str, char c) {
+	_logFile << str << c;
 }
 
-void
-Logger::endBlock()
-{
-	const std::string	end		= "End of Block:";
-	const size_t		width	= _currentBlock.size()
-								+ ((end.size()/4) * 4) + 12;
-
-	log(std::string(width, BlockSeparator));
-	log("\t" + end + "\t" + _currentBlock);
-	log(std::string(width, BlockSeparator) + "\n");
-
-	_currentBlock.clear();
+void Logger::putendl(std::string const &str) {
+	_logFile << str << "\n";
 }
 
 void

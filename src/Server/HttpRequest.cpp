@@ -48,16 +48,16 @@ namespace Http {
 		std::string line;
 
 		getlineCRLF(stream, line);
-		if (parseRequestLine(line) == -1)
+		if (EasyPrint(parseRequestLine(line)) == -1)
 			return (-1);
-		if (parseHeaders(stream, line) == -1)
-			return (-1);
-
-		if (parseEntityBody(stream) == -1)
+		if (EasyPrint(parseHeaders(stream, line)) == -1)
 			return (-1);
 
-		if (validateParseRequest() == -1)
-			return (-1);
+		// if (EasyPrint(parseEntityBody(stream)) == -1)
+		// 	return (-1);
+
+		// if (EasyPrint(validateParseRequest()) == -1)
+		// 	return (-1);
 
 		return (0);
 	}

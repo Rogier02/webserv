@@ -10,13 +10,17 @@
 class	Logger
 {
 	public:
-		static Logger	&get();// trying to make singleton usage stand out, might have to update Style guide for it?
+		static Logger	&get();
 
 	public:
 		static constexpr const char	*FileName = "Log.txt";
 
-	private:
-		static constexpr char		BlockSeparator = '=';
+		enum	Level : ::size_t {
+			Error = 0,
+			Info,
+			Warning,
+			Debug,
+		};
 
 	private:
 		Logger();
@@ -24,20 +28,19 @@ class	Logger
 		Logger(Logger &&) = delete;
 		~Logger();
 
-	public:
-		void	log(std::string const &message);
-
-		void	startBlock(std::string const &blockName, std::string const &blockHeader = "");
-		void	endBlock();
-
 	private:
 		std::ofstream	_logFile;
-		std::string		_currentBlock;
+
+	public:
+		void	log(Level level, std::string const &message, const char *file, int line);
 
 	private:
+		void	put(std::string const &str, char c = 0);
+		void	putendl(std::string const &str = "");
+
 		void	header();
 };
 
-# define LOGGER(call) Logger::get().call
+# define LOG(level, message) Logger::get().log(Logger::Level::level, message, __FILE__, __LINE__)
 
 #endif
