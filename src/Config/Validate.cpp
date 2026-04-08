@@ -3,6 +3,9 @@
 #include <filesystem>
 #include <unordered_set>
 
+// this file is ugly af
+// TODO: dit fixen
+
 Validate::Validate(const Config &config) : _config(config) {
 	validateConfig();
 }

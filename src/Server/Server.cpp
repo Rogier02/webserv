@@ -14,12 +14,6 @@ Server::Server(Config &config)
 	}
 }
 
-// Server::~Server()
-// {
-// 	for (int fd : _listenSockets)
-// 		close(fd);
-// }
-
 void
 Server::run()
 {
@@ -66,5 +60,5 @@ void
 Server::_closeConnection(int fd)
 {
 	EventHandlers::erase(fd);
-	std::cout << "Client " << fd << " \e[33mSuccessfully Disconnected.\e[0m\n";
+	std::cout << "Client " << fd << " \e[33mSuccessfully Disconnected\e[0m\n";
 }

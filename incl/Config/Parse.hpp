@@ -36,7 +36,6 @@ class	Parse
 		// get simple value(s)
 		void	single(std::string &dest);
 		void	single(u_int16_t &dest);
-		void	multiple(std::vector<std::string> &dest);
 		void	multiple(std::string &dest);
 
 		// get complex directive value(s)

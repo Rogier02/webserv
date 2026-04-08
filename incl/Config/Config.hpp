@@ -7,14 +7,14 @@
 # include <map>
 # include <iostream>
 
-struct	Config //should probably be Server class
+struct	Config
 {
 
 	struct	Listener
 	{
 		struct Location
 		{
-			std::string	root; // if directive is missing, enter Listener root + location path
+			std::string	root; // TODO: if directive is missing, enter Listener root + location path
 			std::string	index;
 			std::string	allowedMethods;
 			std::string	uploadDir;

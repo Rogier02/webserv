@@ -3,6 +3,7 @@
 
 // C
 # include <sys/stat.h>
+# include <sys/wait.h>
 // C++
 # include <iostream>
 # include <functional>
@@ -11,7 +12,6 @@
 # include "EventHandlers.hpp"
 # include "HttpRequest.hpp"
 # include "HttpResponse.hpp"
-# include "CGI2.hpp"
 # include "CGInboxEvent.hpp"
 # include "Logger.hpp"
 # include "IO.hpp"
@@ -28,6 +28,13 @@ class ClientEvent : public Event
 			std::string	root;
 			std::string	file;
 			std::string	extension;
+		};
+
+		const std::map<std::string, std::string>	SupportedCGIExtensions = {
+			{".py", "/usr/bin/python3"},
+			{".sh", "/bin/bash"},
+			//{".php", "/usr/bin/php-cgi"},
+			// {".pl", "/usr/bin/perl"},
 		};
 
 	private:

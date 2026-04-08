@@ -47,7 +47,7 @@ ClientEvent::_out()
 	if (_responseBuffer.empty()) {
 		LOG(Info, "Client " + std::to_string(data.fd) + " Completed Response");
 
-		std::cout << "Client " << data.fd << " \e[32mCompleted Response.\e[0m\n";
+		std::cout << "Client " << data.fd << " \e[32mCompleted Response\e[0m\n";
 		EventHandlers::erase(data.fd);
 	}
 }
@@ -184,7 +184,7 @@ ClientEvent::_get(
 	if (_target.file == "/")
 		_target.file = location.index;
 
-	if (CGI2::SupportedExtensions.contains(_target.extension)) {
+	if (SupportedCGIExtensions.contains(_target.extension)) {
 		_cgi(location);
 		return;
 	}
@@ -320,7 +320,7 @@ ClientEvent::_cgi(
 		::dup2(pipe[1], STDOUT_FILENO);
 		::dup2(pipe[1], STDERR_FILENO);
 		{
-			std::string	interpreter	= CGI2::SupportedExtensions.at(_target.extension);
+			std::string	interpreter	= SupportedCGIExtensions.at(_target.extension);
 			std::string	path		= "." + _target.root + _target.file;
 
 			char	**env	= setupEnvironment();
@@ -339,7 +339,7 @@ ClientEvent::_cgi(
 		EventHandlers::create<CGInboxEvent>(
 			pipe[0], *this, r_epoll, r_config);
 
-		std::cout << "CGInbox " << pipe[0] << " \e[33mSuccessfully Created.\e[0m\n";
+		std::cout << "CGInbox " << pipe[0] << " \e[33mCreated\e[0m\n";
 	}
 }
 

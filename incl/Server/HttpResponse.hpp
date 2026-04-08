@@ -23,7 +23,7 @@ namespace Http {
 			u_int16_t	_statusCode;
 				// 2xx, 3xx, 4xx, 5xx
 			std::string	_reasonPhrase;
-				// "OK", "Not Found" etc.
+				// "OK", "Not Found", etc.
 
 			HeaderMap	_responseHeaders;
 				// location, server, www-authenticate
@@ -35,6 +35,7 @@ namespace Http {
 
 			void	setResponseHeaderValue(std::string const &key, std::string const &value);
 
+	// TODO: should these do something?
 			void	setGeneralHeaderValue(std::string const &key, std::string const &value);
 			void	setEntityHeaderValue(std::string const &key, std::string const &value);
 	};

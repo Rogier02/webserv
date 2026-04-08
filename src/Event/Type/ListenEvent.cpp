@@ -12,5 +12,5 @@ ListenEvent::_in()
 	EventHandlers::create<ClientEvent>(
 		socketFd, r_epoll, r_config);
 
-	std::cout << "Client " << socketFd << " \e[33mSuccessfully Connected.\e[0m\n";
+	std::cout << "Client " << socketFd << " \e[33mSuccessfully Connected\e[0m\n";
 }

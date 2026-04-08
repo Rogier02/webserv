@@ -3,6 +3,8 @@
 
 # include "EasyPrint.hpp"
 
+// TODO: welke parsing is overbodig? welke mist nog?
+
 namespace Http {
 	std::string
 	Request::toString()
@@ -77,7 +79,7 @@ namespace Http {
 		if (sp2 == std::string::npos)
 		{
 			if (_method != "GET")
-				return (-1); // Give error that HTTP/0.9 can only use GET method
+				return (-1); // TODO: Give error that HTTP/0.9 can only use GET method
 			_URI = line.substr(sp1 + 1);
 			_version = "HTTP/0.9";
 		}
@@ -107,7 +109,7 @@ namespace Http {
 			for (::size_t i = 0; i < key.size(); i++)
 				key[i] = std::tolower((unsigned char)key[i]);
 			std::string value = line.substr(colon + 1);
-			std::map<std::string, HeaderHandler>::const_iterator it = HeaderHandlers.find(key);
+			std::map<std::string, HeaderSorter>::const_iterator it = HeaderHandlers.find(key);
 			if (it == HeaderHandlers.end())
 				continue;
 			it->second(value);
@@ -125,14 +127,13 @@ namespace Http {
 
 		::size_t	contentLength = std::stoul(it->second);
 		_entityBody.resize(contentLength);
-		stream.read(_entityBody.data(), contentLength); //data returns pointer to where entityBody is stored
+		stream.read(_entityBody.data(), contentLength);
 
 		if (static_cast<::size_t>(stream.gcount()) != contentLength)
 			return (-1);
 		return (0);
 	}
 
-	// Validation parse request //
 	int
 	Request::validateParseRequest()
 	{

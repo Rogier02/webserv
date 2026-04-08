@@ -22,12 +22,12 @@ namespace Http {
 
 		private:
 			std::string	_method;
-			// "GET", "HEAD", "POST"
+				// "GET", "HEAD", "POST"
 			std::string	_URI;
-			// "/relative/path/to/resource"
+				// "path/to/resource"
 
 			HeaderMap	_requestHeaders;
-			// authorisation, from, if-modified-since, referer, user-agent
+				// authorisation, from, if-modified-since, referer, user-agent
 
 		public:
 			int		parseHead(std::string const &requestHead);
@@ -46,8 +46,8 @@ namespace Http {
 			bool	isHexDigits(char c);
 			bool	isAllowedURICharacter(char c);
 
-		using	HeaderHandler = std::function<void (std::string const &)>;
-		std::map<std::string, HeaderHandler>
+		using	HeaderSorter = std::function<void (std::string const &)>;
+		std::map<std::string, HeaderSorter>
 		HeaderHandlers = {
 			{"date",
 				[this](std::string const &value)
@@ -91,18 +91,18 @@ namespace Http {
 			};
 
 		public:
-			std::string const	&getVersion() const;
-			std::string const	&getMethod() const;
-			std::string const	&getURI() const;
-			std::string const	&getEntityBody() const;
-			std::string 		getQueryString() const; //check of dit niet const & moet zijn?
-			std::string 		getScriptName() const;
+			std::string	const	&getVersion() const;
+			std::string	const	&getMethod() const;
+			std::string	const	&getURI() const;
+			std::string	const	&getEntityBody() const;
+			std::string			getQueryString() const;
+			std::string			getScriptName() const;
 
-			HeaderMap const		&getRequestHeaders() const;
-			std::string const	&getRequestHeaderValue(std::string const &key) const;
+			HeaderMap	const	&getRequestHeaders() const;
+			std::string	const	&getRequestHeaderValue(std::string const &key) const;
 
-			std::string const	&getGeneralHeaderValue(std::string const &key) const;
-			std::string const	&getEntityHeaderValue(std::string const &key) const;
+			std::string	const	&getGeneralHeaderValue(std::string const &key) const;
+			std::string	const	&getEntityHeaderValue(std::string const &key) const;
 	};
 }
 

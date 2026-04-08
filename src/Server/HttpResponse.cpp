@@ -64,7 +64,7 @@ namespace Http {
 		_entityBody = content;
 
 		_entityHeaders["content-length"] = std::to_string(content.length());
-		// other entity headers
+		// TODO: set other entity headers?
 
 	}
 

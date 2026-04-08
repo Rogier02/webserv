@@ -5,12 +5,13 @@
 #include "Logger.hpp"
 #include <unordered_set>
 
+// TODO: normaal
+
 class Validate
 {
 private:
 	const Config				&_config;
 	std::vector<std::string>	_log;
-	// bool						_validated;
 
 public:
 	Validate() = delete;
