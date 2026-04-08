@@ -115,10 +115,10 @@ TokenStream::advanceTillBracket() {
 		advance();
 }
 
-std::size_t
+::size_t
 TokenStream::tokensOnLine() {
 	Iterator	start	= lineStart();
 	Iterator	end		= lineEnd();
 
-	return(static_cast<std::size_t>(end - start));
+	return(static_cast<::size_t>(end - start));
 }

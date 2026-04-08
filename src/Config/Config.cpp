@@ -6,7 +6,7 @@ std::ostream	&operator<<(std::ostream &os, Config const &config)
 		return (os);
 
 	os << "==== CONFIG ====\n";
-	for (size_t i = 0; i < config.listeners.size(); ++i)
+	for (::size_t i = 0; i < config.listeners.size(); ++i)
 	{
 		const Config::Listener& srv = config.listeners[i];
 		os << "\n--- Listener " << i << " ---\n";
@@ -18,14 +18,14 @@ std::ostream	&operator<<(std::ostream &os, Config const &config)
 
 		// Error pages
 		os << "Error Pages:\n";
-		for (std::pair<u_int16_t, std::string> const &errorPage : srv.errorPages)
+		for (std::pair<const u_int16_t, std::string> const &errorPage : srv.errorPages)
 		{
 			os << "  [" << errorPage.first << "] " << errorPage.second << "\n";
 		}
 
 		// Locations
 		os << "Locations:\n";
-		for (std::pair<std::string, Config::Listener::Location> const &location : srv.locations)
+		for (std::pair<const std::string, Config::Listener::Location> const &location : srv.locations)
 		{
 			std::string const					&path	= location.first;
 			Config::Listener::Location const	&loc	= location.second;

@@ -13,7 +13,7 @@ Validate::validateConfig()
 	if (_config.listeners.empty()){
 		throw std::runtime_error("Config error: no servers defined");
 	}
-	for (size_t i = 0; i < _config.listeners.size(); i++)
+	for (::size_t i = 0; i < _config.listeners.size(); i++)
 	{
 		validateServer(_config.listeners[i]);
 		// if (!_validated)
@@ -30,10 +30,10 @@ Validate::validateServer(const Config::Listener &server)
 	validateHost(server.host);
 	validatePort(server.port);
 
-	for (size_t i = 0; i < server.errorPages.size(); i++)
+	for (::size_t i = 0; i < server.errorPages.size(); i++)
 		validateErrorPage(server.errorPages[i]);
 
-	for (size_t i = 0; i < server.locations.size(); i++){
+	for (::size_t i = 0; i < server.locations.size(); i++){
 		std::unordered_set<std::string>	seen;
 
 		if (!seen.insert(server.locations[i].path).second) //duplicate locations		startup	❌

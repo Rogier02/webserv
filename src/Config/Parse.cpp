@@ -49,7 +49,7 @@ Parse::server()
 void
 Parse::errorPage(std::map<u_int16_t, std::string> &dest)
 {
-	size_t	tokensFound = _ts.tokensOnLine();
+	::size_t	tokensFound = _ts.tokensOnLine();
 	if (tokensFound == 4) {
 		u_int16_t	code = std::stoi(_ts.consume());
 		std::string	path = _ts.consume();
@@ -67,7 +67,7 @@ Parse::errorPage(std::map<u_int16_t, std::string> &dest)
 void
 Parse::location(std::map<std::string, Config::Listener::Location> &dest)
 {
-	size_t	tokensFound = _ts.tokensOnLine();
+	::size_t	tokensFound = _ts.tokensOnLine();
 	if (tokensFound == 3) {
 		Config::Listener::Location	location;
 		std::string					path = _ts.consume();
@@ -99,7 +99,7 @@ Parse::location(std::map<std::string, Config::Listener::Location> &dest)
 void
 Parse::single(std::string &dest)
 {
-	size_t	tokensFound = _ts.tokensOnLine();
+	::size_t	tokensFound = _ts.tokensOnLine();
 	if (tokensFound == 3) {
 		dest = _ts.consume();
 		expect(";");
@@ -111,7 +111,7 @@ Parse::single(std::string &dest)
 void
 Parse::single(u_int16_t &dest)
 {
-	size_t	tokensFound = _ts.tokensOnLine();
+	::size_t	tokensFound = _ts.tokensOnLine();
 	if (tokensFound == 3) {
 		dest = std::stoi(_ts.consume());
 		expect(";");
@@ -127,7 +127,7 @@ void
 Parse::multiple(std::string &dest)
 {
 	TokenStream::Iterator	lineEnd = _ts.lineEnd();
-	size_t					tokensFound = _ts.tokensOnLine();
+	::size_t					tokensFound = _ts.tokensOnLine();
 	if (tokensFound >= 3) {
 		while (_ts.current() != lineEnd && _ts.peek().text != ";")
 			dest += _ts.consume() + ' ';
@@ -146,10 +146,10 @@ Parse::multiple(std::string &dest)
 void
 Parse::listen(std::string &host, int &port)
 {
-	size_t	tokensFound = _ts.tokensOnLine();
+	::size_t	tokensFound = _ts.tokensOnLine();
 	if (tokensFound == 3) {
 		std::string	hostPort	= _ts.consume();
-		size_t		colonPos	= hostPort.find(':');
+		::size_t		colonPos	= hostPort.find(':');
 
 		if (colonPos == std::string::npos)
 			log("listen directive requires host:port format");
@@ -166,9 +166,9 @@ Parse::listen(std::string &host, int &port)
 }
 
 void
-Parse::clientMaxBodySize(size_t &clientMaxBodySize)
+Parse::clientMaxBodySize(::size_t &clientMaxBodySize)
 {
-	size_t	tokensFound = _ts.tokensOnLine();
+	::size_t	tokensFound = _ts.tokensOnLine();
 	if (tokensFound == 3) {
 		std::string	token	= _ts.peek().text;
 		char		unit	= token.back();
@@ -199,7 +199,7 @@ Parse::clientMaxBodySize(size_t &clientMaxBodySize)
 void
 Parse::returnPage(u_int16_t &code, std::string &path)
 {
-	size_t	tokensFound = _ts.tokensOnLine();
+	::size_t	tokensFound = _ts.tokensOnLine();
 	if (tokensFound == 4) {
 		code = std::stoi(_ts.consume());
 		path = _ts.consume();
@@ -215,7 +215,7 @@ Parse::returnPage(u_int16_t &code, std::string &path)
 
 void Parse::autoIndex(bool &autoIndex)
 {
-	size_t	tokensFound = _ts.tokensOnLine();
+	::size_t	tokensFound = _ts.tokensOnLine();
 	if (tokensFound == 3) {
 		std::string	value = _ts.consume();
 
@@ -277,7 +277,7 @@ Parse::unexpected(std::string const &expected, std::string const &found)
 }
 
 std::string
-Parse::unexpectedTokenCount(std::string expected, size_t found)
+Parse::unexpectedTokenCount(std::string expected, ::size_t found)
 {
 	return ("Unexpected token count: " + std::to_string(found) + " (expected: " + expected + ")"
 		+ "on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());

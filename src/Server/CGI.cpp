@@ -97,7 +97,7 @@ namespace CGI
 		}
 
 		char **env = new char*[_envVariables.size() + 1];
-		for (size_t i = 0; i < _envVariables.size(); i++) {
+		for (::size_t i = 0; i < _envVariables.size(); i++) {
 			env[i] = new char[_envVariables[i].length() + 1];
 			std::strcpy(env[i], _envVariables[i].c_str());
 		}
@@ -210,7 +210,7 @@ namespace CGI
 	{
 		//CGI scripts output headers followed by blank line, then body
 
-		size_t headerEndPos = rawOutput.find("\r\n\r\n");
+		::size_t headerEndPos = rawOutput.find("\r\n\r\n");
 		if (headerEndPos == std::string::npos) {
 			// No headers found, treats entire output as body
 			return (rawOutput);
@@ -232,19 +232,19 @@ namespace CGI
 			if (headerLine.empty())
 				continue;
 
-			size_t colonPos = headerLine.find(':');
+			::size_t colonPos = headerLine.find(':');
 			if(colonPos == std::string::npos)
 				continue;
 
 			std::string key = headerLine.substr(0, colonPos);
 			std::string value = headerLine.substr(colonPos + 1);
 
-			size_t firstNonSpace = value.find_first_not_of(" \t");
+			::size_t firstNonSpace = value.find_first_not_of(" \t");
 			if (firstNonSpace != std::string::npos)
 				value = value.substr(firstNonSpace);
 
 			if (key == "Status") {
-				size_t spacePos = value.find(' ');
+				::size_t spacePos = value.find(' ');
 				statusCode = (spacePos != std::string::npos)
 					? value.substr(0, spacePos)
 					: value;

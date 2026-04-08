@@ -41,7 +41,7 @@ class	Parse
 
 		// get complex directive value(s)
 		void	listen(std::string &host, int &port);
-		void	clientMaxBodySize(size_t &clientMaxBodySize);
+		void	clientMaxBodySize(::size_t &clientMaxBodySize);
 		void	returnPage(u_int16_t &code, std::string &path);
 		void	autoIndex(bool &autoIndex);
 
@@ -55,7 +55,7 @@ class	Parse
 		// error format
 		std::string	unknownDirective(const std::string& directive);
 		std::string	unexpected(std::string const &expected, std::string const &found);
-		std::string	unexpectedTokenCount(std::string expected, size_t found);
+		std::string	unexpectedTokenCount(std::string expected, ::size_t found);
 
 	private:
 		using	ServerDirective = std::function<void (Config::Listener &)>;

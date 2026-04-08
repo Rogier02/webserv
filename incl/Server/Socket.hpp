@@ -20,7 +20,7 @@ using InternetSocketAddress	= WrapIn::InternetSocketAddress;
 
 namespace	Socket
 {
-	constexpr std::size_t	bufferSize = 1024;
+	constexpr ::size_t	bufferSize = 1024;
 
 	int			create(int port);
 	int			accept(int fd);

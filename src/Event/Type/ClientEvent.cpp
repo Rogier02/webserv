@@ -54,7 +54,7 @@ ClientEvent::_out()
 
 void
 ClientEvent::_receiveHead() {
-	const std::size_t headerEndPos = _requestBuffer.find(HeaderEnd);
+	const ::size_t headerEndPos = _requestBuffer.find(HeaderEnd);
 
 	if (headerEndPos == std::string::npos)
 		return;
@@ -105,8 +105,8 @@ std::string
 ClientEvent::_collapseSlashes(std::string const &rawURI)
 const {
 	std::string	URI		= rawURI;
-	std::size_t	start	= URI.find_first_of('/');
-	std::size_t	end		= URI.find_first_not_of('/', start);
+	::size_t	start	= URI.find_first_of('/');
+	::size_t	end		= URI.find_first_not_of('/', start);
 
 	while (start < URI.length())
 	{
@@ -137,7 +137,7 @@ ClientEvent::_URIdentification()
 		_target.root		= locations.at(URI).root;
 		_target.file		= "/";
 	} else {
-		std::size_t const	lastSlash = URI.find_last_of('/');
+		::size_t const		lastSlash = URI.find_last_of('/');
 		std::string const	URIParent = URI.substr(0, lastSlash);
 
 		if (!locations.contains(URIParent))
@@ -147,7 +147,7 @@ ClientEvent::_URIdentification()
 		_target.root		= locations.at(URIParent).root;
 		_target.file		= URI.substr(lastSlash);
 
-		std::size_t const	dot	= _target.file.find('.');
+		::size_t const	dot	= _target.file.find('.');
 		if (dot != std::string::npos)
 			_target.extension	= _target.file.substr(dot);
 	}
@@ -206,6 +206,8 @@ void
 ClientEvent::_post(
 	Config::Listener::Location const &location)
 {
+	(void)location;
+
 	std::string	path = "." + _target.root + _target.file;
 
 	if (_target.file == "/") {
@@ -232,10 +234,12 @@ void
 ClientEvent::_delete(
 	Config::Listener::Location const &location)
 {
-	if (_target.file == "/")
-		throw HttpError(403);
+	(void)location;
 
 	std::string		path = "." + _target.root + _target.file;
+
+	if (_target.file == "/")
+		throw HttpError(403);
 
 	if (std::remove(path.c_str()) == -1)
 		throw HttpError(500);
@@ -279,7 +283,7 @@ const {
 	}
 
 	char **env = new char*[_envVariables.size() + 1];
-	for (size_t i = 0; i < _envVariables.size(); i++) {
+	for (::size_t i = 0; i < _envVariables.size(); i++) {
 		env[i] = new char[_envVariables[i].length() + 1];
 		std::strcpy(env[i], _envVariables[i].c_str());
 	}
@@ -356,19 +360,19 @@ ClientEvent::parseMailHeaders(std::string const &headers)
 		if (headerLine.empty())
 			continue;
 
-		size_t colonPos = headerLine.find(':');
+		::size_t colonPos = headerLine.find(':');
 		if(colonPos == std::string::npos)
 			continue;
 
 		std::string key = headerLine.substr(0, colonPos);
 		std::string value = headerLine.substr(colonPos + 1);
 
-		size_t firstNonSpace = value.find_first_not_of(" \t");
+		::size_t firstNonSpace = value.find_first_not_of(" \t");
 		if (firstNonSpace != std::string::npos)
 			value = value.substr(firstNonSpace);
 
 		if (key == "Status") {
-			size_t spacePos = value.find(' ');
+			::size_t spacePos = value.find(' ');
 			statusCode =	(spacePos != std::string::npos)
 							? value.substr(0, spacePos)
 							: value;
@@ -398,7 +402,7 @@ ClientEvent::youHaveGotMail(std::string &cgiOutput)
 	EasyPrint(cgiOutput);
 	LOG(Info, cgiOutput);
 
-	size_t	headerEndPos = cgiOutput.find(HeaderEnd);
+	::size_t	headerEndPos = cgiOutput.find(HeaderEnd);
 	if (headerEndPos != std::string::npos) {
 		parseMailHeaders(cgiOutput.substr(0, headerEndPos));
 		cgiOutput.erase(0, headerEndPos + HeaderEnd.length());

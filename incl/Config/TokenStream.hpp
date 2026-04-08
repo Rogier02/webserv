@@ -44,7 +44,7 @@ class	TokenStream
 		std::string	getLine() const;
 		void		advanceLine();
 		void		advanceTillBracket();
-		std::size_t	tokensOnLine();
+		::size_t	tokensOnLine();
 };
 
 #endif

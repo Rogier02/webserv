@@ -22,8 +22,8 @@ namespace Http {
 	int
 	Request::setEntityBody(std::string const &requestEntity)
 	{
-		const std::size_t	entityLength	= requestEntity.length();
-		std::size_t			contentLength	= 0;
+		const ::size_t	entityLength	= requestEntity.length();
+		::size_t		contentLength	= 0;
 
 		if (_entityHeaders.contains("content-length"))
 			contentLength = std::stoul(_entityHeaders.at("content-length"));
@@ -65,14 +65,14 @@ namespace Http {
 	int
 	Request::parseRequestLine(std::string const &line)
 	{
-		size_t sp1 = line.find(' ');
+		::size_t sp1 = line.find(' ');
 
 		if (sp1 == std::string::npos)
 			return (-1);
 
 		_method = line.substr(0, sp1);
 
-		size_t sp2 = line.find(' ', sp1 + 1);
+		::size_t sp2 = line.find(' ', sp1 + 1);
 
 		if (sp2 == std::string::npos)
 		{
@@ -100,11 +100,11 @@ namespace Http {
 			if (line.empty())
 				return (0);
 
-			size_t colon = line.find(':');
+			::size_t colon = line.find(':');
 			if (colon == std::string::npos)
 				return (-1);
 			std::string	key = line.substr(0, colon);
-			for (int i = 0; i < key.size(); i++)
+			for (::size_t i = 0; i < key.size(); i++)
 				key[i] = std::tolower((unsigned char)key[i]);
 			std::string value = line.substr(colon + 1);
 			std::map<std::string, HeaderHandler>::const_iterator it = HeaderHandlers.find(key);
@@ -123,11 +123,11 @@ namespace Http {
 		if (it == _entityHeaders.end())
 			return (0);
 
-		size_t	contentLength = std::stoul(it->second);
+		::size_t	contentLength = std::stoul(it->second);
 		_entityBody.resize(contentLength);
 		stream.read(_entityBody.data(), contentLength); //data returns pointer to where entityBody is stored
 
-		if (stream.gcount() != contentLength)
+		if (static_cast<::size_t>(stream.gcount()) != contentLength)
 			return (-1);
 		return (0);
 	}
@@ -158,7 +158,7 @@ namespace Http {
 		if (_version.find("HTTP/") == std::string::npos)
 			return (-1);
 
-		size_t	dot = _version.find(".");
+		::size_t	dot = _version.find(".");
 		if (dot == 5 || _version.size() <= dot + 5) // returns -1 if: HTTP/.9 or HTTP/1.
 			return (-1);
 
@@ -182,7 +182,7 @@ namespace Http {
 			return (-1);
 		if (_URI.size() > 2048)
 			return (-1);
-		for (size_t i = 0; i < _URI.size(); i++)
+		for (::size_t i = 0; i < _URI.size(); i++)
 		{
 			if (_URI[i] <= 31 || _URI[i] == 127)
 				return (-1);
@@ -239,7 +239,7 @@ namespace Http {
 		if (str.empty())
 			return (false);
 
-		for (int i = 0; i < str.size(); i++)
+		for (::size_t i = 0; i < str.size(); i++)
 			if (!std::isdigit((unsigned char)str[i]))
 				return (false);
 
