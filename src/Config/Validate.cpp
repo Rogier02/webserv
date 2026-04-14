@@ -3,9 +3,6 @@
 #include <filesystem>
 #include <unordered_set>
 
-// this file is ugly af
-// TODO: dit fixen
-
 Validate::Validate(const Config &config) : _config(config) {
 	validateConfig();
 }
@@ -16,9 +13,9 @@ Validate::validateConfig()
 	if (_config.listeners.empty()){
 		throw std::runtime_error("Config error: no servers defined");
 	}
-	for (::size_t i = 0; i < _config.listeners.size(); i++)
+	for (const Config::Listener &server : _config.listeners)
 	{
-		validateServer(_config.listeners[i]);
+		validateServer(server);
 		// if (!_validated)
 		// 	log("Config error: something in server is not valid");
 	}
@@ -33,17 +30,18 @@ Validate::validateServer(const Config::Listener &server)
 	validateHost(server.host);
 	validatePort(server.port);
 
-	for (::size_t i = 0; i < server.errorPages.size(); i++)
-		validateErrorPage(server.errorPages[i]);
+	validateErrorPages(server);
 
-	for (::size_t i = 0; i < server.locations.size(); i++){
+	for (std::pair<const std::string, Config::Listener::Location> const &location : server.locations)
+	{
 		std::unordered_set<std::string>	seen;
 
-		if (!seen.insert(server.locations[i].path).second) //duplicate locations		startup	❌
+		if (seen.insert(location.first).second) //duplicate locations		startup	❌
 			log("Config error: duplicate location");
-		validateLocation(server.locations[i]);
+		validateLocation(location.second);
 	}
 }
+
 void
 Validate::validateHost(const std::string &host)
 {
@@ -82,15 +80,17 @@ Validate::validatePort(int port)
 }
 
 void
-Validate::validateErrorPage(const Config::Listener::Page &errorPage)
+Validate::validateErrorPages(const Config::Listener &server)
 {
-	if (!validErrorCodes.count(errorPage.code))
-		log("Config error: " + std::to_string(errorPage.code) + " does not belong to the list of valid errorPages.");
-	// 	error page missing		startup	✅ (warning in terminal)
-	if (errorPage.path.empty())
-		std::cout << "Error page path is empty!" << std::endl;
-	else if (!fileExists(errorPage.path))
-		std::cout << errorPage.path << " file doesn't exist." << std::endl;
+	for (std::pair<const u_int16_t, std::string> const &errorPage : server.errorPages)
+	{
+		if (!Http::Statuses.contains(errorPage.first))
+			log("Config error: " + std::to_string(errorPage.first) + " does not belong to the list of valid errorPages.");
+		if (errorPage.second.empty())
+			std::cout << "Error page path is empty!" << std::endl;
+		else if (!IO::exists(errorPage.second))
+			std::cout << errorPage.second << " file doesn't exist." << std::endl;
+	}
 }
 
 bool
@@ -104,15 +104,12 @@ void
 Validate::validateLocation(const Config::Listener::Location &location)
 {
 	// location root missing	startup	✅ (warning in terminal)
-	if (!location.path.empty() && !directoryExists(location.path))
-		std::cout << location.path << " directory doesn't exist." << std::endl;
-	// location root missing	startup	✅ (warning in terminal)
 	if (!location.root.empty() && !directoryExists(location.root))
 		std::cout << location.root << " directory doesn't exist." << std::endl;
 	if ((location.clientMaxBodySize > 104857600 || location.clientMaxBodySize < 1) && location.clientMaxBodySize != 0)
 		log("client_max_body_size of " + std::to_string(location.clientMaxBodySize) + " is too big. Max: 100m");
-	if (!location.returnURL.path.empty() && !directoryExists(location.returnURL.path))
-		log(location.returnURL.path + " directory doesn't exist.");
+	if (!location.returnURL.empty() && !directoryExists(location.returnURL))
+		log(location.returnURL + " directory doesn't exist.");
 	if (!location.uploadDir.empty() && !directoryExists(location.uploadDir))
 		log(location.uploadDir + " directory doesn't exist.");
 	// location.index; >> dit is nog helemaal unknown.
@@ -120,16 +117,13 @@ Validate::validateLocation(const Config::Listener::Location &location)
 	if (!location.cgiPath.empty() && !directoryExists(location.cgiPath))
 		log(location.cgiPath + " directory doesn't exist.");
 	// location.redirectStatus;
-	for (unsigned long i = 0; i < location.allowedMethods.size(); i++)
-	{
-		if (!isValidMethod(location.allowedMethods[i]))
-			log(location.allowedMethods[i] + " is an NOT an allowed method!");
-	}
-	for (unsigned long i = 0; i < location.indexFiles.size(); i++)
-	{
-		if (!fileExists(location.indexFiles[i]))
-			log(location.indexFiles[i] + " file doesn't exist.");
-	}
+	// for (unsigned long i = 0; i < location.allowedMethods.size(); i++) // dis string now
+	// {
+	// 	if (!isValidMethod(location.allowedMethods[i]))
+	// 		log(location.allowedMethods[i] + " is an NOT an allowed method!");
+	// }
+	if (!IO::exists(location.index))
+		log(location.index + " file doesn't exist.");
 }
 
 bool
@@ -142,18 +136,6 @@ Validate::directoryExists(const std::string& path)
 		return (std::filesystem::is_directory(fullPath));
 	}
 	return (std::filesystem::is_directory(path));
-}
-
-bool
-Validate::fileExists(const std::string& path)
-{
-	if (std::filesystem::path(path).is_absolute())
-	{
-		std::string	currentPath = std::filesystem::current_path();
-		std::string fullPath = currentPath + path;
-		return (std::filesystem::is_regular_file(fullPath));
-	}
-	return (std::filesystem::is_regular_file(path));
 }
 
 void
@@ -169,10 +151,8 @@ Validate::report()
 		return ;
 	}
 
-	LOGGER(startBlock("Config File Errors"));
 	for (std::string message : _log)
-		LOGGER(log(message));
-	LOGGER(endBlock());
+		LOG(Info, message);
 
 	throw std::runtime_error(std::string("Config File Errors detected, see \"") + Logger::FileName + "\" for detailed error messages");
 }

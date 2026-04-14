@@ -3,8 +3,6 @@
 
 # include "EasyPrint.hpp"
 
-// TODO: welke parsing is overbodig? welke mist nog?
-
 namespace Http {
 	std::string
 	Request::toString()
@@ -44,22 +42,18 @@ namespace Http {
 	}
 
 	int
-	Request::parseHead(std::string const &request) // this returns -1 unnecessarily, and parses entitybody why?
+	Request::parseHead(std::string const &request)
 	{
-		std::istringstream stream(request);
-		std::string line;
+		std::istringstream	stream(request);
+		std::string			line;
 
 		getlineCRLF(stream, line);
 		if (EasyPrint(parseRequestLine(line)) == -1)
 			return (-1);
 		if (EasyPrint(parseHeaders(stream, line)) == -1)
 			return (-1);
-
-		// if (EasyPrint(parseEntityBody(stream)) == -1)
-		// 	return (-1);
-
-		// if (EasyPrint(validateParseRequest()) == -1)
-		// 	return (-1);
+		if (EasyPrint(validateParseRequest()) == -1)
+			return (-1);
 
 		return (0);
 	}
@@ -79,7 +73,7 @@ namespace Http {
 		if (sp2 == std::string::npos)
 		{
 			if (_method != "GET")
-				return (-1); // TODO: Give error that HTTP/0.9 can only use GET method
+				return (-1);
 			_URI = line.substr(sp1 + 1);
 			_version = "HTTP/0.9";
 		}
@@ -109,44 +103,19 @@ namespace Http {
 			for (::size_t i = 0; i < key.size(); i++)
 				key[i] = std::tolower((unsigned char)key[i]);
 			std::string value = line.substr(colon + 1);
-			std::map<std::string, HeaderSorter>::const_iterator it = HeaderHandlers.find(key);
-			if (it == HeaderHandlers.end())
+			if (!HeaderHandlers.contains(key))
 				continue;
-			it->second(value);
+			HeaderHandlers.at(key)(value);
 		}
-		return (0);
-	}
-
-	int
-	Request::parseEntityBody(std::istream &stream)
-	{
-		std::map<std::string, std::string>::iterator it = _entityHeaders.find("content-length");
-
-		if (it == _entityHeaders.end())
-			return (0);
-
-		::size_t	contentLength = std::stoul(it->second);
-		_entityBody.resize(contentLength);
-		stream.read(_entityBody.data(), contentLength);
-
-		if (static_cast<::size_t>(stream.gcount()) != contentLength)
-			return (-1);
 		return (0);
 	}
 
 	int
 	Request::validateParseRequest()
 	{
-		if (_method != "GET"
-		||	_method != "POST"
-		||	_method != "DELETE"
-		||	_method != "HEAD")
-			return (-1);
 		if (!validateHTTPVersion())
 			return (-1);
 		if (!validateURI())
-			return (-1);
-		if (!validateHeaders())
 			return (-1);
 		return (0);
 	}
@@ -156,7 +125,7 @@ namespace Http {
 	{
 		if (_version.empty())
 			return (-1);
-		if (_version.find("HTTP/") == std::string::npos)
+		if (_version.find("HTTP/") != 0)
 			return (-1);
 
 		::size_t	dot = _version.find(".");
@@ -199,24 +168,6 @@ namespace Http {
 			if (!isAllowedURICharacter(_URI[i]))
 				return (-1);
 		}
-
-		return (0);
-	}
-
-	int
-	Request::validateHeaders()
-	{
-		std::map<std::string, std::string>::iterator it;
-
-		for (it = _generalHeaders.begin(); it != _generalHeaders.end(); ++it)
-			if (!it->second.empty() && it->second[0] == ' ')
-				return (-1);
-		for (it = _requestHeaders.begin(); it != _requestHeaders.end(); ++it)
-			if (!it->second.empty() && it->second[0] == ' ')
-				return (-1);
-		for (it = _entityHeaders.begin(); it != _entityHeaders.end(); ++it)
-			if (!it->second.empty() && it->second[0] == ' ')
-				return (-1);
 
 		return (0);
 	}

@@ -12,7 +12,7 @@
 class	Event : public epoll_event
 {
 	public:
-		Event() = default;
+		// Event() = default;
 		Event(Event const &) = default;
 		Event(Event &&) = default;
 		Event(int fd, u_int32_t eventTypes, Epoll &epoll, Config::Listener const &config);

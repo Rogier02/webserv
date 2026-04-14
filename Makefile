@@ -4,7 +4,7 @@ MAKEFLAGS		=	-r -R
 
 CXX				=	c++
 CXXFLAGS		=	-MMD -MP -std=c++20
-CXXFLAGS		+=	-Wall -Wextra -Werror
+CXXFLAGS		+=	-Wall -Werror -Wextra
 # CXXFLAGS		+=	-fsanitize=address
 # CXXFLAGS		+=	-g
 
@@ -18,6 +18,7 @@ CONFIG_MODULE	=	Config
 CONFIG_FILES	=	Config.cpp			\
 					Parse.cpp			\
 					TokenStream.cpp		\
+					Validate.cpp		\
 
 EVENTBASE_MODULE=	Event/Base
 EVENTBASE_FILES	=	Event.cpp			\

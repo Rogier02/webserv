@@ -6,6 +6,7 @@
 #include "Server.hpp"
 #include "Config.hpp"
 #include "Parse.hpp"
+#include "Validate.hpp"
 
 std::atomic<bool>	_pleaseShutDown(false);
 
@@ -36,7 +37,8 @@ int	main(int argc, char *argv[])
 	signal(SIGTERM, stopAllServerLoops);
 
 	try {
-		Config	config = Parse(configFilePath).config();
+		Config		config = Parse(configFilePath).config();
+		Validate	Validate(config);
 		std::cout << config;
 
 		Server	server(config);

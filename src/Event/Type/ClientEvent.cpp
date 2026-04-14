@@ -26,9 +26,15 @@ ClientEvent::_in()
 		if (_receivedHead)
 			_receiveBody();
 	} catch (HttpError const &e) {
+		u_int16_t	statusCode = e.status();
 		std::cerr << "\e[31mError:\e[0m " << e.what() << std::endl;
 		LOG(Error, e.what());
-		_response.err(e.status());
+		_response.err(statusCode);
+		if (r_config.errorPages.contains(statusCode)) {
+			const std::string content = IO::getFileContent(r_config.errorPages.at(statusCode));
+			if (!content.empty())
+			_response.setEntityBody(content);
+		}
 		_finalise();
 		// return;
 	}
@@ -332,7 +338,7 @@ ClientEvent::_cgi(
 
 			execve(argv[0], argv, env);
 		}
-		exit(0);
+		exit(errno);
 	} else {
 		::close(pipe[1]);
 
