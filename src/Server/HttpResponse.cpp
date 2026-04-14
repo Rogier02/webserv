@@ -35,14 +35,16 @@ namespace Http {
 	{
 		setStatus(statusCode);
 
-		_entityBody	=
+		std::string	entityBody =
 			"<html>\n"
 			"<head><title>" + std::to_string(statusCode) + " " + _reasonPhrase + "</title></head>\n"
 			"<body>\n"
 			"<center><h1>" + std::to_string(statusCode) + " " + _reasonPhrase + "</h1></center>\n"
-			"<hr><center>webserv/1.0</center>\n"
+			"<hr><center>webserv " + _version + "</center>\n"
 			"</body>\n"
 			"</html>\n";
+
+		setEntityBody(entityBody);
 	}
 
 	void Response::setVersion(std::string const &version) {

@@ -36,8 +36,8 @@ Validate::validateServer(const Config::Listener &server)
 	{
 		std::unordered_set<std::string>	seen;
 
-		if (seen.insert(location.first).second) //duplicate locations		startup	❌
-			log("Config error: duplicate location");
+		if (!seen.insert(location.first).second) //duplicate locations		startup	❌
+			log("Config error: duplicate location " + location.first);
 		validateLocation(location.second);
 	}
 }
@@ -88,8 +88,8 @@ Validate::validateErrorPages(const Config::Listener &server)
 			log("Config error: " + std::to_string(errorPage.first) + " does not belong to the list of valid errorPages.");
 		if (errorPage.second.empty())
 			std::cout << "Error page path is empty!" << std::endl;
-		else if (!IO::exists(errorPage.second))
-			std::cout << errorPage.second << " file doesn't exist." << std::endl;
+		else if (!IO::exists("./" + errorPage.second))
+			std::cout << "./" + errorPage.second << " file doesn't exist." << std::endl;
 	}
 }
 
@@ -110,8 +110,8 @@ Validate::validateLocation(const Config::Listener::Location &location)
 		log("client_max_body_size of " + std::to_string(location.clientMaxBodySize) + " is too big. Max: 100m");
 	if (!location.returnURL.empty() && !directoryExists(location.returnURL))
 		log(location.returnURL + " directory doesn't exist.");
-	if (!location.uploadDir.empty() && !directoryExists(location.uploadDir))
-		log(location.uploadDir + " directory doesn't exist.");
+	if (!location.uploadDir.empty() && !directoryExists(location.root + location.uploadDir))
+		log(location.root + location.uploadDir + " directory doesn't exist.");
 	// location.index; >> dit is nog helemaal unknown.
 	// location.cgiEXT;
 	if (!location.cgiPath.empty() && !directoryExists(location.cgiPath))
@@ -122,7 +122,7 @@ Validate::validateLocation(const Config::Listener::Location &location)
 	// 	if (!isValidMethod(location.allowedMethods[i]))
 	// 		log(location.allowedMethods[i] + " is an NOT an allowed method!");
 	// }
-	if (!IO::exists(location.index))
+	if (!IO::exists("." + location.root + location.index))
 		log(location.index + " file doesn't exist.");
 }
 

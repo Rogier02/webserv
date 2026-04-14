@@ -4,7 +4,8 @@ Parse::Parse(std::string const &filePath)
 	:	_ts(filePath)
 {}
 
-Config Parse::config()
+Config
+Parse::config()
 {
 	Config	config;
 
@@ -34,9 +35,8 @@ Parse::server()
 	{
 		std::string directive = _ts.consume();
 
-		DirectiveMapIterator<ServerDirective> it = serverDirectives.find(directive);
-		if (it != serverDirectives.end())
-			it->second(server);
+		if (serverDirectives.contains(directive))
+			serverDirectives.at(directive)(server);
 		else {
 			log(unknownDirective(directive));
 			_ts.advanceLine();
@@ -57,8 +57,7 @@ Parse::errorPage(std::map<u_int16_t, std::string> &dest)
 
 		expect(";");
 	}
-	else
-	{
+	else {
 		log(unexpectedTokenCount("4", tokensFound));
 		_ts.advanceLine();
 	}
@@ -75,12 +74,10 @@ Parse::location(std::map<std::string, Config::Listener::Location> &dest)
 		expect("{");
 		while (!_ts.atEnd() && _ts.peek().text != "}")
 		{
-			// Hier moet eigenlijk ook elke keer een tokenCount worden gedaan om te checken of er wel genoeg tokens in de line zitten,
 			std::string	directive = _ts.consume();
 
-			DirectiveMapIterator<LocationDirective> it = locationDirectives.find(directive);
-			if (it != locationDirectives.end())
-				it->second(location);
+			if (locationDirectives.contains(directive))
+				locationDirectives.at(directive)(location);
 			else {
 				log(unknownDirective(directive));
 				_ts.advanceLine();
@@ -104,8 +101,10 @@ Parse::single(std::string &dest)
 		dest = _ts.consume();
 		expect(";");
 	}
-	else
+	else {
 		log(unexpectedTokenCount("3", tokensFound));
+		_ts.advanceLine();
+	}
 }
 
 void
@@ -116,8 +115,7 @@ Parse::single(u_int16_t &dest)
 		dest = std::stoi(_ts.consume());
 		expect(";");
 	}
-	else
-	{
+	else {
 		log(unexpectedTokenCount("3", tokensFound));
 		_ts.advanceLine();
 	}
@@ -136,8 +134,7 @@ Parse::multiple(std::string &dest)
 
 		expect(";");
 	}
-	else
-	{
+	else {
 		log(unexpectedTokenCount("3 or more", tokensFound));
 		_ts.advanceLine();
 	}
@@ -158,8 +155,7 @@ Parse::listen(std::string &host, int &port)
 		port	= std::stoi(hostPort.substr(colonPos + 1));
 		expect(";");
 	}
-	else
-	{
+	else {
 		log(unexpectedTokenCount("3", tokensFound));
 		_ts.advanceLine();
 	}
@@ -189,8 +185,7 @@ Parse::clientMaxBodySize(::size_t &clientMaxBodySize)
 
 		expect(";");
 	}
-	else
-	{
+	else {
 		log(unexpectedTokenCount("3", tokensFound));
 		_ts.advanceLine();
 	}
@@ -206,8 +201,7 @@ Parse::returnPage(u_int16_t &code, std::string &path)
 
 		expect(";");
 	}
-	else
-	{
+	else {
 		log(unexpectedTokenCount("4", tokensFound));
 		_ts.advanceLine();
 	}
@@ -228,8 +222,7 @@ void Parse::autoIndex(bool &autoIndex)
 
 		expect(";");
 	}
-	else
-	{
+	else {
 		log(unexpectedTokenCount("3", tokensFound));
 		_ts.advanceLine();
 	}

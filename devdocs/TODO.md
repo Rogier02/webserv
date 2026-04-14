@@ -1,4 +1,5 @@
 CGI: test good and bad cases (where do execve errors go?)
+CGI: timeout
 
 Timeout clients
 

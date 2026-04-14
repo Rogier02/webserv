@@ -1,0 +1,240 @@
+:root {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --bg-color: #f8fafc;
+    --card-bg: #ffffff;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+    --radius: 8px;
+    --header-bg: #1e293b;
+    --header-text: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    background-color: var(--header-bg);
+    color: var(--header-text);
+    padding: 1rem 0;
+    box-shadow: var(--shadow-md);
+}
+
+.header-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--header-text);
+}
+
+header nav a {
+    color: #cbd5e1;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+header nav a:hover {
+    color: #fff;
+}
+
+header nav ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+}
+
+header nav li {
+    margin: 0;
+}
+
+main {
+    flex: 1;
+    max-width: 800px;
+    width: 100%;
+    margin: 2rem auto;
+    padding: 0 20px;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    border-top: 1px solid var(--border-color);
+    background: var(--card-bg);
+}
+
+h1, h2, h3 {
+    margin-top: 0;
+    color: var(--text-main);
+}
+
+h2 {
+    font-size: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+ul {
+    padding-left: 1.5rem;
+}
+
+.card {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.btn, button {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-decoration: none;
+}
+
+.btn:hover, button:hover {
+    background-color: var(--primary-hover);
+    text-decoration: none;
+}
+
+input[type="text"],
+input[type="file"],
+textarea {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    font-family: inherit;
+}
+
+textarea {
+    resize: vertical;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.error-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+}
+
+.error-container {
+    background: var(--card-bg);
+    padding: 3rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    max-width: 500px;
+    width: 90%;
+}
+
+.error-code {
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0;
+    line-height: 1;
+}
+
+.text-center { text-align: center; }
+.mt-4 { margin-top: 1rem; }
+.mb-4 { margin-bottom: 1rem; }
+
+.file-list {
+    list-style: none;
+    padding: 0;
+}
+
+.file-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.file-list li:last-child {
+    border-bottom: none;
+}
+
+.result {
+    background: #f1f5f9;
+    padding: 1rem;
+    border-radius: var(--radius);
+    font-family: monospace;
+    margin-top: 1rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.nav-links a {
+    background: #e2e8f0;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.nav-links a:hover {
+    background: #cbd5e1;
+    text-decoration: none;
+}

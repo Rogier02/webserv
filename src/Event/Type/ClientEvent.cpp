@@ -33,7 +33,9 @@ ClientEvent::_in()
 		if (r_config.errorPages.contains(statusCode)) {
 			const std::string content = IO::getFileContent(r_config.errorPages.at(statusCode));
 			if (!content.empty())
-			_response.setEntityBody(content);
+				_response.setEntityBody(content);
+			EasyPrint(r_config.errorPages.at(statusCode));
+			EasyPrint(content);
 		}
 		_finalise();
 		// return;
@@ -144,7 +146,10 @@ ClientEvent::_URIdentification()
 		_target.file		= "/";
 	} else {
 		::size_t const		lastSlash = URI.find_last_of('/');
-		std::string const	URIParent = URI.substr(0, lastSlash);
+		std::string			URIParent = URI.substr(0, lastSlash);
+
+		if (URIParent.empty())
+			URIParent = "/";
 
 		if (!locations.contains(URIParent))
 			return (-1);
@@ -214,12 +219,12 @@ ClientEvent::_post(
 {
 	(void)location;
 
-	std::string	path = "." + _target.root + _target.file;
+	std::string	path = "." + _target.root + location.uploadDir + _target.file;
 
 	if (_target.file == "/") {
 		for (::size_t i = 0; i < 100; ++i)
 		{
-			path = "." + _target.root + "/temp_file_" + std::to_string(i);
+			path = "." + _target.root + location.uploadDir + "/temp_file_" + std::to_string(i);
 			if (!IO::exists(path))
 				break;
 		}
@@ -252,21 +257,24 @@ ClientEvent::_delete(
 }
 
 char **
-ClientEvent::setupEnvironment()
+ClientEvent::setupEnvironment(std::string const &scriptPath)
 const {
-	std::vector<std::string> _envVariables;
-
-	_envVariables.push_back("REQUEST_METHOD=" + _request.getMethod());
-	_envVariables.push_back("CONTENT_TYPE=" + _request.getRequestHeaderValue("Content-Type")); // TODO:: ROGIER :: doublecheck for this
-	_envVariables.push_back("CONTENT_LENGTH=" + _request.getRequestHeaderValue("Content-Length"));
-	_envVariables.push_back("SCRIPT_NAME=" + _request.getScriptName());
-	_envVariables.push_back("QUERY_STRING=" + _request.getQueryString());
-	_envVariables.push_back("REQUEST_URI=" + _request.getURI());
-	_envVariables.push_back("SERVER_PROTOCOL=" + _request.getVersion());
-	_envVariables.push_back("GATEWAY_INTERFACE=CGI/1.0"); // wordt dit geparsed uit de httpRequest? of is dit vast?
-	_envVariables.push_back("SERVER_NAME=" + r_config.name);
-	_envVariables.push_back("SERVER_PORT=" + std::to_string(r_config.port));
-	_envVariables.push_back("SERVER_ADDR=" + r_config.host);
+	std::vector<std::string> envVars =
+	{
+		"REDIRECT_STATUS=200",
+		"GATEWAY_INTERFACE=CGI/1.0",
+		"PATH=/usr/bin:/bin",
+		"REQUEST_METHOD=" + _request.getMethod(),
+		"SERVER_PROTOCOL=" + _request.getVersion(),
+		"SERVER_NAME=" + r_config.name,
+		"SERVER_PORT=" + std::to_string(r_config.port),
+		"CONTENT_TYPE=" + _request.getRequestHeaderValue("Content-Type"),
+		"CONTENT_LENGTH=" + _request.getRequestHeaderValue("Content-Length"),
+		"QUERY_STRING=" + _request.getQueryString(),
+		"SCRIPT_NAME=" + _request.getScriptName(),
+		"SCRIPT_FILENAME=" + scriptPath,
+		"TZ=Europe/Amsterdam"
+	};
 
 	// add HTTP headers as CGI variables
 
@@ -285,17 +293,18 @@ const {
 			else
 				cgiVarName += std::toupper(c);
 		}
-		_envVariables.push_back(cgiVarName + "=" + headerValue);
+		envVars.push_back(cgiVarName + "=" + headerValue);
 	}
 
-	char **env = new char*[_envVariables.size() + 1];
-	for (::size_t i = 0; i < _envVariables.size(); i++) {
-		env[i] = new char[_envVariables[i].length() + 1];
-		std::strcpy(env[i], _envVariables[i].c_str());
+	char**	envArray = new char*[envVars.size() + 1]{};
+	for (uint32_t i = 0; i < envVars.size(); i++)
+	{
+		envArray[i] = new char[envVars[i].length() + 1];
+		std::strcpy(envArray[i], envVars[i].c_str());
 	}
-	env[_envVariables.size()] = NULL;
+	envArray[envVars.size()] = NULL;
 
-	return (env);
+	return (char**)envArray;
 }
 
 void
@@ -303,9 +312,6 @@ ClientEvent::_cgi(
 	Config::Listener::Location const &location)
 {
 	if (location.cgiEXT.find(_target.extension) == std::string::npos)
-		throw HttpError(403);
-
-	if (location.cgiPath.empty())
 		throw HttpError(403);
 
 	int	pipe[2];
@@ -324,12 +330,15 @@ ClientEvent::_cgi(
 		EasyPrint(_target.file);
 		::close(pipe[0]);
 		::dup2(pipe[1], STDOUT_FILENO);
-		::dup2(pipe[1], STDERR_FILENO);
+		// ::dup2(pipe[1], STDERR_FILENO);
 		{
 			std::string	interpreter	= SupportedCGIExtensions.at(_target.extension);
-			std::string	path		= "." + _target.root + _target.file;
+			std::string	path		= std::filesystem::absolute("." + _target.root + _target.file);
 
-			char	**env	= setupEnvironment();
+			if (chdir(std::string("." + _target.root).c_str()) < 0)
+				exit(EXIT_FAILURE);
+
+			char	**env	= setupEnvironment(path);
 			char	*argv[]	= {
 				(char *)interpreter.c_str(),
 				(char *)path.c_str(),

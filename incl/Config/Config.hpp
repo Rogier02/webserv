@@ -18,7 +18,7 @@ struct	Config
 			std::string	index;
 			std::string	allowedMethods;
 			std::string	uploadDir;
-			::size_t		clientMaxBodySize = 0;
+			::size_t	clientMaxBodySize = 0;
 			u_int16_t	redirectStatus = 0;
 			std::string	returnURL;
 			std::string	cgiEXT;
@@ -30,7 +30,7 @@ struct	Config
 		std::string	root;
 		std::string	host;
 		int			port = 8080;
-		::size_t		clientMaxBodySize;
+		::size_t	clientMaxBodySize;
 
 		std::map<u_int16_t, std::string>	errorPages;
 		std::map<std::string, Location>		locations;

@@ -26,7 +26,6 @@ Server::run()
 				int	fd = unknown.data.fd;
 
 				if (unknown.events & (Epoll::Events::Err
-									| Epoll::Events::Hup
 									| Epoll::Events::RdH))
 					_closeConnection(fd);
 				else

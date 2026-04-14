@@ -103,10 +103,7 @@ class	Parse
 				{ single(l.index); }},
 			{"cgi_ext",
 				[this](Config::Listener::Location& l)
-				{ single(l.cgiEXT); }},
-			{"cgi_path",
-				[this](Config::Listener::Location& l)
-				{ single(l.cgiPath); }},
+				{ multiple(l.cgiEXT); }},
 			{"allowed_methods",
 				[this](Config::Listener::Location& l)
 				{ multiple(l.allowedMethods); }},

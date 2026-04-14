@@ -7,6 +7,7 @@
 // C++
 # include <iostream>
 # include <functional>
+# include <filesystem>
 // webserv
 # include "Config.hpp"
 # include "EventHandlers.hpp"
@@ -33,7 +34,7 @@ class ClientEvent : public Event
 		const std::map<std::string, std::string>	SupportedCGIExtensions = {
 			{".py", "/usr/bin/python3"},
 			{".sh", "/bin/bash"},
-			//{".php", "/usr/bin/php-cgi"},
+			{".php", "/usr/bin/php-cgi"},
 			// {".pl", "/usr/bin/perl"},
 		};
 
@@ -82,7 +83,7 @@ class ClientEvent : public Event
 		int			_URIdentification();
 		std::string	_collapseSlashes(std::string const &rawURI) const;
 
-		char	**setupEnvironment() const;
+		char	**setupEnvironment(std::string const &scriptPath) const;
 		void	parseMailHeaders(std::string const &headerStream);
 
 	private:
