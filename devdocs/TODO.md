@@ -1,15 +1,14 @@
-CGI: test good and bad cases (where do execve errors go?)
-CGI: timeout
+CGI: where do execve errors go?
 
-Timeout clients
+Timeout: slow CGI, Client not sending full request
 
-Index pages: make em pretty and usable
-Error Pages: make test pages to give in config files
+Index pages: make em pretty and usable ~
 
 LOG better: more consistently, more verbosely, less messy
 
-search TODO: 9 hits atm
+Consider every Config key and where to use it
+
+search TODO: 6 hits atm
 
 Laura:
-	validate headers if nodig
 	config parser checken of alles werkt (eind project)

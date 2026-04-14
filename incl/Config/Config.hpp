@@ -14,7 +14,7 @@ struct	Config
 	{
 		struct Location
 		{
-			std::string	root; // TODO: if directive is missing, enter Listener root + location path
+			std::string	root;
 			std::string	index;
 			std::string	allowedMethods;
 			std::string	uploadDir;
