@@ -1,13 +1,21 @@
 #include "HttpResponse.hpp"
 
 namespace Http {
+
+	const std::map<std::string, std::string> Response::FileTypes = {
+		{".css", "text/css"},
+		{".html", "text/html"},
+		{".ico", "image/icon"},
+		{".jpeg", "image/jpeg"},
+		{".jpg", "image/jpeg"},
+		{".png", "image/png"},
+	};
+
 	Response::Response()
 		:	Message("1.0")
 		,	_statusCode(200)
 		,	_reasonPhrase(Statuses[_statusCode])
 	{
-		_entityHeaders["content-type"] = "text/html";
-		_entityHeaders["content-length"] = "0";
 	}
 
 	std::string
@@ -47,6 +55,20 @@ namespace Http {
 		setEntityBody(entityBody);
 	}
 
+	std::string const &
+	Response::_getContentType(std::string const &filename)
+	{
+		::size_t	dot = filename.find_last_of('.');
+		if (dot == std::string::npos)
+			return (FileTypes.at(".html"));
+
+		std::string	extension = filename.substr(dot);
+		if (!FileTypes.contains(extension))
+			return (FileTypes.at(".html"));
+
+		return (FileTypes.at(extension));
+	}
+
 	void Response::setVersion(std::string const &version) {
 		_version = version;
 	}
@@ -61,13 +83,13 @@ namespace Http {
 
 	void
 	Response::setEntityBody(
-		std::string const &content)
+		std::string const &content,
+		std::string const &file)
 	{
 		_entityBody = content;
 
-		_entityHeaders["content-length"] = std::to_string(content.length());
-		// TODO: set other entity headers?
-
+		_entityHeaders["content-length"]	= std::to_string(content.length());
+		_entityHeaders["content-type"]		= _getContentType(file);
 	}
 
 	void Response::setResponseHeaderValue(std::string const &key, std::string const &value)	{

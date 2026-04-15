@@ -31,10 +31,11 @@ ClientEvent::_in()
 		LOG(Error, e.what());
 		_response.err(statusCode);
 		if (r_config.errorPages.contains(statusCode)) {
-			const std::string content = IO::getFileContent(r_config.errorPages.at(statusCode));
+			const std::string errorPage	= r_config.errorPages.at(statusCode);
+			const std::string content	= IO::getFileContent(errorPage);
 			if (!content.empty())
-				_response.setEntityBody(content);
-			EasyPrint(r_config.errorPages.at(statusCode));
+				_response.setEntityBody(content, errorPage);
+			EasyPrint(errorPage);
 			EasyPrint(content);
 		}
 		_finalise();
@@ -89,6 +90,7 @@ ClientEvent::_receiveBody() {
 		return;
 
 	LOG(Debug, "Client " + std::to_string(data.fd) + " Received Full Body");
+	EasyPrint(_requestBuffer);
 
 	_processRequest();
 
@@ -210,7 +212,7 @@ ClientEvent::_get(
 	if (indexContent.empty())
 		throw HttpError(404);
 	else
-		_response.setEntityBody(indexContent);
+		_response.setEntityBody(indexContent, path);
 }
 
 void
@@ -276,8 +278,6 @@ const {
 		"TZ=Europe/Amsterdam"
 	};
 
-	// add HTTP headers as CGI variables
-
 	const Http::HeaderMap	&headers = _request.getRequestHeaders();
 	for (Http::HeaderMap::const_iterator it = headers.begin(); it != headers.end(); ++it)
 	{
@@ -330,7 +330,7 @@ ClientEvent::_cgi(
 		EasyPrint(_target.file);
 		::close(pipe[0]);
 		::dup2(pipe[1], STDOUT_FILENO);
-		// ::dup2(pipe[1], STDERR_FILENO);
+		::dup2(pipe[1], STDERR_FILENO);
 		{
 			std::string	interpreter	= SupportedCGIExtensions.at(_target.extension);
 			std::string	path		= std::filesystem::absolute("." + _target.root + _target.file);

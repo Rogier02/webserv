@@ -12,7 +12,7 @@
             width: 100%;
             height: 150px;
         }
-        input, select, button {
+        input, button {
             margin-top: 10px;
             padding: 6px;
         }
@@ -27,44 +27,31 @@
 </head>
 <body>
 
-<h2>HTTP/1.0 POST Request Tester</h2>
+<h2>HTTP POST Request Tester</h2>
 
 <label>
-    Endpoint:
-    <input type="text" id="endpoint" value="http://localhost:8080/upload/file">
-</label>
-<br>
-
-<label>
-    Content-Type:
-    <select id="contentType">
-        <option value="application/json">application/json</option>
-        <option value="application/x-www-form-urlencoded">application/x-www-form-urlencoded</option>
-        <option value="text/plain">text/plain</option>
-    </select>
+    Filename:
+    <input type="text" id="filename" value="file">
 </label>
 <br>
 
 <label>
     Request Body:
-    <textarea id="body">
-{
-  "message": "Hello HTTP/1.0 server"
-}
-    </textarea>
+    <textarea id="body"></textarea>
 </label>
 <br>
 
 <button onclick="sendPost()">Send POST</button>
+
+<button onclick="sendDelete()">Send DELETE</button>
 
 <h3>Response:</h3>
 <div id="response"></div>
 
 <script>
 async function sendPost() {
-    const endpoint = document.getElementById("endpoint").value;
+    const endpoint = "http://localhost:8080/upload/" + document.getElementById("filename").value.trim();
     const body = document.getElementById("body").value;
-    const contentType = document.getElementById("contentType").value;
     const responseDiv = document.getElementById("response");
 
     responseDiv.textContent = "Sending...";
@@ -73,7 +60,7 @@ async function sendPost() {
         const response = await fetch(endpoint, {
             method: "POST",
             headers: {
-                "Content-Type": contentType
+                "Content-Type": "text/plain"
             },
             body: body
         });
@@ -81,10 +68,29 @@ async function sendPost() {
         const text = await response.text();
 
         responseDiv.textContent =
-            "Status: " + response.status + " " + response.statusText + "\n\n" +
-            text;
+            "Status: " + response.status + " " + response.statusText + "\n\n" + text;
     } catch (error) {
-        responseDiv.textContent = "Error: " + error;
+        responseDiv.textContent = "Error: " + error.message;
+    }
+}
+
+async function sendDelete() {
+    const endpoint = "http://localhost:8080/vault/" + document.getElementById("filename").value.trim();
+    const responseDiv = document.getElementById("response");
+
+    responseDiv.textContent = "Sending DELETE...";
+
+    try {
+        const response = await fetch(endpoint, {
+            method: "DELETE"
+        });
+
+        const text = await response.text();
+
+        responseDiv.textContent =
+            "Status: " + response.status + " " + response.statusText + "\n\n" + text;
+    } catch (error) {
+        responseDiv.textContent = "Error: " + error.message;
     }
 }
 </script>
