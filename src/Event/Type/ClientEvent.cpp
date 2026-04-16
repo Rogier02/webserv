@@ -219,7 +219,10 @@ void
 ClientEvent::_post(
 	Config::Listener::Location const &location)
 {
-	(void)location;
+	if (SupportedCGIExtensions.contains(_target.extension)) {
+		_cgi(location);
+		return ;
+	}
 
 	std::string	path = "." + _target.root + location.uploadDir + _target.file;
 
@@ -247,7 +250,10 @@ void
 ClientEvent::_delete(
 	Config::Listener::Location const &location)
 {
-	(void)location;
+	if (SupportedCGIExtensions.contains(_target.extension)) {
+		_cgi(location);
+		return;
+	}
 
 	std::string		path = "." + _target.root + _target.file;
 
@@ -270,8 +276,8 @@ const {
 		"SERVER_PROTOCOL=" + _request.getVersion(),
 		"SERVER_NAME=" + r_config.name,
 		"SERVER_PORT=" + std::to_string(r_config.port),
-		"CONTENT_TYPE=" + _request.getRequestHeaderValue("Content-Type"),
-		"CONTENT_LENGTH=" + _request.getRequestHeaderValue("Content-Length"),
+		"CONTENT_TYPE=" + _request.getEntityHeaderValue("content-type"),
+		"CONTENT_LENGTH=" + _request.getEntityHeaderValue("content-length"),
 		"QUERY_STRING=" + _request.getQueryString(),
 		"SCRIPT_NAME=" + _request.getScriptName(),
 		"SCRIPT_FILENAME=" + scriptPath,
@@ -307,6 +313,12 @@ const {
 	return (char**)envArray;
 }
 
+enum PipeDef
+{
+	READ,
+	WRITE,
+};
+
 void
 ClientEvent::_cgi(
 	Config::Listener::Location const &location)
@@ -314,29 +326,41 @@ ClientEvent::_cgi(
 	if (location.cgiEXT.find(_target.extension) == std::string::npos)
 		throw HttpError(403);
 
-	int	pipe[2];
-	if (::pipe(pipe) == -1)
+	int	cgiToServer[2];
+	if (::pipe(cgiToServer) == -1)
 		throw HttpError(500);
+
+	int	serverToCgi[2];
+	if (::pipe(serverToCgi) == -1)
+		throw HttpError(500);
+
 
 	_cgild = fork();
 	EasyPrint(_cgild);
 	if (_cgild == -1) {
-		::close(pipe[0]);
-		::close(pipe[1]);
+		::close(cgiToServer[READ]);
+		::close(cgiToServer[WRITE]);
+		::close(serverToCgi[READ]);
+		::close(serverToCgi[WRITE]);
 		throw HttpError(500);
 	}
 
 	if (_cgild == 0) {
 		EasyPrint(_target.file);
-		::close(pipe[0]);
-		::dup2(pipe[1], STDOUT_FILENO);
-		::dup2(pipe[1], STDERR_FILENO);
+		::close(cgiToServer[READ]);
+		::close(serverToCgi[WRITE]);
+		::dup2(cgiToServer[WRITE], STDOUT_FILENO);
+		::dup2(serverToCgi[READ], STDIN_FILENO);
+		// ::dup2(pipe[1], STDERR_FILENO);
 		{
 			std::string	interpreter	= SupportedCGIExtensions.at(_target.extension);
 			std::string	path		= std::filesystem::absolute("." + _target.root + _target.file);
 
+			std::cerr << "I LOVE CHICKED" << std::endl;
 			if (chdir(std::string("." + _target.root).c_str()) < 0)
 				exit(EXIT_FAILURE);
+
+						std::cerr << "I DONT LOVE CHDIR" << std::endl;
 
 			char	**env	= setupEnvironment(path);
 			char	*argv[]	= {
@@ -345,16 +369,25 @@ ClientEvent::_cgi(
 				NULL
 			};
 
+			std::cerr << "I LOVE CHEESEEEEEE" << std::endl;
 			execve(argv[0], argv, env);
+
+			std::cerr << "NO THIS I NOT WANT" << std::endl;
 		}
 		exit(errno);
 	} else {
-		::close(pipe[1]);
+		::close(cgiToServer[WRITE]);
+		::close(serverToCgi[READ]);
 
+		EasyPrint(_request.getEntityBody());
 		EventHandlers::create<CGInboxEvent>(
-			pipe[0], *this, r_epoll, r_config);
+			cgiToServer[READ], *this, r_epoll, r_config);
 
-		std::cout << "CGInbox " << pipe[0] << " \e[33mCreated\e[0m\n";
+		EventHandlers::create<ServerToCGIEvent>(
+			serverToCgi[WRITE], r_epoll, r_config, _request.getEntityBody()
+		);
+
+		std::cout << "CGInbox " << cgiToServer[READ] << " \e[33mCreated\e[0m\n";
 	}
 }
 

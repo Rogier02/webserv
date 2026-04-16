@@ -12,6 +12,7 @@
 namespace IO {
 	std::string	getFileContent(std::string const &path);
 	::ssize_t	read(int fd, std::string &dest);
+	::ssize_t 	write(int fd, std::string &src);
 	bool		exists(std::string const &file);
 }
 

@@ -2,7 +2,7 @@
 """
 cgi-bin/delete.py
 Receives a POST with field 'path', deletes the file, returns a result page.
-Used by the no-JS test suite because browsers cannot send DELETE natively.
+Because browsers cannot send DELETE natively.
 """
  
 import cgi

@@ -14,6 +14,7 @@
 # include "HttpRequest.hpp"
 # include "HttpResponse.hpp"
 # include "CGInboxEvent.hpp"
+# include "ServerToCGIEvent.hpp"
 # include "Logger.hpp"
 # include "IO.hpp"
 

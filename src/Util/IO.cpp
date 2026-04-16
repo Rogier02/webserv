@@ -26,6 +26,14 @@ namespace IO {
 		return (received);
 	}
 
+	::ssize_t
+	write(int fd, std::string &src)
+	{
+		::ssize_t	written = ::write(fd, src.c_str(), src.size());
+
+		return (written);
+	}
+
 	bool
 	exists(std::string const &file)
 	{

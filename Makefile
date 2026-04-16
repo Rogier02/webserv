@@ -26,6 +26,7 @@ EVENTBASE_FILES	=	Event.cpp			\
 
 EVENTTYPE_MODULE=	Event/Type
 EVENTTYPE_FILES	=	CGInboxEvent.cpp	\
+					ServerToCGIEvent.cpp\
 					ClientEvent.cpp		\
 					ListenEvent.cpp		\
 

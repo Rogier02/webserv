@@ -261,6 +261,13 @@ namespace Http {
 	std::string const	&
 	Request::getRequestHeaderValue(std::string const &key)
 	const {
+
+		for (auto& [key, value]: _requestHeaders)
+		{
+			std::cerr << "KEY: " << key;
+			std::cerr << "VALUE" << value << std::endl;
+		}
+
 		HeaderMap::const_iterator it = _requestHeaders.find(key);
 		if (it != _requestHeaders.end())
 			return (it->second);

@@ -53,14 +53,25 @@ def respond(status, title, message, extra=''):
 	print("\r")
 	print(body)
 
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
 def main():
 	# Only accept POST
 	if os.environ.get('REQUEST_METHOD', 'GET') != 'POST':
 		respond(405, 'Method Not Allowed', 'This endpoint only accepts POST requests.')
 		return
 
+	eprint(os.environ)
+
+	eprint("WE GOT A GET")
 	# Ensure upload dir exists
 	os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+	eprint(f"UPLOAD_DIR: {UPLOAD_DIR}")
+
+	#print argv
+	eprint(f"ARGV: {sys.argv}")
 
 	# Parse multipart form
 	form = cgi.FieldStorage(
@@ -69,9 +80,16 @@ def main():
 		keep_blank_values=True
 	)
 
+	eprint("WE PARSED THE PART")
+
+	eprint("Form is none: ", form)
+
+
 	if 'file' not in form:
 		respond(400, 'Bad Request', 'No file field found in the form data.')
 		return
+
+	eprint("WE FOUND THE FILE")
 
 	fileitem = form['file']
 
@@ -79,11 +97,16 @@ def main():
 		respond(400, 'Bad Request', 'No file was selected.')
 		return
 
+	eprint("WE HAVE THE FILE")
+
+
 	# Sanitise filename — strip path components
 	filename  = os.path.basename(fileitem.filename.replace('\\', '/'))
 	if not filename:
 		respond(400, 'Bad Request', 'Invalid filename.')
 		return
+
+	eprint(f"FILENAME: {filename}")
 
 	# Add timestamp to avoid collisions
 	ts       = int(time.time())
@@ -94,17 +117,22 @@ def main():
 	if len(data) > MAX_SIZE:
 		respond(413, 'Payload Too Large', f'File exceeds the {MAX_SIZE // 1024 // 1024} MB limit.')
 		return
+	eprint(f"FILE SIZE: {len(data)} bytes")
 
 	with open(savepath, 'wb') as f:
 		f.write(data)
 
+	eprint(f"FILE SAVED TO: {savepath}")
+
 	note = html.escape(form.getvalue('note', ''))
 	size = len(data)
+
 
 	extra = f'<p style="margin-top:10px">Saved as <code>{html.escape(savename)}</code> ({size:,} bytes)</p>'
 	if note:
 		extra += f'<p>Note: {note}</p>'
 
+	eprint("WE ARE RESPONDING")
 	respond(200, 'Upload successful', f'File <code>{html.escape(filename)}</code> was uploaded successfully.', extra)
 
 main()
