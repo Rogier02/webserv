@@ -1,0 +1,6 @@
+# Ignore generated files during Docker build
+obj/
+webserv
+.git/
+.github/
+node_modules/

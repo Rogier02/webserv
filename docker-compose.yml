@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  build:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/webserv
+    working_dir: /webserv
+    # Keep container running so you can exec into it
+    command: /bin/bash -c "make clean && make && bash"
+    stdin_open: true
+    tty: true
+
+  # Optional: service to run the compiled binary
+  run:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/webserv
+    working_dir: /webserv
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    # Uncomment next line when you want to run it with a config file
+    # command: ./webserv configs/default.conf
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+    # requires: build to complete first
+    depends_on:
+      build:
+        condition: service_started
