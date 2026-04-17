@@ -1,4 +1,4 @@
-#include "ServerToCGIEvent.hpp"
+#include "CGOutboxEvent.hpp"
 
 CGOutboxEvent::CGOutboxEvent(int fd, Epoll &epoll, Config::Listener const &config, const std::string& request_body)
 	:	Event(fd, Epoll::Events::Out, epoll, config)
