@@ -49,12 +49,6 @@ Logger::log(Level level, std::string const &message, const char *file, int line)
 		<< "\e[3" << std::to_string(level + 1) << "m" << construct.str() << "\e[0m\n";
 
 	putendl(construct.str());
-
-	// put(PREFIX[level], '\t');
-	// put(message, ' ');
-	// if (level == Error || level == Debug)
-	// 	put(std::string("(") + file + ":" + std::to_string(line) + ")");
-	// putendl();
 }
 
 void Logger::put(std::string const &str, char c) {

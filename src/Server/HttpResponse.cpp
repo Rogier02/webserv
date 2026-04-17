@@ -36,7 +36,6 @@ namespace Http {
 		return (statusLine + headers + CRLF + _entityBody);
 	}
 
-	// check for custom error page
 	void
 	Response::err(
 		u_int16_t statusCode)
