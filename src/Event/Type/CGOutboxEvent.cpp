@@ -13,7 +13,6 @@ CGOutboxEvent::~CGOutboxEvent()
 void
 CGOutboxEvent::_out()
 {
-	// TODO: do we want to catch an error??? when write return
 	::size_t	sent = IO::write(data.fd, _inputBuffer);
 
 	LOG(Debug, std::to_string(sent) + " Characters Sent");
@@ -22,10 +21,6 @@ CGOutboxEvent::_out()
 
 	if (_inputBuffer.empty())
 	{
-		{// what dis doin?
-		std::string miep("\0");
-		IO::write(data.fd, miep);
-		}
 		LOG(Info, "CGOutbox " + std::to_string(data.fd) + " Completed Sending");
 		std::cout << "CGOutbox " << data.fd << " \e[32mCompleted Sending\e[0m\n";
 		EventHandlers::erase(data.fd);
