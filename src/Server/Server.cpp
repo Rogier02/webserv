@@ -6,8 +6,8 @@ Server::Server(Config &config)
 	{
 		int	socketFd = Socket::create(listener.port);
 
-		EasyPrint(socketFd);
-		EasyPrint(listener.port);
+		LOG(Info, "Socket Fd: " + std::to_string(socketFd));
+		LOG(Info, "Listener Port: " + std::to_string(listener.port));
 
 		EventHandlers::create<ListenEvent>(
 			socketFd, _epoll, listener);

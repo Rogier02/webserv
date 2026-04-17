@@ -14,7 +14,6 @@
 # include "Epoll.hpp"
 # include "EventHandlers.hpp"
 # include "EasyThrow.hpp"
-# include "EasyPrint.hpp"
 # include "Logger.hpp"
 // events
 # include "ClientEvent.hpp"

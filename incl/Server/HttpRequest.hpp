@@ -5,9 +5,11 @@
 # include <string>
 # include <sstream>
 # include <functional>
+# include <iostream>
 
 // webserv
 # include "HttpMessage.hpp"
+# include "Logger.hpp"
 
 namespace Http {
 	class	Request : public Message {

@@ -19,7 +19,6 @@ Logger::~Logger() {
 	_logFile.close();
 }
 
-// TODO: print to stdout / stderr with cool colours
 void
 Logger::log(Level level, std::string const &message, const char *file, int line)
 {

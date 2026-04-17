@@ -11,7 +11,7 @@
 // webserv
 # include "Socket.hpp"
 # include "EasyThrow.hpp"
-# include "EasyPrint.hpp"
+# include "Logger.hpp"
 
 class	Epoll
 {

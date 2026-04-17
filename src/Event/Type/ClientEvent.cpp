@@ -90,7 +90,7 @@ ClientEvent::_receiveBody() {
 		return;
 
 	LOG(Debug, "Client " + std::to_string(data.fd) + " Received Full Body");
-	EasyPrint(_requestBuffer);
+	LOG(Debug, "RequestBuffer: " + _requestBuffer);
 
 	_processRequest();
 
@@ -164,9 +164,8 @@ ClientEvent::_URIdentification()
 		if (dot != std::string::npos)
 			_target.extension	= _target.file.substr(dot);
 	}
-
-	EasyPrint(_target.root);
-	EasyPrint(_target.file);
+	LOG(Info, "Target Root: " + _target.root);
+	LOG(Info, "Target File: " + _target.file);
 
 	return (0);
 }
@@ -205,9 +204,7 @@ ClientEvent::_get(
 	std::string	path			= "." + _target.root + _target.file;
 	std::string	indexContent	= IO::getFileContent(path);
 
-	std::cout	<< "GET " << _request.getURI()
-				<< " <" << path << "> "
-				<< ((indexContent.empty()) ? "(empty)" : "") << "\n";
+	LOG(Debug, "GET Path: " + path + ((indexContent.empty()) ? "(empty)" : ""));
 
 	if (indexContent.empty())
 		throw HttpError(404);
@@ -225,6 +222,7 @@ ClientEvent::_post(
 	}
 
 	std::string	path = "." + _target.root + location.uploadDir + _target.file;
+	LOG(Debug, "POST Path: " + path);
 
 	if (_target.file == "/") {
 		for (::size_t i = 0; i < 100; ++i)
@@ -235,7 +233,6 @@ ClientEvent::_post(
 		}
 	}
 
-	EasyPrint(path);
 	std::ofstream	outfile(path);
 
 	if (!outfile.is_open())
@@ -253,6 +250,7 @@ ClientEvent::_delete(
 	(void)location;
 
 	std::string		path = "." + _target.root + _target.file;
+	LOG(Debug, "DELETE Path: " + path);
 
 	if (_target.file == "/")
 		throw HttpError(403);
@@ -334,7 +332,7 @@ ClientEvent::_cgi(
 		throw HttpError(500);
 
 	_cgild = fork();
-	EasyPrint(_cgild);
+	LOG(Info, "CGI pid: " + ((_cgild == 0) ? "none" : std::to_string(_cgild)));
 	if (_cgild == -1) {
 		::close(cgiToServer[Rd]);
 		::close(cgiToServer[Wr]);
@@ -344,7 +342,6 @@ ClientEvent::_cgi(
 	}
 
 	if (_cgild == 0) {
-		EasyPrint(_target.file);
 		::close(cgiToServer[Rd]);
 		::close(serverToCgi[Wr]);
 		::dup2(cgiToServer[Wr], STDOUT_FILENO);
@@ -354,11 +351,8 @@ ClientEvent::_cgi(
 			std::string	interpreter	= SupportedCGIExtensions.at(_target.extension);
 			std::string	path		= std::filesystem::absolute("." + _target.root + _target.file);
 
-			std::cerr << "I LOVE CHICKED" << std::endl;
 			if (chdir(std::string("." + _target.root).c_str()) < 0)
 				exit(EXIT_FAILURE);
-
-						std::cerr << "I DONT LOVE CHDIR" << std::endl;
 
 			char	**env	= setupEnvironment(path);
 			char	*argv[]	= {
@@ -367,17 +361,14 @@ ClientEvent::_cgi(
 				NULL
 			};
 
-			std::cerr << "I LOVE CHEESEEEEEE" << std::endl;
 			execve(argv[0], argv, env);
-
-			std::cerr << "NO THIS I NOT WANT" << std::endl;
 		}
 		exit(errno);
 	} else {
 		::close(cgiToServer[Wr]);
 		::close(serverToCgi[Rd]);
 
-		EasyPrint(_request.getEntityBody());
+		LOG(Debug, "CGI Entity Body:\n" + _request.getEntityBody());
 		EventHandlers::create<CGInboxEvent>(
 			cgiToServer[Rd], r_epoll, r_config, *this);
 
@@ -444,7 +435,6 @@ ClientEvent::youHaveGotMail(std::string &cgiOutput)
 			LOG(Warning, "cgi child: signaled " + std::to_string(WTERMSIG(status)));
 	}
 
-	EasyPrint(cgiOutput);
 	LOG(Info, "CGI Output:\n" + cgiOutput);
 
 	::size_t	headerEndPos = cgiOutput.find(HeaderEnd);

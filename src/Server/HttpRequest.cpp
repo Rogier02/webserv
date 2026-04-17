@@ -1,7 +1,4 @@
 #include "HttpRequest.hpp"
-#include <iostream>
-
-# include "EasyPrint.hpp"
 
 namespace Http {
 	std::string
@@ -28,9 +25,8 @@ namespace Http {
 		if (_entityHeaders.contains("content-length"))
 			contentLength = std::stoul(_entityHeaders.at("content-length"));
 
-		if (entityLength > contentLength)
-		{
-			EasyPrint(entityLength - contentLength);
+		if (entityLength > contentLength) {
+			LOG(Error, "Bad Request: Entity Body too long: " + std::to_string(entityLength) + "/" + std::to_string(contentLength));
 			return (-1);// bad request
 		}
 
@@ -48,12 +44,18 @@ namespace Http {
 		std::string			line;
 
 		getlineCRLF(stream, line);
-		if (EasyPrint(parseRequestLine(line)) == -1)
+		if (parseRequestLine(line) == -1) {
+			LOG(Error, "Parsehead::RequestLine failed");
 			return (-1);
-		if (EasyPrint(parseHeaders(stream, line)) == -1)
+		}
+		if (parseHeaders(stream, line) == -1) {
+			LOG(Error, "Parsehead::Headers failed");
 			return (-1);
-		if (EasyPrint(validateParseRequest()) == -1)
+		}
+		if (validateParseRequest() == -1) {
+			LOG(Error, "Parsehead::Validate failed");
 			return (-1);
+		}
 
 		return (0);
 	}
