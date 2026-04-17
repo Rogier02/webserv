@@ -30,6 +30,11 @@ Logger::log(Level level, std::string const &message, const char *file, int line)
 		"DEBUG",
 	};
 
+#ifndef DEBUG
+	if (level == Debug)
+		return;
+#endif
+
 	std::stringstream	construct;
 
 	construct << PREFIX[level];

@@ -35,8 +35,8 @@ ClientEvent::_in()
 			const std::string content	= IO::getFileContent(errorPage);
 			if (!content.empty())
 				_response.setEntityBody(content, errorPage);
-			EasyPrint(errorPage);
-			EasyPrint(content);
+			LOG(Info, errorPage);
+			LOG(Debug, content);
 		}
 		_finalise();
 		// return;
@@ -83,7 +83,7 @@ void
 ClientEvent::_receiveBody() {
 	int	bytesSet = _request.setEntityBody(_requestBuffer);
 
-	EasyPrint(bytesSet);
+	LOG(Debug, std::to_string(bytesSet) + " Characters Set");
 	if (bytesSet == -1)
 		throw HttpError(400);
 	if (bytesSet == 0)
@@ -94,7 +94,7 @@ ClientEvent::_receiveBody() {
 
 	_processRequest();
 
-	EasyPrint(_cgild);
+	LOG(Debug, "CGI child pid: " + std::to_string(_cgild));
 	(_cgild == -1)
 	?	_finalise()
 	:	_mod(0)
@@ -108,6 +108,7 @@ void
 ClientEvent::_finalise()
 {
 	_responseBuffer = _response.toString();
+	LOG(Debug, "ResponseBuffer: " + _responseBuffer);
 	_mod(Epoll::Events::Out);
 }
 
@@ -129,8 +130,7 @@ const {
 	if (URI.length() > 1 && URI.back() == '/')
 		URI.pop_back();
 
-	EasyPrint(rawURI);
-	EasyPrint(URI);
+	LOG(Info, "URI: " + URI);
 
 	return (URI);
 }
@@ -250,15 +250,15 @@ void
 ClientEvent::_delete(
 	Config::Listener::Location const &location)
 {
-	if (SupportedCGIExtensions.contains(_target.extension)) {
-		_cgi(location);
-		return;
-	}
+	(void)location;
 
 	std::string		path = "." + _target.root + _target.file;
 
 	if (_target.file == "/")
 		throw HttpError(403);
+
+	if (!IO::exists(path))
+		throw HttpError(404);
 
 	if (std::remove(path.c_str()) == -1)
 		throw HttpError(500);
@@ -313,7 +313,6 @@ const {
 	return (char**)envArray;
 }
 
-
 void
 ClientEvent::_cgi(
 	Config::Listener::Location const &location)
@@ -333,7 +332,6 @@ ClientEvent::_cgi(
 	int	serverToCgi[2];
 	if (::pipe(serverToCgi) == -1)
 		throw HttpError(500);
-
 
 	_cgild = fork();
 	EasyPrint(_cgild);
@@ -440,14 +438,14 @@ ClientEvent::youHaveGotMail(std::string &cgiOutput)
 			LOG(Warning, "cgi child: zombie process now");
 		if (WIFEXITED(status) == false)
 			LOG(Warning, "cgi child: did not exit");
-		if (WIFEXITED(status) == true)
+		if (WIFEXITED(status) == true && WEXITSTATUS(status) != 0)
 			LOG(Warning, "cgi child: exited with code " + std::to_string(WEXITSTATUS(status)));
 		if (WIFSIGNALED(status) == true)
 			LOG(Warning, "cgi child: signaled " + std::to_string(WTERMSIG(status)));
 	}
 
 	EasyPrint(cgiOutput);
-	LOG(Info, cgiOutput);
+	LOG(Info, "CGI Output:\n" + cgiOutput);
 
 	::size_t	headerEndPos = cgiOutput.find(HeaderEnd);
 	if (headerEndPos != std::string::npos) {

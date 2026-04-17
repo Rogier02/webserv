@@ -16,7 +16,7 @@ CGOutboxEvent::_out()
 	// TODO: do we want to catch an error??? when write return
 	::size_t	sent = IO::write(data.fd, _inputBuffer);
 
-	EasyPrint(sent);
+	LOG(Debug, std::to_string(sent) + " Characters Sent");
 
 	_inputBuffer.erase(0, sent);
 

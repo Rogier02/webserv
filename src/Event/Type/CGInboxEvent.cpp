@@ -19,6 +19,5 @@ CGInboxEvent::_in()
 		return;
 
 	r_client.youHaveGotMail(_outputBuffer);
-	EasyPrint("");
 	EventHandlers::erase(data.fd);
 }

@@ -27,20 +27,17 @@
 			The server stores it under <code>/uploads/</code> via the CGI handler.
 		</p>
 
-		<form action="/cgi-bin/upload.py" method="POST" enctype="multipart/form-data">
-			<div class="field-row">
-				<label for="uploadFile">File</label>
-				<input type="file" id="uploadFile" name="file">
-			</div>
-			<div class="field-row">
-				<label for="uploadNote">Note <span class="optional">(optional)</span></label>
-				<input type="text" id="uploadNote" name="note" placeholder="description of the file">
-			</div>
-			<div class="field-row field-row-submit">
-				<span></span>
-				<button type="submit" class="btn">Upload</button>
-			</div>
-		</form>
+		<label>
+			<input type="text" id="filename" name="path" value="file">
+		</label>
+		<br>
+
+		<label>
+			<textarea id="content">Hello World!</textarea>
+		</label>
+		<br>
+		<button onclick="sendPost(filename.value, content.value)" type="submit" class="btn">Send POST</button>
+
 	</section>
 
 	<!-- ── SECTION 2: Browse uploads ── -->
@@ -57,22 +54,11 @@
 	<section class="card">
 		<div class="card-label">03</div>
 		<h2>DELETE — remove a file</h2>
-		<p class="card-desc">
-			Browsers cannot send a DELETE request natively, so this routes through a CGI
-			helper (<code>delete.py</code>) that receives the target path as a POST field
-			and performs the deletion server-side.
-		</p>
 
-		<form action="/cgi-bin/delete.py" method="POST">
-			<div class="field-row">
-				<label for="deletePath">Path</label>
-				<input type="text" id="deletePath" name="path" placeholder="/uploads/filename.txt">
-			</div>
-			<div class="field-row field-row-submit">
-				<span></span>
-				<button type="submit" class="btn btn-danger">Delete</button>
-			</div>
-		</form>
+		<label>
+			<input type="text" id="deletePath" name="path" value="file">
+		</label>
+		<button onclick="sendDelete(deletePath.value)" type="submit" class="btn btn-danger">Send DELETE</button>
 	</section>
 
 	<!-- ── SECTION 4: CGI env dump ── -->
@@ -105,6 +91,26 @@ curl -I http://localhost:8080/cgi-bin/env.py</pre>
 <footer>
 	<p>42 School — webserv project · pure HTML/CSS · no JavaScript</p>
 </footer>
+
+<script>
+	async function sendPost(URI, content) {
+		const endpoint = "http://localhost:8080/uploads/" + URI;
+		fetch(endpoint, {
+				method: "POST",
+				headers: {
+					"Content-Type": "text/plain"
+				},
+				body: content
+			});
+	}
+
+	async function sendDelete(URI) {
+		const endpoint = "http://localhost:8080/uploads/" + URI;
+		fetch(endpoint, {
+			method: "DELETE"
+		});
+	}
+</script>
 
 </body>
 </html>

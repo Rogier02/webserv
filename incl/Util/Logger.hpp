@@ -8,6 +8,8 @@
 # include <ctime>
 # include <iomanip>
 
+// # define DEBUG
+
 class	Logger
 {
 	public:
