@@ -2,6 +2,7 @@
 # define LOGGER_HPP
 
 // C++
+# include <iostream>
 # include <string>
 # include <fstream>
 # include <ctime>

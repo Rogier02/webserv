@@ -55,8 +55,8 @@ ClientEvent::_out()
 
 	if (_responseBuffer.empty()) {
 		LOG(Info, "Client " + std::to_string(data.fd) + " Completed Response");
-
 		std::cout << "Client " << data.fd << " \e[32mCompleted Response\e[0m\n";
+
 		EventHandlers::erase(data.fd);
 	}
 }
@@ -313,16 +313,16 @@ const {
 	return (char**)envArray;
 }
 
-enum PipeDef
-{
-	READ,
-	WRITE,
-};
 
 void
 ClientEvent::_cgi(
 	Config::Listener::Location const &location)
 {
+	enum Pipend {
+		Rd = 0,
+		Wr,
+	};
+
 	if (location.cgiEXT.find(_target.extension) == std::string::npos)
 		throw HttpError(403);
 
@@ -338,19 +338,19 @@ ClientEvent::_cgi(
 	_cgild = fork();
 	EasyPrint(_cgild);
 	if (_cgild == -1) {
-		::close(cgiToServer[READ]);
-		::close(cgiToServer[WRITE]);
-		::close(serverToCgi[READ]);
-		::close(serverToCgi[WRITE]);
+		::close(cgiToServer[Rd]);
+		::close(cgiToServer[Wr]);
+		::close(serverToCgi[Rd]);
+		::close(serverToCgi[Wr]);
 		throw HttpError(500);
 	}
 
 	if (_cgild == 0) {
 		EasyPrint(_target.file);
-		::close(cgiToServer[READ]);
-		::close(serverToCgi[WRITE]);
-		::dup2(cgiToServer[WRITE], STDOUT_FILENO);
-		::dup2(serverToCgi[READ], STDIN_FILENO);
+		::close(cgiToServer[Rd]);
+		::close(serverToCgi[Wr]);
+		::dup2(cgiToServer[Wr], STDOUT_FILENO);
+		::dup2(serverToCgi[Rd], STDIN_FILENO);
 		// ::dup2(pipe[1], STDERR_FILENO);
 		{
 			std::string	interpreter	= SupportedCGIExtensions.at(_target.extension);
@@ -376,18 +376,17 @@ ClientEvent::_cgi(
 		}
 		exit(errno);
 	} else {
-		::close(cgiToServer[WRITE]);
-		::close(serverToCgi[READ]);
+		::close(cgiToServer[Wr]);
+		::close(serverToCgi[Rd]);
 
 		EasyPrint(_request.getEntityBody());
 		EventHandlers::create<CGInboxEvent>(
-			cgiToServer[READ], *this, r_epoll, r_config);
+			cgiToServer[Rd], r_epoll, r_config, *this);
 
-		EventHandlers::create<ServerToCGIEvent>(
-			serverToCgi[WRITE], r_epoll, r_config, _request.getEntityBody()
-		);
+		EventHandlers::create<CGOutboxEvent>(
+			serverToCgi[Wr], r_epoll, r_config, _request.getEntityBody());
 
-		std::cout << "CGInbox " << cgiToServer[READ] << " \e[33mCreated\e[0m\n";
+		std::cout << "CGInbox " << cgiToServer[Rd] << " \e[33mCreated\e[0m\n";
 	}
 }
 

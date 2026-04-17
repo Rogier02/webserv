@@ -4,11 +4,11 @@ namespace IO {
 	std::string
 	getFileContent(std::string const &filePath)
 	{
-		std::ifstream file(filePath);
-		if (!file.is_open()) {
+		std::stringstream	buffer;
+		std::ifstream		file(filePath);
+		if (!file.is_open())
 			return ("");
-		}
-		std::stringstream buffer;
+
 		buffer << file.rdbuf();
 		return (buffer.str());
 	}
@@ -16,21 +16,18 @@ namespace IO {
 	::ssize_t
 	read(int fd, std::string &dest)
 	{
-		char	buffer[1024];
-
+		char		buffer[1024];
 		::ssize_t	received = ::read(fd, buffer, sizeof(buffer) - 1);
 
 		if (received > 0)
 			dest.append(buffer, received);
-
 		return (received);
 	}
 
 	::ssize_t
 	write(int fd, std::string &src)
 	{
-		::ssize_t	written = ::write(fd, src.c_str(), src.size());
-
+		::ssize_t	written = ::write(fd, src.c_str(), src.length());
 		return (written);
 	}
 
