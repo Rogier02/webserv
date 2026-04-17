@@ -18,60 +18,18 @@
 
 <main>
 
-	<!-- ── SECTION 1: POST upload ── -->
 	<section class="card">
 		<div class="card-label">01</div>
-		<h2>POST — upload file</h2>
-		<p class="card-desc">
-			Upload a file to the server.
-			The server stores it under <code>/uploads/</code> via the CGI handler.
-		</p>
-
-		<label>
-			<input type="text" id="filename" name="path" value="file">
-		</label>
+		<h2>Test POST and DELETE</h2>
+		<a class="btn" href="/uploads">Uploads</a>
 		<br>
+	</section>
 
-		<label>
-			<textarea id="content">Hello World!</textarea>
-		</label>
+	<section class="card">
+		<div class="card-label">01</div>
+		<h2>Execute various scripts</h2>
+		<a class="btn" href="/cgi">CGI</a>
 		<br>
-		<button onclick="sendPost(filename.value, content.value)" type="submit" class="btn">Send POST</button>
-
-	</section>
-
-	<!-- ── SECTION 2: Browse uploads ── -->
-	<section class="card">
-		<div class="card-label">02</div>
-		<h2>GET — browse uploads</h2>
-		<p class="card-desc">
-			Open the <code>/uploads/</code> directory listing served by the server.
-		</p>
-		<a class="btn" href="/uploads/" target="_blank">Open /uploads/</a>
-	</section>
-
-	<!-- ── SECTION 3: DELETE via form ── -->
-	<section class="card">
-		<div class="card-label">03</div>
-		<h2>DELETE — remove a file</h2>
-
-		<label>
-			<input type="text" id="deletePath" name="path" value="file">
-		</label>
-		<button onclick="sendDelete(deletePath.value)" type="submit" class="btn btn-danger">Send DELETE</button>
-	</section>
-
-	<!-- ── SECTION 4: CGI env dump ── -->
-	<section class="card">
-		<div class="card-label">04</div>
-		<h2>GET — CGI environment</h2>
-		<p class="card-desc">
-			Opens <code>/cgi-bin/env.py</code> which dumps every environment variable
-			the server passes to the CGI process. Varifies
-			<code>REQUEST_METHOD</code>, <code>CONTENT_TYPE</code>,
-			<code>PATH_INFO</code>, <code>QUERY_STRING</code>, etc.
-		</p>
-		<a class="btn" href="/cgi-bin/env.py" target="_blank">Open env dump</a>
 	</section>
 
 </main>
@@ -79,26 +37,6 @@
 <footer>
 	<p>Http/1.0</p>
 </footer>
-
-<script>
-	async function sendPost(URI, content) {
-		const endpoint = "http://localhost:8080/uploads/" + URI;
-		fetch(endpoint, {
-				method: "POST",
-				headers: {
-					"Content-Type": "text/plain"
-				},
-				body: content
-			});
-	}
-
-	async function sendDelete(URI) {
-		const endpoint = "http://localhost:8080/uploads/" + URI;
-		fetch(endpoint, {
-			method: "DELETE"
-		});
-	}
-</script>
 
 </body>
 </html>

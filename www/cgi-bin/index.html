@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>webserv — test suite</title>
+	<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header>
+	<div class="header-inner">
+		<div class="logo">
+			<span class="logo-bracket">[</span>webserv<span class="logo-bracket">]</span>
+		</div>
+	</div>
+	<div class="header-inner">
+		<nav>
+			<a href="/">Home</a>
+		</nav>
+	</div>
+</header>
+
+<!-- cgi time.py, time.php, infinite.py -->
+<main>
+	<section class="card">
+		<div class="card-label">04</div>
+		<h2>GET — CGI environment</h2>
+		<p class="card-desc">
+			Opens <code>/cgi/env.py</code> which dumps every environment variable
+			the server passes to the CGI process. Varifies
+			<code>REQUEST_METHOD</code>, <code>CONTENT_TYPE</code>,
+			<code>PATH_INFO</code>, <code>QUERY_STRING</code>, etc.
+		</p>
+		<a class="btn" href="/cgi/env.py">Open env dump</a>
+	</section>
+
+	<section class="card">
+		<div class="card-label">04</div>
+		<h2>Timestamp from scripts in two different languages</h2>
+		<a class="btn" href="/cgi/time.py">Python</a>
+		<a class="btn" href="/cgi/time.php">PHP</a>
+	</section>
+	<section class="card">
+		<div class="card-label">04</div>
+		<h2>Infinite loop script to test Timeout</h2>
+		<a class="btn" href="/cgi/infinite.py">Python</a>
+	</section>
+</main>
+
+<footer>
+	<p>Http/1.0</p>
+</footer>
+
+</body>
+</html>

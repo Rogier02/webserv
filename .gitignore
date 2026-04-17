@@ -2,7 +2,8 @@
 obj/
 *.o
 
-www/upload/temp*
+www/uploads/file
+www/uploads/temp*
 webserv
 a.out
 Log.txt
