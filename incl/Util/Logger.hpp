@@ -8,7 +8,7 @@
 # include <ctime>
 # include <iomanip>
 
-// # define DEBUG
+# define DEBUG
 
 class	Logger
 {
@@ -23,6 +23,7 @@ class	Logger
 			Info,
 			Warning,
 			Debug,
+			Memory,
 		};
 
 	private:

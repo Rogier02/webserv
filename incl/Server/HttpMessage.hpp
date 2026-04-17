@@ -4,6 +4,8 @@
 // CPP
 # include <string>
 # include <map>
+// webserv
+# include "Logger.hpp"
 
 namespace Http {
 	constexpr std::string	SP = " ";
@@ -38,7 +40,7 @@ namespace Http {
 			Message(std::string const &version);
 			Message(Message const &) = delete;
 			Message(Message &&) = delete;
-			virtual ~Message() = default;
+			virtual ~Message();
 
 		public:
 			virtual std::string	toString() const = 0;

@@ -5,7 +5,12 @@ namespace Http {
 		std::string const &version)
 		:	_version(version)
 	{
-		// _entityHeaders["content-length"] = "0";
+		LOG(Memory, "  Http Message Constructed");
+	}
+
+	Message::~Message()
+	{
+		LOG(Memory, "  Http Message Destructed");
 	}
 
 	void

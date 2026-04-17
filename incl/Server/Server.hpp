@@ -28,7 +28,7 @@ class	Server
 		Server(Server const &) = delete;
 		Server(Server &&) = delete;
 		Server(Config &config);
-		~Server() = default;
+		~Server();
 
 	private:
 		Epoll	_epoll;

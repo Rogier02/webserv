@@ -39,7 +39,7 @@ int	main(int argc, char *argv[])
 	try {
 		Config		config = Parse(configFilePath).config();
 		Validate	Validate(config);
-		std::cout << config;
+		LOG(Debug, "Config File:\n" + config.toString());
 
 		Server	server(config);
 		server.run();

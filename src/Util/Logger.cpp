@@ -27,10 +27,11 @@ Logger::log(Level level, std::string const &message, const char *file, int line)
 		"INFO",
 		"WARNING",
 		"DEBUG",
+		"MEMORY",
 	};
 
 #ifndef DEBUG
-	if (level == Debug)
+	if (level == Debug || level == Memory)
 		return;
 #endif
 

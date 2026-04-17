@@ -8,12 +8,15 @@ Event::Event(int fd, u_int32_t eventTypes, Epoll &epoll, Config::Listener const 
 	events	= eventTypes | Epoll::Events::Err | Epoll::Events::Hup | Epoll::Events::RdH;
 
 	r_epoll.ctl(Epoll::Ctl::Add, *this);
+
+	LOG(Memory, "Event Constructed: " + std::to_string(data.fd));
 }
 
 Event::~Event()
 {
 	r_epoll.ctl(Epoll::Ctl::Del, data.fd);
 	::close(data.fd);
+	LOG(Memory, "Event Destructed: " + std::to_string(data.fd));
 }
 
 void

@@ -4,11 +4,13 @@ CGInboxEvent::CGInboxEvent(int fd, Epoll &epoll, Config::Listener const &config,
 	:	Event(fd, Epoll::Events::In, epoll, config)
 	,	r_client(client)
 
-{}
+{
+	LOG(Memory, " CGInboxEvent Constructed: " + std::to_string(data.fd));
+}
 
 CGInboxEvent::~CGInboxEvent()
 {
-	std::cout << "CGInbox " << data.fd << "\e[34m Destructed (pipe read end)\e[0m\n";
+	LOG(Memory, " CGInboxEvent Destructed: " + std::to_string(data.fd));
 }
 
 void

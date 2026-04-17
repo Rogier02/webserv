@@ -6,6 +6,7 @@
 # include <vector>
 # include <map>
 # include <iostream>
+# include <sstream>
 
 struct	Config
 {
@@ -37,8 +38,8 @@ struct	Config
 	};
 
 	std::vector<Listener>	listeners;
-};
 
-std::ostream	&operator<<(std::ostream &os, Config const &config);
+	std::string	toString() const;
+};
 
 #endif

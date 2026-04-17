@@ -2,6 +2,8 @@
 
 Server::Server(Config &config)
 {
+	LOG(Memory, "Server Constructed");
+
 	for (Config::Listener &listener : config.listeners)
 	{
 		int	socketFd = Socket::create(listener.port);
@@ -14,10 +16,15 @@ Server::Server(Config &config)
 	}
 }
 
+Server::~Server()
+{
+	LOG(Memory, "Server Destructed");
+}
+
 void
 Server::run()
 {
-	std::cout << "Server running...\n";
+	LOG(Info, "Server Running");
 	while (_pleaseShutDown == false)
 	{
 		try {
@@ -33,31 +40,24 @@ Server::run()
 			}
 		}
 		catch	(std::runtime_error &exception) {
-			LOG(Error, exception.what());
-			std::cerr << "Runtime Error (continuing server loop): "
-				<< exception.what() << std::endl;
+			LOG(Error, std::string("Runtime Error (continuing server loop): ") + exception.what());
 		}
 		catch (std::logic_error &exception) {
-			LOG(Error, exception.what());
-			std::cerr << "Logic Error: (breaking server loop)"
-				<< exception.what() << std::endl;
+			LOG(Error, std::string("Logic Error: (breaking server loop): ") + exception.what());
 			break;
 		}
 		catch (std::exception &exception) {
-			LOG(Error, exception.what());
-			std::cerr << "!? Unexpected exception: (breaking loose all hell)"
-				<< exception.what() << std::endl;
+			LOG(Error, std::string("!? Unexpected exception: (breaking loose all hell): ") + exception.what());
 			throw exception;
 		}
 		// TODO: time out requests that haven't done anything for a while
 	}
 	LOG(Info, "Controlled Server Shutdown\n");
-	std::cout << "Server shutting down...\n";
 }
 
 void
 Server::_closeConnection(int fd)
 {
 	EventHandlers::erase(fd);
-	std::cout << "Client " << fd << " \e[33mSuccessfully Disconnected\e[0m\n";
+	LOG(Info, "Client " + std::to_string(fd) + "Disconnected by Server");
 }

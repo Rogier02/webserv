@@ -3,11 +3,13 @@
 CGOutboxEvent::CGOutboxEvent(int fd, Epoll &epoll, Config::Listener const &config, const std::string& request_body)
 	:	Event(fd, Epoll::Events::Out, epoll, config)
 	, 	_inputBuffer(request_body)
-{}
+{
+	LOG(Memory, " CGOutboxEvent Constructed: " + std::to_string(data.fd));
+}
 
 CGOutboxEvent::~CGOutboxEvent()
 {
-	std::cout << "ServerToCGI " << data.fd << "\e[34m Destructed (pipe read end)\e[0m\n";
+	LOG(Memory, " CGOutboxEvent Destructed: " + std::to_string(data.fd));
 }
 
 void
@@ -22,7 +24,6 @@ CGOutboxEvent::_out()
 	if (_inputBuffer.empty())
 	{
 		LOG(Info, "CGOutbox " + std::to_string(data.fd) + " Completed Sending");
-		std::cout << "CGOutbox " << data.fd << " \e[32mCompleted Sending\e[0m\n";
 		EventHandlers::erase(data.fd);
 	}
 }

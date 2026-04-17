@@ -2,15 +2,22 @@
 
 ListenEvent::ListenEvent(int socketFd, Epoll &epoll, Config::Listener const &config)
 	:	Event(socketFd, Epoll::Events::In, epoll, config)
-{}
+{
+	LOG(Memory, " ListenEvent Constructed: " + std::to_string(data.fd));
+}
+
+ListenEvent::~ListenEvent()
+{
+	LOG(Memory, " ListenEvent Destructed: " + std::to_string(data.fd));
+}
 
 void
 ListenEvent::_in()
 {
-	int	socketFd = Socket::accept(data.fd);
+	int	clientFd = Socket::accept(data.fd);
 
 	EventHandlers::create<ClientEvent>(
-		socketFd, r_epoll, r_config);
+		clientFd, r_epoll, r_config);
 
-	std::cout << "Client " << socketFd << " \e[33mSuccessfully Connected\e[0m\n";
+	LOG(Info, "Client " + std::to_string(clientFd) + "Connected to Server");
 }

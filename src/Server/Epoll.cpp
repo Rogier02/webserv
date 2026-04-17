@@ -9,14 +9,15 @@ Epoll::Epoll()
 		throw LocatedThrow("Epoll resource limit (nofile) is too large");
 	_buffer = new epoll_event[resourceLimit.rlim_cur];
 
-	LOG(Info, "Epoll Fd: " + std::to_string(_epfd));
-	LOG(Info, "Epoll Resource Limit: " + std::to_string(resourceLimit.rlim_cur));
+	LOG(Memory, "Epoll Constructed: " + std::to_string(_epfd));
+	LOG(Memory, "Epoll Resource Limit: " + std::to_string(resourceLimit.rlim_cur));
 }
 
 Epoll::~Epoll()
 {
 	::close(_epfd);
 	delete[] _buffer;
+	LOG(Memory, "Epoll Destructed: " + std::to_string(_epfd));
 }
 
 std::vector<epoll_event>

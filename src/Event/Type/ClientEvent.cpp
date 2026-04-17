@@ -7,12 +7,12 @@ ClientEvent::ClientEvent(int socketFd, Epoll &epoll, Config::Listener const &con
 	,	_receivedHead(false)
 	,	_cgild(-1)
 {
-	std::cout << "Client " << data.fd << " \e[34mConstructed\e[0m\n";
+	LOG(Memory, " ClientEvent Constructed: " + std::to_string(data.fd));
 }
 
 ClientEvent::~ClientEvent()
 {
-	std::cout << "Client " << data.fd << " \e[34mDestructed\e[0m\n";
+	LOG(Memory, " ClientEvent Destructed: " + std::to_string(data.fd));
 }
 
 void
@@ -36,7 +36,6 @@ ClientEvent::_in()
 			if (!content.empty())
 				_response.setEntityBody(content, errorPage);
 			LOG(Info, errorPage);
-			LOG(Debug, content);
 		}
 		_finalise();
 		// return;
@@ -55,7 +54,6 @@ ClientEvent::_out()
 
 	if (_responseBuffer.empty()) {
 		LOG(Info, "Client " + std::to_string(data.fd) + " Completed Response");
-		std::cout << "Client " << data.fd << " \e[32mCompleted Response\e[0m\n";
 
 		EventHandlers::erase(data.fd);
 	}
@@ -76,7 +74,7 @@ ClientEvent::_receiveHead() {
 	if (_request.parseHead(head) == -1)
 		throw HttpError(400);
 
-	LOG(Debug, "Client " + std::to_string(data.fd) + " Received Good Head");
+	LOG(Info, "Client " + std::to_string(data.fd) + " Received Good Head");
 }
 
 void
@@ -89,7 +87,7 @@ ClientEvent::_receiveBody() {
 	if (bytesSet == 0)
 		return;
 
-	LOG(Debug, "Client " + std::to_string(data.fd) + " Received Full Body");
+	LOG(Info, "Client " + std::to_string(data.fd) + " Received Full Body");
 	LOG(Debug, "RequestBuffer: " + _requestBuffer);
 
 	_processRequest();
@@ -100,7 +98,7 @@ ClientEvent::_receiveBody() {
 	:	_mod(0)
 	;
 
-	LOG(Debug, "Client " + std::to_string(data.fd) + " Processed Request: "
+	LOG(Info, "Client " + std::to_string(data.fd) + " Processed Request: "
 		+ ((_cgild == -1) ? "ready to send" : "waiting for CGI"));
 }
 
@@ -108,7 +106,6 @@ void
 ClientEvent::_finalise()
 {
 	_responseBuffer = _response.toString();
-	LOG(Debug, "ResponseBuffer: " + _responseBuffer);
 	_mod(Epoll::Events::Out);
 }
 
@@ -164,8 +161,8 @@ ClientEvent::_URIdentification()
 		if (dot != std::string::npos)
 			_target.extension	= _target.file.substr(dot);
 	}
-	LOG(Info, "Target Root: " + _target.root);
-	LOG(Info, "Target File: " + _target.file);
+	LOG(Debug, "Target Root: " + _target.root);
+	LOG(Debug, "Target File: " + _target.file);
 
 	return (0);
 }
@@ -204,7 +201,7 @@ ClientEvent::_get(
 	std::string	path			= "." + _target.root + _target.file;
 	std::string	indexContent	= IO::getFileContent(path);
 
-	LOG(Debug, "GET Path: " + path + ((indexContent.empty()) ? "(empty)" : ""));
+	LOG(Info, "GET Path: " + path + ((indexContent.empty()) ? "(empty)" : ""));
 
 	if (indexContent.empty())
 		throw HttpError(404);
@@ -222,7 +219,7 @@ ClientEvent::_post(
 	}
 
 	std::string	path = "." + _target.root + location.uploadDir + _target.file;
-	LOG(Debug, "POST Path: " + path);
+	LOG(Info, "POST Path: " + path);
 
 	if (_target.file == "/") {
 		for (::size_t i = 0; i < 100; ++i)
@@ -250,7 +247,7 @@ ClientEvent::_delete(
 	(void)location;
 
 	std::string		path = "." + _target.root + _target.file;
-	LOG(Debug, "DELETE Path: " + path);
+	LOG(Info, "DELETE Path: " + path);
 
 	if (_target.file == "/")
 		throw HttpError(403);
@@ -368,14 +365,11 @@ ClientEvent::_cgi(
 		::close(cgiToServer[Wr]);
 		::close(serverToCgi[Rd]);
 
-		LOG(Debug, "CGI Entity Body:\n" + _request.getEntityBody());
 		EventHandlers::create<CGInboxEvent>(
 			cgiToServer[Rd], r_epoll, r_config, *this);
 
 		EventHandlers::create<CGOutboxEvent>(
 			serverToCgi[Wr], r_epoll, r_config, _request.getEntityBody());
-
-		std::cout << "CGInbox " << cgiToServer[Rd] << " \e[33mCreated\e[0m\n";
 	}
 }
 

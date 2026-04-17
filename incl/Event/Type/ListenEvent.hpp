@@ -16,7 +16,7 @@ class ListenEvent : public Event
 		ListenEvent(ListenEvent const &) = delete;
 		ListenEvent(ListenEvent &&) = delete;
 		ListenEvent(int socketFd, Epoll &epoll, Config::Listener const &config);
-		~ListenEvent() = default;
+		~ListenEvent();
 
 	private:
 		void	_in() override;
