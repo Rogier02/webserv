@@ -49,7 +49,7 @@ namespace Http {
 			bool	isAllowedURICharacter(char c);
 
 		using	HeaderSorter = std::function<void (std::string const &)>;
-		std::map<std::string, HeaderSorter>
+		const std::map<std::string, HeaderSorter>
 		HeaderHandlers = {
 			{"date",
 				[this](std::string const &value)

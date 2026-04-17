@@ -13,7 +13,7 @@ namespace Http {
 
 	using	HeaderMap = std::map<std::string, std::string>;
 
-	static std::map<u_int16_t, std::string>	Statuses	= {
+	static const std::map<u_int16_t, std::string>	Statuses	= {
 		{200, "OK"},
 		{201, "Created"},
 		{202, "Accepted"},

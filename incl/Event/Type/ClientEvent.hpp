@@ -25,6 +25,7 @@ class ClientEvent : public Event
 	public:
 		using LocationMap	= std::map<std::string, Config::Listener::Location>;
 		using PageMap		= std::map<u_int16_t, std::string>;
+
 		struct	Target	{
 			std::string	location;
 			std::string	root;
@@ -34,9 +35,9 @@ class ClientEvent : public Event
 
 		const std::map<std::string, std::string>	SupportedCGIExtensions = {
 			{".py", "/usr/bin/python3"},
-			{".sh", "/bin/bash"},
 			{".php", "/usr/bin/php-cgi"},
 			// {".pl", "/usr/bin/perl"},
+			// {".sh", "/bin/bash"},
 		};
 
 	private:
@@ -89,7 +90,7 @@ class ClientEvent : public Event
 
 	private:
 		using	Method = std::function<void (Config::Listener::Location const &)>;
-		std::map<std::string, Method>
+		const std::map<std::string, Method>
 		Methods = {
 			{"GET",
 				[this](Config::Listener::Location const &location)

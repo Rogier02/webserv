@@ -58,7 +58,7 @@ class	Parse
 
 	private:
 		using	ServerDirective = std::function<void (Config::Listener &)>;
-		std::map<std::string, ServerDirective>
+		const std::map<std::string, ServerDirective>
 		serverDirectives = {
 			{"server_name",
 				[this](Config::Listener& s)
@@ -81,7 +81,7 @@ class	Parse
 		};
 
 		using	LocationDirective = std::function<void (Config::Listener::Location &)>;
-		std::map<std::string, LocationDirective>
+		const std::map<std::string, LocationDirective>
 		locationDirectives = {
 			{"root",
 				[this](Config::Listener::Location& l)

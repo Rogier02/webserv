@@ -14,7 +14,7 @@ namespace Http {
 	Response::Response()
 		:	Message("1.0")
 		,	_statusCode(200)
-		,	_reasonPhrase(Statuses[_statusCode])
+		,	_reasonPhrase(Statuses.at(_statusCode))
 	{
 	}
 
@@ -78,7 +78,7 @@ namespace Http {
 		u_int16_t statusCode)
 	{
 		_statusCode		= statusCode;
-		_reasonPhrase	= Statuses[statusCode];
+		_reasonPhrase	= Statuses.at(_statusCode);
 	}
 
 	void
