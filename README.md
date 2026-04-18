@@ -15,35 +15,35 @@ The primary functions are to store, process and deliver web pages to clients.
 
 ## Requirements
 
-	- The Http server is not allowed to crash under any circumstances
+- The Http server is not allowed to crash under any circumstances
 
-	- Must use a configuration file 
+- Must use a configuration file 
 
-	- Must remain non-blocking at all times and handle client connects and disconnects
+- Must remain non-blocking at all times and handle client connects and disconnects
 
-	- Use of only one poll() or equivalent function is allowed
+- Use of only one poll() or equivalent function is allowed
 
-	- Use of NGINX is allowed to comapre headers and anser behaviours
+- Use of NGINX is allowed to comapre headers and anser behaviours
 
-	- Accurate HTTP response status codes
+- Accurate HTTP response status codes
 
-	- Must accomodate at least GET, POST, DELETE methods
+- Must accomodate at least GET, POST, DELETE methods
 
-	- Must be able to listen to multiple ports simultaniously
+- Must be able to listen to multiple ports simultaniously
 
 ## Features
 
-	- Complys with HTTP/1.0
+- Complys with HTTP/1.0
 
-	- CGI (Common gateway interface) for executing programs.
+- CGI (Common gateway interface) for executing programs.
 
-	- Upload and delete files 
+- Upload and delete files 
 
-	- Timestamps
+- Timestamps
 
-	- Custom error pages
+- Custom error pages
 
-	- NGINX-like webserver configuration
+- NGINX-like webserver configuration
 
 ## Install & Setup
 
