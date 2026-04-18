@@ -65,6 +65,14 @@ Once its compiled run the executable:
 ./webserv
 ```
 
+then in the browser go to:
+
+```sh
+localhost:8080
+```
+
+*The port may be different depending on the configuration used. But by default it should be 8080.
+
 ### Clean up 
 
 remove objects:
@@ -92,12 +100,10 @@ make re
 [Beej's Guide to network Programming ](https://beej.us/guide/bgnet/)
 
 [MDN web docs on HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP)
-
-### RFC
 	
-[RFC 1945 - HTTP/1.0 PROTOCOL](https://datatracker.ietf.org/doc/html/rfc1945)
+[RFC 1945 - HTTP/1.0](https://datatracker.ietf.org/doc/html/rfc1945)
 
-[RFC 6455 - WEBSOCKETS](https://datatracker.ietf.org/doc/html/rfc6455)
+[RFC 6455 - Websockets](https://datatracker.ietf.org/doc/html/rfc6455)
 
 [RFC 3875 - CGI](https://datatracker.ietf.org/doc/html/rfc3875)
 
