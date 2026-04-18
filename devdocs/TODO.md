@@ -4,13 +4,13 @@ Rogier:
 
 Simon:
 	trace all Http Headers
-	Timeout: slow CGI, Client not sending full request
-	maximum clients (fds)
-	reset signal for cgild
-	(remove wrapper, add socket::create() to ListenEvent())
+	ListenEvent:
+		maximum clients (fds) simply don't allow high fds? maybe let client close itself and err()
+		move socket::create() into ListenEvent Constructor;
+			remove wrapper
 
 Laura:
 	config parser checken of alles werkt (eind project)
 	trace all Config keys
 
-search TODO: 3 hits atm
+search TODO: 2 hits atm

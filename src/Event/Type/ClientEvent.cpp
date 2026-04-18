@@ -8,7 +8,6 @@ ClientEvent::ClientEvent(int socketFd, Epoll &epoll, Config::Listener const &con
 	:	Event(socketFd, Epoll::Events::In, epoll, config)
 	,	_receivedHead(false)
 {
-	LOG(Info, r_config.name + ": " + std::to_string(r_config.clientMaxBodySize));
 	LOG(Memory, " ClientEvent Constructed: " + std::to_string(data.fd));
 }
 
