@@ -7,6 +7,7 @@ ClientEvent::ClientEvent(int socketFd, Epoll &epoll, Config::Listener const &con
 	,	_receivedHead(false)
 	,	_cgild(-1)
 {
+	LOG(Info, r_config.name + ": " + std::to_string(r_config.clientMaxBodySize));
 	LOG(Memory, " ClientEvent Constructed: " + std::to_string(data.fd));
 }
 
@@ -27,7 +28,6 @@ ClientEvent::_in()
 			_receiveBody();
 	} catch (HttpError const &e) {
 		u_int16_t	statusCode = e.status();
-		std::cerr << "\e[31mError:\e[0m " << e.what() << std::endl;
 		LOG(Error, e.what());
 		_response.err(statusCode);
 		if (r_config.errorPages.contains(statusCode)) {
@@ -79,12 +79,27 @@ ClientEvent::_receiveHead() {
 
 void
 ClientEvent::_receiveBody() {
-	int	bytesSet = _request.setEntityBody(_requestBuffer);
+	const ::size_t	entityLength	= _requestBuffer.length();
+	::size_t		contentLength	= 0;
 
-	LOG(Debug, std::to_string(bytesSet) + " Characters Set");
-	if (bytesSet == -1)
+	Http::HeaderMap const	&entityHeaders = _response.getEntityHeaders();
+	if (entityHeaders.contains("content-length"))
+		contentLength = std::stoul(entityHeaders.at("content-length"));
+
+	if (entityLength > contentLength) {
+		LOG(Error, "Bad Request: Entity Body Exceeds Content Length: "
+			+ std::to_string(entityLength) + "/" + std::to_string(contentLength));
 		throw HttpError(400);
-	if (bytesSet == 0)
+	}
+	if (contentLength > r_config.clientMaxBodySize) {
+		LOG(Error, "Bad Request: Content Length Exceeds ClientMaxBodySize"
+			+ std::to_string(contentLength) + "/" + std::to_string(r_config.clientMaxBodySize));
+		throw HttpError(400);
+	}
+
+	_response.setEntityBody(_requestBuffer);
+	LOG(Debug, std::to_string(entityLength) + "/" + std::to_string(contentLength) + " Characters Set");
+	if (entityLength < contentLength)
 		return;
 
 	LOG(Info, "Client " + std::to_string(data.fd) + " Received Full Body");
@@ -329,7 +344,7 @@ ClientEvent::_cgi(
 		throw HttpError(500);
 
 	_cgild = fork();
-	LOG(Info, "CGI pid: " + ((_cgild == 0) ? "none" : std::to_string(_cgild)));
+	LOG(Info, "CGI pid: " + std::to_string(_cgild));
 	if (_cgild == -1) {
 		::close(cgiToServer[Rd]);
 		::close(cgiToServer[Wr]);

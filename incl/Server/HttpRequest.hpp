@@ -33,7 +33,7 @@ namespace Http {
 
 		public:
 			int		parseHead(std::string const &requestHead);
-			int		setEntityBody(std::string const &requestEntity);
+			void	setEntityBody(std::string const &requestEntity);
 
 		private:
 			int		parseRequestLine(std::string const &line);

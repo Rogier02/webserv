@@ -19,5 +19,5 @@ ListenEvent::_in()
 	EventHandlers::create<ClientEvent>(
 		clientFd, r_epoll, r_config);
 
-	LOG(Info, "Client " + std::to_string(clientFd) + "Connected to Server");
+	LOG(Info, "Client " + std::to_string(clientFd) + " Connected to Server");
 }
