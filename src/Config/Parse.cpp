@@ -108,7 +108,7 @@ Parse::location(Config::Listener &server)
 
 		if (server.locations.contains(path)) {
 			log("Duplicate location: " + path);
-			_ts.advanceTillBracket();
+			_ts.advanceToBracket();
 		}
 
 		location.root				= server.root;

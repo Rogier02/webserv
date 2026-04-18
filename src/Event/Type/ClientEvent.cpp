@@ -196,7 +196,7 @@ ClientEvent::_processRequest()
 
 	Config::Listener::Location const	&location = r_config.locations.at(_target.location);
 
-	if (location.allowedMethods.contains(method))
+	if (!location.allowedMethods.contains(method))
 		throw HttpError(403);
 
 	Methods.at(method)(location);
