@@ -5,12 +5,12 @@ CGInboxEvent::CGInboxEvent(int fd, Epoll &epoll, Config::Listener const &config,
 	,	r_client(client)
 
 {
-	LOG(Memory, " CGInboxEvent Constructed: " + std::to_string(data.fd));
+	LOG(Memory, "  CGInboxEvent Constructed: " + std::to_string(data.fd));
 }
 
 CGInboxEvent::~CGInboxEvent()
 {
-	LOG(Memory, " CGInboxEvent Destructed: " + std::to_string(data.fd));
+	LOG(Memory, "  CGInboxEvent Destructed: " + std::to_string(data.fd));
 }
 
 void

@@ -4,12 +4,12 @@ CGOutboxEvent::CGOutboxEvent(int fd, Epoll &epoll, Config::Listener const &confi
 	:	Event(fd, Epoll::Events::Out, epoll, config)
 	, 	_inputBuffer(request_body)
 {
-	LOG(Memory, " CGOutboxEvent Constructed: " + std::to_string(data.fd));
+	LOG(Memory, "  CGOutboxEvent Constructed: " + std::to_string(data.fd));
 }
 
 CGOutboxEvent::~CGOutboxEvent()
 {
-	LOG(Memory, " CGOutboxEvent Destructed: " + std::to_string(data.fd));
+	LOG(Memory, "  CGOutboxEvent Destructed: " + std::to_string(data.fd));
 }
 
 void

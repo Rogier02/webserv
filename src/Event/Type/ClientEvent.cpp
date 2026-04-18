@@ -8,18 +8,20 @@ ClientEvent::ClientEvent(int socketFd, Epoll &epoll, Config::Listener const &con
 	:	Event(socketFd, Epoll::Events::In, epoll, config)
 	,	_receivedHead(false)
 {
-	LOG(Memory, " ClientEvent Constructed: " + std::to_string(data.fd));
+	LOG(Memory, "  ClientEvent Constructed: " + std::to_string(data.fd));
 }
 
 ClientEvent::~ClientEvent()
 {
 	if (_cgild.pid != -1) {
-		if (_cgild.inbox != -1) EventHandlers::erase(_cgild.inbox);
-		if (_cgild.outbox != -1) EventHandlers::erase(_cgild.outbox);
+		if (_cgild.inbox != -1)
+			EventHandlers::erase(_cgild.inbox);
+		if (_cgild.outbox != -1)
+			EventHandlers::erase(_cgild.outbox);
 		::kill(_cgild.pid, SIGKILL);
 		LOG(Info, "Killed CGI child: " + std::to_string(_cgild.pid));
 	}
-	LOG(Memory, " ClientEvent Destructed: " + std::to_string(data.fd));
+	LOG(Memory, "  ClientEvent Destructed: " + std::to_string(data.fd));
 }
 
 void
@@ -454,11 +456,8 @@ ClientEvent::youHaveGotMail(std::string &cgiOutput)
 
 	::size_t	headerEndPos = cgiOutput.find(HeaderEnd);
 	if (headerEndPos != std::string::npos) {
-		_response.setStatus(200);  // Default to 200, parseMailHeaders may override
 		parseMailHeaders(cgiOutput.substr(0, headerEndPos));
 		cgiOutput.erase(0, headerEndPos + HeaderEnd.length());
-	} else {
-		_response.setStatus(200);
 	}
 
 	_response.setEntityBody(cgiOutput);

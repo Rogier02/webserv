@@ -41,7 +41,7 @@ Logger::log(Level level, std::string const &message, const char *file, int line)
 	if (!message.empty())
 		construct << '\t' << message;
 	if (level == Error || level == Debug)
-		construct << " (" << file << ":" << std::to_string(line) << ")";
+		construct << "\n\t(" << file << ":" << std::to_string(line) << ")";
 
 	std::cout << "\e[3" << std::to_string(level + 1) << "m" << construct.str() << "\e[0m\n";
 

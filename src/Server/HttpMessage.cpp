@@ -5,12 +5,12 @@ namespace Http {
 		std::string const &version)
 		:	_version(version)
 	{
-		LOG(Memory, "  Http Message Constructed");
+		LOG(Memory, "    Http Message Constructed");
 	}
 
 	Message::~Message()
 	{
-		LOG(Memory, "  Http Message Destructed");
+		LOG(Memory, "    Http Message Destructed");
 	}
 
 	void
