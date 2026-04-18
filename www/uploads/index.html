@@ -11,12 +11,13 @@
 <header>
 	<div class="header-inner">
 		<div class="logo">
-			<span class="logo-bracket">[</span>webserv<span class="logo-bracket">]</span>
+			<a href="/" style="text-decoration: none; color: inherit;">
+				<span class="logo-bracket">[</span>webserv<span class="logo-bracket">]</span>
+			</a>
 		</div>
-	</div>
-	<div class="header-inner">
-		<nav>
-			<a href="/">Home</a>
+		<nav class="nav">
+			<a href="/cgi">CGI</a>
+			<a href="/uploads">Uploads</a>
 		</nav>
 	</div>
 </header>
@@ -34,12 +35,10 @@
 		<label>
 			<input type="text" id="filename" name="path" value="file">
 		</label>
-		<br>
 
 		<label>
 			<textarea id="content">Hello World!</textarea>
 		</label>
-		<br>
 		<button onclick="sendPost(filename.value, content.value)" type="submit" class="btn">Send POST</button>
 
 	</section>
@@ -60,25 +59,6 @@
 	<p>Http/1.0</p>
 </footer>
 
-<script>
-	async function sendPost(URI, content) {
-		const endpoint = "http://localhost:8080/uploads/" + URI;
-		fetch(endpoint, {
-				method: "POST",
-				headers: {
-					"Content-Type": "text/plain"
-				},
-				body: content
-			});
-	}
-
-	async function sendDelete(URI) {
-		const endpoint = "http://localhost:8080/uploads/" + URI;
-		fetch(endpoint, {
-			method: "DELETE"
-		});
-	}
-</script>
 
 </body>
 </html>
