@@ -37,13 +37,11 @@ namespace Http {
 
 		private:
 			int		parseRequestLine(std::string const &line);
-			int		parseEntityBody(std::istream &stream);
 			int		parseHeaders(std::istream &stream, std::string &line);
 			int		getlineCRLF(std::istream &stream, std::string &line);
 			int		validateParseRequest();
 			int		validateHTTPVersion();
 			int		validateURI();
-			int		validateHeaders();
 			bool	isAllDigits(std::string const &str);
 			bool	isHexDigits(char c);
 			bool	isAllowedURICharacter(char c);
