@@ -94,5 +94,10 @@ make re
 	
 [RFC 1945 - HTTP PROTOCOL](https://datatracker.ietf.org/doc/html/rfc1945)
 [RFC 7230 - HTTP PROTOCOL](https://datatracker.ietf.org/doc/html/rfc7230)
+[RFC 7231 - HTTP PROTOCOL](https://datatracker.ietf.org/doc/html/rfc7231)
+[RFC 7232 - HTTP PROTOCOL](https://datatracker.ietf.org/doc/html/rfc7232)
+[RFC 7323 - HTTP PROTOCOL](https://datatracker.ietf.org/doc/html/rfc7233)
+[RFC 7324 - HTTP PROTOCOL](https://datatracker.ietf.org/doc/html/rfc7234)
+[RFC 7325 - HTTP PROTOCOL](https://datatracker.ietf.org/doc/html/rfc7235)
 [RFC 6455 - WEBSOCKETS](https://datatracker.ietf.org/doc/html/rfc6455)
 [RFC 3875 - CGI](https://datatracker.ietf.org/doc/html/rfc3875)
