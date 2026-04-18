@@ -1,19 +1,15 @@
 # 42 Webserv
-Welcome to our webserv project!
+
+Building a C++ HTTP server
+
+## Contributors
+
+[SimonvH03](https://github.com/SimonvH03) - [Laura-dekoning](https://github.com/laura-dekoning) - [Rogier02](https://github.com/Rogier02)
 
 
 ## Introduction
+
 The aim of this project was to create an HTTP server using c++ in a Non-Blocking manner.
-
-The project consists of multiple parts. The parser handles the processing of incomming requests and the configuration file for the HTTP server. The core implamentation of the HTTP server and client handling and connections. And the execution using (CGI) common gateway interface. 
-
-
-## Project Overview
-
-Our HTTP server will begin by parsing the configuration file that is needed to set the parameters for running the HTTP server. This will determin what and how many ports the server will be listening to. Additionally the configuration will also include the paths for all of the file locations for the CGI scripts, upload locations, index pages, error pages, etc.
-
-Once the HTTP server is configured without error. The server with 'run' and monitor incomming connections using epoll().
-As connection are made the server will identify the type of connection and parse requests. Based on the request the server will then execute with CGI a response or generate a simple HTTP response to send back to the client. 
 
 ## Requirements
 
@@ -26,10 +22,6 @@ As connection are made the server will identify the type of connection and parse
 	- Server must be able to listen to multiple ports.
 
 ## Install & Setup
-
-## Usage
-
-## Architecture
 
 ## Resources
 

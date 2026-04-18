@@ -1,5 +1,5 @@
 Rogier:
-	Index pages: make em pretty and usable ~
+
 	README.md
 
 Simon:
@@ -11,4 +11,4 @@ Laura:
 	config parser checken of alles werkt (eind project)
 	trace all Config keys
 
-search TODO: 3 hits atm
+search TODO: 4 hits atm

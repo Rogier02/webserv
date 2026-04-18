@@ -82,7 +82,7 @@ ClientEvent::_receiveBody() {
 	const ::size_t	entityLength	= _requestBuffer.length();
 	::size_t		contentLength	= 0;
 
-	Http::HeaderMap const	&entityHeaders = _response.getEntityHeaders();
+	Http::HeaderMap const	&entityHeaders = _request.getEntityHeaders();
 	if (entityHeaders.contains("content-length"))
 		contentLength = std::stoul(entityHeaders.at("content-length"));
 
