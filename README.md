@@ -1,45 +1,115 @@
 # 42 Webserv
-Welcome to our webserv project!
+
+Building a C++ HTTP server
 
 
-## Brief Project Outline
-The aim of this project was to create an HTTP server using c++ in a Non-Blocking manner.
+## Contributors
 
-The project consists of multiple parts. The parser handles the processing of incomming requests and the configuration file for the HTTP server. The core implamentation of the HTTP server and client handling and connections. And the execution using (CGI) common gateway interface. 
+[SimonvH03](https://github.com/SimonvH03) - [Laura-dekoning](https://github.com/laura-dekoning) - [Rogier02](https://github.com/Rogier02)
 
-Our HTTP server will begin by parsing the configuration file that is needed to set the parameters for running the HTTP server. This will determin what and how many ports the server will be listening to. Additionally the configuration will also include the paths for all of the file locations for the CGI scripts, upload locations, index pages, error pages, etc.
 
-Once the HTTP server is configured without error. The server with 'run' and monitor incomming connections using epoll().
-As connection are made the server will identify the type of connection and parse requests. Based on the request the server will then execute with CGI a response or generate a simple HTTP response to send back to the client. 
+## Introduction
 
-## Project Requirements
+The aim of this project was to create an HTTP server using c++ in a non-blocking manner.
 
-Some of the requirements for this project include;
-	- The use of 1 poll(), epoll() or equivalent loop.
-	- The poll()/epoll() loop must monitor all communication between the server and clients.
-	- Not allowed to check the value of errno for the purposes of adjusting server behaviour.
-	- Must use at least GET, POST and DELETE methods.
-	- Provide default error pages.
-	- Clients must be able to upload files.
-	- Server must be able to listen to multiple ports.
+The primary functions are to store, process and deliver web pages to clients.
 
-## Detailed Walkthrough
 
-### Part 1 - Configuration.
+## Requirements
 
-### Part 2 - Entering the Server Loop
+- The HTTP server is not allowed to crash under any circumstances
 
-### Part 3 - Event Handling
+- Must use a configuration file 
 
-### Part 3 - Identifying request
+- Must remain non-blocking at all times and handle client connects and disconnects
 
-### Part 4 - Generating response
+- Use of only one poll() or equivalent function is allowed
 
-### Part 5 - CGI
+- Use of NGINX is allowed to comapre headers and answer behaviours
 
-### Part 6 - Error Logging
+- Accurate HTTP response status codes
 
-### Part 7 -
+- Must accomodate at least GET, POST, DELETE methods
+
+- Must be able to listen to multiple ports simultaniously
+
+
+## Features
+
+- Complies with HTTP/1.0 According to the [RFC 1945](https://datatracker.ietf.org/doc/html/rfc1945)
+
+- CGI (Common gateway interface)
+
+- Upload and delete files 
+
+- Timestamps
+
+- Custom error pages
+
+- NGINX-like webserver configuration
+
+
+## Install & Setup
+
+Note: this setup is specifically for Ubuntu linux. Compiling and running this software on other distro's or operating systems can result in error. 
+
+We did not include any docker-compose file or containers as it was not a requirement for this project. 
+
+
+### Building and running
+
+To build first clone the repo and run make inside the root directory:
+
+```sh
+make
+```
+
+Once it's compiled, run the executable:
+
+```sh
+./webserv
+```
+
+Then in your browser go to:
+
+```sh
+localhost:8080
+```
+
+*The port may be different depending on the configuration used. But by default it should be 8080.
+
+
+### Clean up 
+
+Remove objects:
+
+```sh
+make clean
+```
+
+Remove all artifacts created by building:
+
+```sh
+make fclean
+```
+
+Cleanup and rebuild
+
+```sh
+make re
+```
 
 ## Resources
+
+[Subject Pdf](https://github.com/Rogier02/webserv/blob/main/devdocs/webserv.pdf)
+
+[Beej's Guide to network Programming ](https://beej.us/guide/bgnet/)
+
+[MDN web docs on HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP)
+	
+[RFC 1945 - HTTP/1.0](https://datatracker.ietf.org/doc/html/rfc1945)
+
+[RFC 6455 - Websockets](https://datatracker.ietf.org/doc/html/rfc6455)
+
+[RFC 3875 - CGI](https://datatracker.ietf.org/doc/html/rfc3875)
 

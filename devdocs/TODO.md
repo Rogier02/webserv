@@ -1,5 +1,5 @@
 Rogier:
-	Index pages: make em pretty and usable ~
+
 	README.md
 
 Simon:
