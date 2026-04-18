@@ -31,7 +31,7 @@ class	Parse
 		Config::Listener	server();
 
 		void	errorPage(std::map<u_int16_t, std::string> &dest);
-		void	location(std::map<std::string, Config::Listener::Location> &dest);
+		void	location(Config::Listener &server);
 
 		// get simple value(s)
 		void	single(std::string &dest);
@@ -77,7 +77,7 @@ class	Parse
 				{ errorPage(s.errorPages); }},
 			{"location",
 				[this](Config::Listener& s)
-				{ location(s.locations); }},
+				{ location(s); }},
 		};
 
 		using	LocationDirective = std::function<void (Config::Listener::Location &)>;

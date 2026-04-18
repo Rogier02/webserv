@@ -64,12 +64,20 @@ Parse::errorPage(std::map<u_int16_t, std::string> &dest)
 }
 
 void
-Parse::location(std::map<std::string, Config::Listener::Location> &dest)
+Parse::location(Config::Listener &server)
 {
 	::size_t	tokensFound = _ts.tokensOnLine();
 	if (tokensFound == 3) {
 		Config::Listener::Location	location;
 		std::string					path = _ts.consume();
+
+		if (server.locations.contains(path)) {
+			log("Duplicate location: " + path);
+			_ts.advanceTillBracket();
+		}
+
+		location.root				= server.root;
+		location.clientMaxBodySize	= server.clientMaxBodySize;
 
 		expect("{");
 		while (!_ts.atEnd() && _ts.peek().text != "}")
@@ -83,13 +91,13 @@ Parse::location(std::map<std::string, Config::Listener::Location> &dest)
 				_ts.advanceLine();
 			}
 		}
-		dest[path] = location;
+		server.locations[path] = location;
 
 		expect("}");
 	}
 	else {
 		log(unexpectedTokenCount("3", tokensFound));
-		_ts.advanceLine();
+		_ts.advanceTillBracket();
 	}
 }
 
@@ -98,7 +106,7 @@ Parse::single(std::string &dest)
 {
 	::size_t	tokensFound = _ts.tokensOnLine();
 	if (tokensFound == 3) {
-		dest = _ts.consume();
+		dest += _ts.consume();
 		expect(";");
 	}
 	else {

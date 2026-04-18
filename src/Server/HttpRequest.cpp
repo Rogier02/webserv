@@ -16,25 +16,9 @@ namespace Http {
 		return (requestLine + headers + CRLF + _entityBody);
 	}
 
-	int
-	Request::setEntityBody(std::string const &requestEntity)
-	{
-		const ::size_t	entityLength	= requestEntity.length();
-		::size_t		contentLength	= 0;
-
-		if (_entityHeaders.contains("content-length"))
-			contentLength = std::stoul(_entityHeaders.at("content-length"));
-
-		if (entityLength > contentLength) {
-			LOG(Error, "Bad Request: Entity Body too long: " + std::to_string(entityLength) + "/" + std::to_string(contentLength));
-			return (-1);// bad request
-		}
-
-		if (entityLength < contentLength)
-			return (0);// recv more
-
+	void
+	Request::setEntityBody(std::string const &requestEntity) {
 		_entityBody = requestEntity;
-		return (1);// success
 	}
 
 	int

@@ -59,5 +59,5 @@ void
 Server::_closeConnection(int fd)
 {
 	EventHandlers::erase(fd);
-	LOG(Info, "Client " + std::to_string(fd) + "Disconnected by Server");
+	LOG(Info, "Client " + std::to_string(fd) + " Disconnected by Server");
 }
