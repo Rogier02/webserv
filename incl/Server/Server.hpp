@@ -38,6 +38,7 @@ class	Server
 
 	private:
 		void	_closeConnection(int fd);
+		void	_timeOutClients();
 };
 
 #endif

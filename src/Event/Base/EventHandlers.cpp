@@ -14,3 +14,9 @@ EventHandlers::get(int fd)
 void	EventHandlers::erase(int fd) {
 	_handlers.erase(fd);
 }
+
+void	EventHandlers::iter(std::function<void(Event&)> func)
+{
+	for (std::map<int, std::unique_ptr<Event>>::iterator it = _handlers.begin(); it != _handlers.end(); ++it)
+		func(*it->second);
+}

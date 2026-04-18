@@ -50,7 +50,10 @@ Server::run()
 			LOG(Error, std::string("!? Unexpected exception: (breaking loose all hell): ") + exception.what());
 			throw exception;
 		}
-		// TODO: time out requests that haven't done anything for a while
+		_timeOutClients();
+#ifdef DEBUG
+		sleep(1);
+#endif
 	}
 	LOG(Info, "Controlled Server Shutdown\n");
 }
@@ -60,4 +63,14 @@ Server::_closeConnection(int fd)
 {
 	EventHandlers::erase(fd);
 	LOG(Info, "Client " + std::to_string(fd) + " Disconnected by Server");
+}
+
+void
+Server::_timeOutClients()
+{
+	EventHandlers::iter([](Event &event) {
+		ClientEvent *clientEvent = dynamic_cast<ClientEvent*>(&event);
+		if (clientEvent)
+			clientEvent->timeOut();
+	});
 }

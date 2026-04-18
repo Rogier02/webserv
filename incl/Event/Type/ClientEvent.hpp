@@ -42,6 +42,8 @@ class ClientEvent : public Event
 
 	private:
 		static const std::string	HeaderEnd;
+		static const time_t			ClientTimeOut;
+		static const time_t			CGImOut;
 
 	public:
 		// ClientEvent() = default;
@@ -61,10 +63,17 @@ class ClientEvent : public Event
 
 		Target			_target;
 
-		pid_t			_cgild;
+		struct CGI{
+			pid_t	pid		= -1;
+			int		outbox	= -1;
+			int		inbox	= -1;
+			time_t	lastActive;
+		}				_cgild;
+		time_t			_lastActive;
 
 	public:
 		void	youHaveGotMail(std::string &CGIoutput);
+		void	timeOut();
 
 	private:
 		void	_in() override;
@@ -87,6 +96,7 @@ class ClientEvent : public Event
 
 		char	**setupEnvironment(std::string const &scriptPath) const;
 		void	parseMailHeaders(std::string const &headerStream);
+
 
 	private:
 		using	Method = std::function<void (Config::Listener::Location const &)>;
@@ -120,6 +130,8 @@ class ClientEvent : public Event
 				u_int16_t	status() const;
 				const char	*what() const noexcept override;
 		};
+
+		void	_err(HttpError const &e);
 };
 
 #endif

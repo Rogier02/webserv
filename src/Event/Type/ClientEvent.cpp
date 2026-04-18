@@ -1,11 +1,12 @@
 #include "ClientEvent.hpp"
 
 const std::string	ClientEvent::HeaderEnd = Http::CRLF + Http::CRLF;
+const time_t		ClientEvent::ClientTimeOut = 30;
+const time_t		ClientEvent::CGImOut = 5;
 
 ClientEvent::ClientEvent(int socketFd, Epoll &epoll, Config::Listener const &config)
 	:	Event(socketFd, Epoll::Events::In, epoll, config)
 	,	_receivedHead(false)
-	,	_cgild(-1)
 {
 	LOG(Info, r_config.name + ": " + std::to_string(r_config.clientMaxBodySize));
 	LOG(Memory, " ClientEvent Constructed: " + std::to_string(data.fd));
@@ -13,12 +14,20 @@ ClientEvent::ClientEvent(int socketFd, Epoll &epoll, Config::Listener const &con
 
 ClientEvent::~ClientEvent()
 {
+	if (_cgild.pid != -1) {
+		if (_cgild.inbox != -1) EventHandlers::erase(_cgild.inbox);
+		if (_cgild.outbox != -1) EventHandlers::erase(_cgild.outbox);
+		::kill(_cgild.pid, SIGKILL);
+		LOG(Info, "Killed CGI child: " + std::to_string(_cgild.pid));
+	}
 	LOG(Memory, " ClientEvent Destructed: " + std::to_string(data.fd));
 }
 
 void
 ClientEvent::_in()
 {
+	_lastActive = std::time(nullptr);
+
 	try	{
 		if (Socket::recv(data.fd, _requestBuffer) == 0)
 			return (EventHandlers::erase(data.fd));
@@ -27,24 +36,15 @@ ClientEvent::_in()
 		if (_receivedHead)
 			_receiveBody();
 	} catch (HttpError const &e) {
-		u_int16_t	statusCode = e.status();
-		LOG(Error, e.what());
-		_response.err(statusCode);
-		if (r_config.errorPages.contains(statusCode)) {
-			const std::string errorPage	= r_config.errorPages.at(statusCode);
-			const std::string content	= IO::getFileContent(errorPage);
-			if (!content.empty())
-				_response.setEntityBody(content, errorPage);
-			LOG(Info, errorPage);
-		}
-		_finalise();
-		// return;
+		_err(e);
 	}
 }
 
 void
 ClientEvent::_out()
 {
+	_lastActive = std::time(nullptr);
+
 	::ssize_t	sent = Socket::send(data.fd, _responseBuffer);
 
 	if (sent == 0)
@@ -82,7 +82,7 @@ ClientEvent::_receiveBody() {
 	const ::size_t	entityLength	= _requestBuffer.length();
 	::size_t		contentLength	= 0;
 
-	Http::HeaderMap const	&entityHeaders = _response.getEntityHeaders();
+	Http::HeaderMap const	&entityHeaders = _request.getEntityHeaders();
 	if (entityHeaders.contains("content-length"))
 		contentLength = std::stoul(entityHeaders.at("content-length"));
 
@@ -97,7 +97,7 @@ ClientEvent::_receiveBody() {
 		throw HttpError(400);
 	}
 
-	_response.setEntityBody(_requestBuffer);
+	_request.setEntityBody(_requestBuffer);
 	LOG(Debug, std::to_string(entityLength) + "/" + std::to_string(contentLength) + " Characters Set");
 	if (entityLength < contentLength)
 		return;
@@ -107,14 +107,14 @@ ClientEvent::_receiveBody() {
 
 	_processRequest();
 
-	LOG(Debug, "CGI child pid: " + std::to_string(_cgild));
-	(_cgild == -1)
+	LOG(Debug, "CGI child pid: " + std::to_string(_cgild.pid));
+	(_cgild.pid == -1)
 	?	_finalise()
 	:	_mod(0)
 	;
 
 	LOG(Info, "Client " + std::to_string(data.fd) + " Processed Request: "
-		+ ((_cgild == -1) ? "ready to send" : "waiting for CGI"));
+		+ ((_cgild.pid == -1) ? "ready to send" : "waiting for CGI"));
 }
 
 void
@@ -343,22 +343,23 @@ ClientEvent::_cgi(
 	if (::pipe(serverToCgi) == -1)
 		throw HttpError(500);
 
-	_cgild = fork();
-	LOG(Info, "CGI pid: " + std::to_string(_cgild));
-	if (_cgild == -1) {
+	_cgild.pid		= fork();
+	LOG(Info, "CGI pid: " + std::to_string(_cgild.pid));
+
+	if (_cgild.pid == -1) {
 		::close(cgiToServer[Rd]);
 		::close(cgiToServer[Wr]);
 		::close(serverToCgi[Rd]);
 		::close(serverToCgi[Wr]);
 		throw HttpError(500);
-	}
+	} else if (_cgild.pid == 0) {
+		signal(SIGINT, SIG_DFL);
+		signal(SIGTERM, SIG_DFL);
 
-	if (_cgild == 0) {
 		::close(cgiToServer[Rd]);
 		::close(serverToCgi[Wr]);
 		::dup2(cgiToServer[Wr], STDOUT_FILENO);
 		::dup2(serverToCgi[Rd], STDIN_FILENO);
-		// ::dup2(pipe[1], STDERR_FILENO);
 		{
 			std::string	interpreter	= SupportedCGIExtensions.at(_target.extension);
 			std::string	path		= std::filesystem::absolute("." + _target.root + _target.file);
@@ -379,12 +380,15 @@ ClientEvent::_cgi(
 	} else {
 		::close(cgiToServer[Wr]);
 		::close(serverToCgi[Rd]);
+		_cgild.inbox		= cgiToServer[Rd];
+		_cgild.outbox		= serverToCgi[Wr];
+		_cgild.lastActive	= std::time(nullptr);
 
 		EventHandlers::create<CGInboxEvent>(
-			cgiToServer[Rd], r_epoll, r_config, *this);
+			_cgild.inbox, r_epoll, r_config, *this);
 
 		EventHandlers::create<CGOutboxEvent>(
-			serverToCgi[Wr], r_epoll, r_config, _request.getEntityBody());
+			_cgild.outbox, r_epoll, r_config, _request.getEntityBody());
 	}
 }
 
@@ -433,7 +437,7 @@ void
 ClientEvent::youHaveGotMail(std::string &cgiOutput)
 {
 	{	int		status;
-		pid_t	pid = waitpid(_cgild, &status, WNOHANG);
+		pid_t	pid = waitpid(_cgild.pid, &status, WNOHANG);
 		if (pid == 0)
 			LOG(Warning, "cgi child: zombie process now");
 		if (WIFEXITED(status) == false)
@@ -442,18 +446,65 @@ ClientEvent::youHaveGotMail(std::string &cgiOutput)
 			LOG(Warning, "cgi child: exited with code " + std::to_string(WEXITSTATUS(status)));
 		if (WIFSIGNALED(status) == true)
 			LOG(Warning, "cgi child: signaled " + std::to_string(WTERMSIG(status)));
+		_cgild.pid = -1;
+		_cgild.inbox = -1;
+		_cgild.outbox = -1;
 	}
 
 	LOG(Info, "CGI Output:\n" + cgiOutput);
 
 	::size_t	headerEndPos = cgiOutput.find(HeaderEnd);
 	if (headerEndPos != std::string::npos) {
+		_response.setStatus(200);  // Default to 200, parseMailHeaders may override
 		parseMailHeaders(cgiOutput.substr(0, headerEndPos));
 		cgiOutput.erase(0, headerEndPos + HeaderEnd.length());
+	} else {
+		_response.setStatus(200);
 	}
 
 	_response.setEntityBody(cgiOutput);
 
+	_finalise();
+}
+
+void
+ClientEvent::timeOut()
+{
+	LOG(Debug, "Checking timeout for client " + std::to_string(data.fd));
+	if (_cgild.pid != -1
+	&&	std::difftime(std::time(nullptr), _cgild.lastActive) >= CGImOut) {
+		if (_cgild.inbox != -1) {
+			EventHandlers::erase(_cgild.inbox);
+			_cgild.inbox = -1;
+		}
+		if (_cgild.outbox != -1) {
+			EventHandlers::erase(_cgild.outbox);
+			_cgild.outbox = -1;
+		}
+		::kill(_cgild.pid, SIGKILL);
+		LOG(Info, "Killed CGI child: " + std::to_string(_cgild.pid) + " (Timed Out)");
+		_cgild.pid = -1;
+		_err(HttpError(504));
+	}
+	if (std::difftime(std::time(nullptr), _lastActive) >= ClientTimeOut) {
+		LOG(Info, "Client " + std::to_string(data.fd) + " Timed Out");
+		_err(HttpError(408));
+	}
+}
+
+void
+ClientEvent::_err(HttpError const &e)
+{
+	u_int16_t	statusCode = e.status();
+	LOG(Error, e.what());
+	_response.err(statusCode);
+	if (r_config.errorPages.contains(statusCode)) {
+		const std::string errorPage	= r_config.errorPages.at(statusCode);
+		const std::string content	= IO::getFileContent(errorPage);
+		if (!content.empty())
+			_response.setEntityBody(content, errorPage);
+		LOG(Info, errorPage);
+	}
 	_finalise();
 }
 

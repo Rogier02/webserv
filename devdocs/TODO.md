@@ -7,6 +7,7 @@ Simon:
 	Timeout: slow CGI, Client not sending full request
 	maximum clients (fds)
 	reset signal for cgild
+	(remove wrapper, add socket::create() to ListenEvent())
 
 Laura:
 	config parser checken of alles werkt (eind project)

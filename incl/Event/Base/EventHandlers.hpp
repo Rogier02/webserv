@@ -4,6 +4,7 @@
 // C++
 # include <memory>
 # include <map>
+# include <functional>
 // webserv
 # include "Event.hpp"
 
@@ -21,6 +22,8 @@ class	EventHandlers
 
 		static Event	*get(int fd);
 		static void		erase(int fd);
+
+		static void		iter(std::function<void(Event&)>);
 };
 
 # include "EventHandlers.tpp"
