@@ -110,9 +110,10 @@ TokenStream::advanceLine() {
 }
 
 void
-TokenStream::advanceTillBracket() {
-	while (current()->text != "}")
+TokenStream::advanceToBracket() {
+	while (current()->text != "}" && !atEnd())
 		advance();
+	advance();
 }
 
 ::size_t

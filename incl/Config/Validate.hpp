@@ -28,8 +28,8 @@ public:
 	void	validatePort(int port);
 	void	validateErrorPages(const Config::Listener &server);
 	bool	isValidMethod(std::string method);
-	void	validateLocation(const Config::Listener::Location &location);
-	bool	directoryExists(const std::string& path);
+	void	validateLocation(const Config::Listener::Location &location, const std::string &name);
+	void	ensureDirectory(const std::string& path);
 
 private:
 	void	log(std::string const &message);

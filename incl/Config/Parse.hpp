@@ -6,6 +6,7 @@
 # include <vector>
 # include <functional>
 # include <map>
+# include <set>
 // webserv
 # include "Config.hpp"
 # include "TokenStream.hpp"
@@ -37,6 +38,7 @@ class	Parse
 		void	single(std::string &dest);
 		void	single(u_int16_t &dest);
 		void	multiple(std::string &dest);
+		void	multiple(std::set<std::string> &dest);
 
 		// get complex directive value(s)
 		void	listen(std::string &host, int &port);
@@ -45,7 +47,10 @@ class	Parse
 		void	autoIndex(bool &autoIndex);
 
 		// tools
-		void	expect(std::string const &expected);
+		void		expect(std::string const &expected);
+		// bool		duplicate(std::string const &directive, std::string const &message);
+		bool		isAllDigits(std::string const &str);
+		bool		isValidHostChars(const std::string& str);
 
 		// keep an error log
 		void	log(std::string const &message);
@@ -53,7 +58,8 @@ class	Parse
 
 		// error format
 		std::string	unknownDirective(const std::string& directive);
-		std::string	unexpected(std::string const &expected, std::string const &found);
+		std::string	unexpected(std::string const &expected, std::string const &found = "");
+		std::string	unexpectedMessage(std::string const &expected, std::string const &found = "");
 		std::string	unexpectedTokenCount(std::string expected, ::size_t found);
 
 	private:

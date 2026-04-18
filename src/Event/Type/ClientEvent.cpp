@@ -180,7 +180,7 @@ ClientEvent::_processRequest()
 
 	Config::Listener::Location const	&location = r_config.locations.at(_target.location);
 
-	if (location.allowedMethods.find(method) == std::string::npos)
+	if (location.allowedMethods.contains(method))
 		throw HttpError(403);
 
 	Methods.at(method)(location);

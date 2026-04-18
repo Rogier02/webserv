@@ -17,7 +17,7 @@ Parse::config()
 			config.listeners.push_back(server());
 		else {
 			log(unknownDirective(directive));
-			_ts.advanceTillBracket();
+			_ts.advanceToBracket();
 		}
 	}
 
@@ -28,18 +28,29 @@ Parse::config()
 Config::Listener
 Parse::server()
 {
-	Config::Listener	server;
+	Config::Listener		server;
+
+	std::set<std::string>								directives;
+	std::pair<std::set<std::string>::iterator, bool>	result;
 
 	expect("{");
 	while (!_ts.atEnd() && _ts.peek().text != "}")
 	{
 		std::string directive = _ts.consume();
 
-		if (serverDirectives.contains(directive))
-			serverDirectives.at(directive)(server);
-		else {
-			log(unknownDirective(directive));
+		result = directives.insert(directive);
+		if (!result.second && directive != "location" && directive!= "error_page") {
+			log(unexpectedMessage("Duplicate directive", directive));
 			_ts.advanceLine();
+		}
+		else
+		{
+			if (serverDirectives.contains(directive))
+				serverDirectives.at(directive)(server);
+			else {
+				log(unknownDirective(directive));
+				_ts.advanceLine();
+			}
 		}
 	}
 	expect("}");
@@ -50,12 +61,32 @@ void
 Parse::errorPage(std::map<u_int16_t, std::string> &dest)
 {
 	::size_t	tokensFound = _ts.tokensOnLine();
-	if (tokensFound == 4) {
-		u_int16_t	code = std::stoi(_ts.consume());
-		std::string	path = _ts.consume();
-		dest[code] = path;
 
-		expect(";");
+	std::pair<std::map<u_int16_t, std::string>::iterator, bool>	result;
+
+	if (tokensFound == 4)
+	{
+		std::string directive = _ts.consume();
+		u_int16_t	code;
+		
+		if (!isAllDigits(directive))
+		{
+			log(unexpectedMessage("Code can only contain 0-9", directive));
+			_ts.advanceLine();
+		}
+		else
+		{
+			code = std::stoi(directive);
+
+			std::string	path = _ts.consume();
+
+			result = dest.insert(std::make_pair(code, path));
+			if (!result.second) {
+				log(unexpectedMessage("Duplicate code", std::to_string(code)));
+			}
+
+			expect(";");
+		}
 	}
 	else {
 		log(unexpectedTokenCount("4", tokensFound));
@@ -67,6 +98,10 @@ void
 Parse::location(std::map<std::string, Config::Listener::Location> &dest)
 {
 	::size_t	tokensFound = _ts.tokensOnLine();
+
+	std::set<std::string>								directives;
+	std::pair<std::set<std::string>::iterator, bool>	result;
+
 	if (tokensFound == 3) {
 		Config::Listener::Location	location;
 		std::string					path = _ts.consume();
@@ -75,12 +110,19 @@ Parse::location(std::map<std::string, Config::Listener::Location> &dest)
 		while (!_ts.atEnd() && _ts.peek().text != "}")
 		{
 			std::string	directive = _ts.consume();
-
-			if (locationDirectives.contains(directive))
-				locationDirectives.at(directive)(location);
-			else {
-				log(unknownDirective(directive));
+			result = directives.insert(directive);
+			if (!result.second) {
+				log(unexpectedMessage("Duplicate directive", directive));
 				_ts.advanceLine();
+			}
+			else
+			{
+				if (locationDirectives.contains(directive))
+					locationDirectives.at(directive)(location);
+				else {
+					log(unknownDirective(directive));
+					_ts.advanceLine();
+				}
 			}
 		}
 		dest[path] = location;
@@ -89,7 +131,8 @@ Parse::location(std::map<std::string, Config::Listener::Location> &dest)
 	}
 	else {
 		log(unexpectedTokenCount("3", tokensFound));
-		_ts.advanceLine();
+		_ts.advanceToBracket();
+		std::cout << _ts.peek().text << std::endl;
 	}
 }
 
@@ -125,7 +168,8 @@ void
 Parse::multiple(std::string &dest)
 {
 	TokenStream::Iterator	lineEnd = _ts.lineEnd();
-	::size_t					tokensFound = _ts.tokensOnLine();
+	::size_t				tokensFound = _ts.tokensOnLine();
+
 	if (tokensFound >= 3) {
 		while (_ts.current() != lineEnd && _ts.peek().text != ";")
 			dest += _ts.consume() + ' ';
@@ -141,24 +185,67 @@ Parse::multiple(std::string &dest)
 }
 
 void
+Parse::multiple(std::set<std::string> &dest)
+{
+	TokenStream::Iterator	lineEnd = _ts.lineEnd();
+	::size_t				tokensFound = _ts.tokensOnLine();
+
+	std::pair<std::set<std::string>::iterator, bool>	result;
+
+	if (tokensFound >= 3) {
+		while (_ts.current() != lineEnd && _ts.peek().text != ";")
+		{
+			std::string token = _ts.consume();
+			result = dest.insert(token);
+			if (!result.second)
+				log(unexpectedMessage("Duplicate method", token));
+		}
+
+		expect(";");
+	}
+	else {
+		log(unexpectedTokenCount("3 or more", tokensFound));
+		_ts.advanceLine();
+	}
+}
+
+void
 Parse::listen(std::string &host, int &port)
 {
 	::size_t	tokensFound = _ts.tokensOnLine();
 	if (tokensFound == 3) {
 		std::string	hostPort	= _ts.consume();
-		::size_t		colonPos	= hostPort.find(':');
+		::size_t	colonPos	= hostPort.find(':');
 
-		if (colonPos == std::string::npos)
-			log("listen directive requires host:port format");
-
-		host	= hostPort.substr(0, colonPos);
-		port	= std::stoi(hostPort.substr(colonPos + 1));
+		if (isValidHostChars(hostPort))
+		{
+			if (colonPos == std::string::npos)
+				log(unexpectedMessage("Listen directive requires host:port format", hostPort));
+			
+			host	= hostPort.substr(0, colonPos);
+			port	= std::stoi(hostPort.substr(colonPos + 1));
+		}
+		else
+			log(unexpectedMessage("Can only contain 0-9, . or :", hostPort));
 		expect(";");
 	}
 	else {
 		log(unexpectedTokenCount("3", tokensFound));
 		_ts.advanceLine();
 	}
+}
+
+bool
+Parse::isValidHostChars(const std::string& str)
+{
+	if (str.empty())
+		return (false);
+
+	for (::size_t i = 0; i < str.size(); i++)
+		if (!std::isdigit((unsigned char)str[i]) && str[i] != '.' && str[i] != ':')
+			return (false);
+
+	return (true);
 }
 
 void
@@ -218,7 +305,7 @@ void Parse::autoIndex(bool &autoIndex)
 		else if (value == "on")
 			autoIndex = true;
 		else
-			log("autoindex must be 'on' or 'off', got: " + value);
+			log(unexpected("autoindex must be 'on' or 'off'", value));
 
 		expect(";");
 	}
@@ -238,6 +325,37 @@ Parse::expect(std::string const &expected)
 	if (token != expected)
 		log(unexpected(expected, token));
 	_ts.advance();
+}
+
+// bool
+// Parse::duplicate(std::string const &directive, std::string const &message)
+// {
+// 	std::set<std::string>								directives;
+// 	std::pair<std::set<std::string>::iterator, bool>	result;
+
+// 	if (directive != "location" && directive!= "error_page")
+// 	{
+// 		result = directives.insert(directive);
+// 		if (!result.second) {
+// 			log(unexpectedMessage(message, directive));
+// 			_ts.advanceLine();
+// 			return (true);
+// 		}
+// 	}
+// 	return (false);
+// }
+
+bool
+Parse::isAllDigits(std::string const &str)
+{
+	if (str.empty())
+		return (false);
+
+	for (::size_t i = 0; i < str.size(); i++)
+		if (!std::isdigit((unsigned char)str[i]))
+			return (false);
+
+	return (true);
 }
 
 void Parse::log(std::string const &message) {
@@ -269,6 +387,12 @@ Parse::unexpected(std::string const &expected, std::string const &found)
 		" on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
 }
 
+std::string
+Parse::unexpectedMessage(std::string const &expected, std::string const &found)
+{
+	return("Unexpected: \"" + found + "\" > " + expected +
+		" on line " + std::to_string(_ts.peek().lineNbr) + ": " + _ts.getLine());
+}
 std::string
 Parse::unexpectedTokenCount(std::string expected, ::size_t found)
 {

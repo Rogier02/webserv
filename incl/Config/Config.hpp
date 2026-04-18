@@ -7,6 +7,7 @@
 # include <map>
 # include <iostream>
 # include <sstream>
+# include <set>
 
 struct	Config
 {
@@ -15,16 +16,16 @@ struct	Config
 	{
 		struct Location
 		{
-			std::string	root;
-			std::string	index;
-			std::string	allowedMethods;
-			std::string	uploadDir;
-			::size_t	clientMaxBodySize = 0;
-			u_int16_t	redirectStatus = 0;
-			std::string	returnURL;
-			std::string	cgiEXT;
-			std::string	cgiPath;
-			bool		autoindex = false;
+			std::string				root;
+			std::string				index;
+			std::string				uploadDir;
+			::size_t				clientMaxBodySize = 0;
+			u_int16_t				redirectStatus = 0;
+			std::string				returnURL;
+			std::string				cgiEXT;
+			std::string				cgiPath;
+			bool					autoindex = false;
+			std::set<std::string>	allowedMethods;
 		};
 
 		std::string	name;
