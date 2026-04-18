@@ -16,8 +16,6 @@ Validate::validateConfig()
 	for (const Config::Listener &server : _config.listeners)
 	{
 		validateServer(server);
-		// if (!_validated)
-		// 	log("Config error: something in server is not valid");
 	}
 	report();
 }
@@ -36,9 +34,9 @@ Validate::validateServer(const Config::Listener &server)
 	{
 		std::unordered_set<std::string>	seen;
 
-		if (!seen.insert(location.first).second) //duplicate locations		startup	❌
+		if (!seen.insert(location.first).second)
 			log("Config error: duplicate location " + location.first);
-		validateLocation(location.second);
+		validateLocation(location.second, location.first);
 	}
 }
 
@@ -54,22 +52,22 @@ Validate::validateHost(const std::string &host)
 		int	n = std::stoi(part);
 
 		if (part.empty()) // 12..14.22 (empty part)
-			log("Part can't be emtpy. Host IP format: 0.0.0.0");
+			log(host + " is incorrect: part can't be empty. Host IP format: 0.0.0.0");
 		if (!std::all_of(part.begin(), part.end(), ::isdigit)) //abc.def.ghi.jkl (not digits)
-			log("Host IP can only contain numbers");
+			log(host + " is incorrect: can only contain numbers");
 		if (part.size() > 1 && part[0] == '0') // 01.2.3.4 (leading zeroes?)
 		{
 			int	pos = part.find_first_not_of('0');
 			int	end = part.size();
-			log(part + " is wrong, should be: " + part.substr(pos, end));
+			log(host + " is incorrect: " + part + " should be: " + part.substr(pos, end));
 		}
 		if (n < 0 || n > 255) // 256.0.0.1 (part too big)
-		log("All numbers should be between 0-255");
+		log(host + " is incorrect: all numbers should be between 0-255");
 	}
 	if (count > 4) // 12.52.192.168.1 (not 4 parts)
-		log("Host IP too big, format: 0.0.0.0");
+		log(host + " is incorrect: too many parts, format: 0.0.0.0");
 	else if (count < 4) // 192.168.1 (not 4 parts)
-		log("Host IP too small, format: 0.0.0.0");
+		log(host + " is incorrect: not enough parts, format: 0.0.0.0");
 }
 
 void
@@ -87,55 +85,39 @@ Validate::validateErrorPages(const Config::Listener &server)
 		if (!Http::Statuses.contains(errorPage.first))
 			log("Config error: " + std::to_string(errorPage.first) + " does not belong to the list of valid errorPages.");
 		if (errorPage.second.empty())
-			std::cout << "Error page path is empty!" << std::endl;
-		else if (!IO::exists("./" + errorPage.second))
-			std::cout << "./" + errorPage.second << " file doesn't exist." << std::endl;
+			log("Error page path is empty!");
+		else if (!IO::exists(errorPage.second))
+			log(errorPage.second + " file doesn't exist.");
 	}
-}
-
-bool
-Validate::isValidMethod(std::string method)
-{
-	// invalid HTTP methods	startup	❌;
-	return (method == "GET" || method == "POST" || method == "DELETE");
 }
 
 void
-Validate::validateLocation(const Config::Listener::Location &location)
+Validate::validateLocation(const Config::Listener::Location &location, const std::string &name)
 {
-	// location root missing	startup	✅ (warning in terminal)
-	if (!location.root.empty() && !directoryExists(location.root))
-		std::cout << location.root << " directory doesn't exist." << std::endl;
+	ensureDirectory(location.root);
+	ensureDirectory(location.returnURL);
+	if (!location.uploadDir.empty())
+		ensureDirectory(location.root + location.uploadDir);
+	ensureDirectory(location.cgiPath);
 	if ((location.clientMaxBodySize > 104857600 || location.clientMaxBodySize < 1) && location.clientMaxBodySize != 0)
 		log("client_max_body_size of " + std::to_string(location.clientMaxBodySize) + " is too big. Max: 100m");
-	if (!location.returnURL.empty() && !directoryExists(location.returnURL))
-		log(location.returnURL + " directory doesn't exist.");
-	if (!location.uploadDir.empty() && !directoryExists(location.root + location.uploadDir))
-		log(location.root + location.uploadDir + " directory doesn't exist.");
-	// location.index; >> dit is nog helemaal unknown.
-	// location.cgiEXT;
-	if (!location.cgiPath.empty() && !directoryExists(location.cgiPath))
-		log(location.cgiPath + " directory doesn't exist.");
-	// location.redirectStatus;
-	// for (unsigned long i = 0; i < location.allowedMethods.size(); i++) // dis string now
-	// {
-	// 	if (!isValidMethod(location.allowedMethods[i]))
-	// 		log(location.allowedMethods[i] + " is an NOT an allowed method!");
-	// }
 	if (!IO::exists("." + location.root + location.index))
-		log(location.index + " file doesn't exist.");
+		log(location.index + " file doesn't exist in directory: " + location.root);
+
+	const std::unordered_set<std::string> valid = {
+		"GET", "POST", "DELETE"
+	};
+
+	for (const std::string& method : location.allowedMethods)
+		if (!valid.contains(method))
+			log("In location: " + name + " [" + method + "] is NOT an allowed method!");
 }
 
-bool
-Validate::directoryExists(const std::string& path)
+void
+Validate::ensureDirectory(const std::string& path)
 {
-	if (std::filesystem::path(path).is_absolute())
-	{
-		std::string	currentPath = std::filesystem::current_path();
-		std::string fullPath = currentPath + path;
-		return (std::filesystem::is_directory(fullPath));
-	}
-	return (std::filesystem::is_directory(path));
+	if (!path.empty())
+		std::filesystem::create_directories("." + path);
 }
 
 void
@@ -147,7 +129,6 @@ void
 Validate::report()
 {
 	if (_log.empty()){
-		// _validated = true;
 		return ;
 	}
 

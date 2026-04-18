@@ -43,7 +43,14 @@ const {
 			stream << "  index: " << loc.index << "\n";
 			stream << "  cgiEXT: " << loc.cgiEXT << "\n";
 			stream << "  cgiPath: " << loc.cgiPath << "\n";
-			stream << "  allowedMethods: " << loc.allowedMethods << "\n";
+			stream << "  allowedMethods: ";
+			for (std::set<std::string>::const_iterator it = loc.allowedMethods.begin();
+				it != loc.allowedMethods.end(); ++it)
+			{
+				if (it != loc.allowedMethods.begin())
+					stream << ", ";
+				stream << *it;
+			}
 		}
 
 		stream << "\n";

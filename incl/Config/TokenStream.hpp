@@ -43,7 +43,7 @@ class	TokenStream
 		Iterator	lineEnd() const;
 		std::string	getLine() const;
 		void		advanceLine();
-		void		advanceTillBracket();
+		void		advanceToBracket();
 		::size_t	tokensOnLine();
 };
 
