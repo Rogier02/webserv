@@ -59,6 +59,25 @@
 	<p>Http/1.0</p>
 </footer>
 
+<script>
+	async function sendPost(URI, content) {
+		const endpoint = "http://localhost:8080/uploads/" + URI;
+		fetch(endpoint, {
+				method: "POST",
+				headers: {
+					"Content-Type": "text/plain"
+				},
+				body: content
+			});
+	}
+
+	async function sendDelete(URI) {
+		const endpoint = "http://localhost:8080/uploads/" + URI;
+		fetch(endpoint, {
+			method: "DELETE"
+		});
+	}
+</script>
 
 </body>
 </html>
