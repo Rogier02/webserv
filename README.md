@@ -15,35 +15,35 @@ The primary functions are to store, process and deliver web pages to clients.
 
 ## Requirements
 
-	> The Http server is not allowed to crash under any circumstances
+	- The Http server is not allowed to crash under any circumstances
 
-	> Must use a configuration file 
+	- Must use a configuration file 
 
-	> Must remain non-blocking at all times and handle client connects and disconnects
+	- Must remain non-blocking at all times and handle client connects and disconnects
 
-	> Use of only one poll() or equivalent function is allowed
+	- Use of only one poll() or equivalent function is allowed
 
-	> Use of NGINX is allowed to comapre headers and anser behaviours
+	- Use of NGINX is allowed to comapre headers and anser behaviours
 
-	> Accurate HTTP response status codes
+	- Accurate HTTP response status codes
 
-	> Must accomodate at least GET, POST, DELETE methods
+	- Must accomodate at least GET, POST, DELETE methods
 
-	> Must be able to listen to multiple ports simultaniously
+	- Must be able to listen to multiple ports simultaniously
 
 ## Features
 
-	> Complys with HTTP/1.0
+	- Complys with HTTP/1.0
 
-	> CGI (Common gateway interface) for executing programs.
+	- CGI (Common gateway interface) for executing programs.
 
-	> Upload and delete files 
+	- Upload and delete files 
 
-	> Timestamps
+	- Timestamps
 
-	> Custom error pages
+	- Custom error pages
 
-	> NGINX-like webserver configuration
+	- NGINX-like webserver configuration
 
 ## Install & Setup
 
@@ -88,16 +88,16 @@ make re
 ## Resources
 
 [Subject Pdf](https://github.com/Rogier02/webserv/blob/main/devdocs/webserv.pdf)
+
 [Beej's Guide to network Programming ](https://beej.us/guide/bgnet/)
+
+[MDN web docs on HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP)
 
 ### RFC
 	
-[RFC 1945 - HTTP PROTOCOL](https://datatracker.ietf.org/doc/html/rfc1945)
-[RFC 7230 - HTTP PROTOCOL](https://datatracker.ietf.org/doc/html/rfc7230)
-[RFC 7231 - HTTP PROTOCOL](https://datatracker.ietf.org/doc/html/rfc7231)
-[RFC 7232 - HTTP PROTOCOL](https://datatracker.ietf.org/doc/html/rfc7232)
-[RFC 7323 - HTTP PROTOCOL](https://datatracker.ietf.org/doc/html/rfc7233)
-[RFC 7324 - HTTP PROTOCOL](https://datatracker.ietf.org/doc/html/rfc7234)
-[RFC 7325 - HTTP PROTOCOL](https://datatracker.ietf.org/doc/html/rfc7235)
+[RFC 1945 - HTTP/1.0 PROTOCOL](https://datatracker.ietf.org/doc/html/rfc1945)
+
 [RFC 6455 - WEBSOCKETS](https://datatracker.ietf.org/doc/html/rfc6455)
+
 [RFC 3875 - CGI](https://datatracker.ietf.org/doc/html/rfc3875)
+
