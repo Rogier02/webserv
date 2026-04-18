@@ -2,6 +2,7 @@
 
 Building a C++ HTTP server
 
+
 ## Contributors
 
 [SimonvH03](https://github.com/SimonvH03) - [Laura-dekoning](https://github.com/laura-dekoning) - [Rogier02](https://github.com/Rogier02)
@@ -9,13 +10,14 @@ Building a C++ HTTP server
 
 ## Introduction
 
-The aim of this project was to create an HTTP server using c++ in a Non-Blocking manner.
+The aim of this project was to create an HTTP server using c++ in a non-blocking manner.
 
 The primary functions are to store, process and deliver web pages to clients.
 
+
 ## Requirements
 
-- The Http server is not allowed to crash under any circumstances
+- The HTTP server is not allowed to crash under any circumstances
 
 - Must use a configuration file 
 
@@ -23,7 +25,7 @@ The primary functions are to store, process and deliver web pages to clients.
 
 - Use of only one poll() or equivalent function is allowed
 
-- Use of NGINX is allowed to comapre headers and anser behaviours
+- Use of NGINX is allowed to comapre headers and answer behaviours
 
 - Accurate HTTP response status codes
 
@@ -31,11 +33,12 @@ The primary functions are to store, process and deliver web pages to clients.
 
 - Must be able to listen to multiple ports simultaniously
 
+
 ## Features
 
-- Complys with HTTP/1.0
+- Complies with HTTP/1.0 According to the [RFC 1945](https://datatracker.ietf.org/doc/html/rfc1945)
 
-- CGI (Common gateway interface) for executing programs.
+- CGI (Common gateway interface)
 
 - Upload and delete files 
 
@@ -45,11 +48,13 @@ The primary functions are to store, process and deliver web pages to clients.
 
 - NGINX-like webserver configuration
 
+
 ## Install & Setup
 
-Note: this setup is specifically for Ubuntu linux. Compiling and running this software on other distro's or operating systems will likely result in error. 
+Note: this setup is specifically for Ubuntu linux. Compiling and running this software on other distro's or operating systems can result in error. 
 
 We did not include any docker-compose file or containers as it was not a requirement for this project. 
+
 
 ### Building and running
 
@@ -59,13 +64,13 @@ To build first clone the repo and run make inside the root directory:
 make
 ```
 
-Once its compiled run the executable:
+Once it's compiled, run the executable:
 
 ```sh
 ./webserv
 ```
 
-then in the browser go to:
+Then in your browser go to:
 
 ```sh
 localhost:8080
@@ -73,9 +78,10 @@ localhost:8080
 
 *The port may be different depending on the configuration used. But by default it should be 8080.
 
+
 ### Clean up 
 
-remove objects:
+Remove objects:
 
 ```sh
 make clean
