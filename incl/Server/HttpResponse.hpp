@@ -3,9 +3,12 @@
 
 // CPP
 # include <string>
+# include <iostream>
+# include <fstream>
 # include <map>
 // webserv
 # include "HttpMessage.hpp"
+# include "IO.hpp"
 
 namespace Http {
 	class	Response : public Message {
