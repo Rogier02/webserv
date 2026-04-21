@@ -97,7 +97,7 @@ class	Parse
 				{ clientMaxBodySize(l.clientMaxBodySize); }},
 			{"return",
 				[this](Config::Listener::Location& l)
-				{ returnPage(l.redirectStatus, l.returnURL); }},
+				{ returnPage(l.redirectStatus, l.redirect); }},
 			{"autoindex",
 				[this](Config::Listener::Location& l)
 				{ autoIndex(l.autoindex); }},

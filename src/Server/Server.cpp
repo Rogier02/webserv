@@ -43,16 +43,16 @@ Server::run()
 			LOG(Error, std::string("Runtime Error (continuing server loop): ") + exception.what());
 		}
 		catch (std::logic_error &exception) {
-			LOG(Error, std::string("Logic Error: (breaking server loop): ") + exception.what());
+			LOG(Error, std::string("Logic Error (breaking server loop): ") + exception.what());
 			break;
 		}
 		catch (std::exception &exception) {
-			LOG(Error, std::string("!? Unexpected exception: (breaking loose all hell): ") + exception.what());
+			LOG(Error, std::string("!? Unexpected exception (breaking loose all hell): ") + exception.what());
 			throw exception;
 		}
 		_timeOutClients();
 #ifdef DEBUG
-		sleep(1);
+		// sleep(1);
 #endif
 	}
 	LOG(Info, "Controlled Server Shutdown\n");

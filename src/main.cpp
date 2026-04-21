@@ -1,7 +1,7 @@
 #include <errno.h>
 #include <stdio.h>
-#include <stdexcept>
 #include <signal.h>
+#include <stdexcept>
 
 #include "Server.hpp"
 #include "Config.hpp"

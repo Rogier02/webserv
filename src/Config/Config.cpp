@@ -36,7 +36,7 @@ const {
 			stream << "  --- Location " << path << " ---\n";
 			stream << "  root: " << loc.root << "\n";
 			stream << "  clientMaxBodySize: " << loc.clientMaxBodySize << "\n";
-			stream << "  returnURL: " << loc.returnURL << "\n";
+			stream << "  redirectURL: " << loc.redirect << "\n";
 			stream << "  redirectStatus: " << loc.redirectStatus << "\n";
 			stream << "  autoindex: " << (loc.autoindex ? "true" : "false") << "\n";
 			stream << "  uploadDir: " << loc.uploadDir << "\n";
