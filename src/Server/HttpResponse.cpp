@@ -42,14 +42,24 @@ namespace Http {
 	{
 		setStatus(statusCode);
 
-		std::string	entityBody =
-			"<html>\n"
-			"<head><title>" + std::to_string(statusCode) + " " + _reasonPhrase + "</title></head>\n"
-			"<body>\n"
-			"<center><h1>" + std::to_string(statusCode) + " " + _reasonPhrase + "</h1></center>\n"
-			"<hr><center>webserv " + _version + "</center>\n"
-			"</body>\n"
-			"</html>\n";
+		std::string errorMessage = Statuses.at(statusCode); 
+		std::string entityBody = IO::getFileContent("../www/errorPages/defaultError.html");
+		
+		// Find and replace errorCode
+		std::string placeholderCode = "errorCode";
+		size_t pos = entityBody.find(placeholderCode);
+
+		if (pos != std::string::npos) {
+			entityBody.replace(pos, placeholderCode.size(), std::to_string(statusCode));
+		}			
+		
+
+		std::string placeholderMessage = "errorMessage";
+		pos = entityBody.find(placeholderMessage);
+
+		if (pos != std::string::npos) {
+			entityBody.replace(pos, placeholderMessage.size(), errorMessage);
+		}	
 
 		setEntityBody(entityBody);
 	}
