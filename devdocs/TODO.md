@@ -16,3 +16,9 @@ Laura:
 	trace all Config keys
 
 search TODO: 2 hits atm
+
+mock eval:
+-	autoindex
+-	return URL
+-	timeout fixen
+-	blijf checken met siege
