@@ -21,6 +21,16 @@ namespace Http {
 		_entityBody = requestEntity;
 	}
 
+	::size_t
+	Request::getContentLength() {
+		::size_t	contentLength = 0;
+
+		if (_entityHeaders.contains("content-length"))
+			contentLength = std::stoul(_entityHeaders.at("content-length"));
+
+		return (contentLength);
+	}
+
 	int
 	Request::parseHead(std::string const &request)
 	{

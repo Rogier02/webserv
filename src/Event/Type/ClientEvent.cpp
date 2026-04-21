@@ -77,26 +77,16 @@ ClientEvent::_receiveHead() {
 void
 ClientEvent::_receiveBody() {
 	const ::size_t	entityLength	= _requestBuffer.length();
-	::size_t		contentLength	= 0;
-
-	Http::HeaderMap const	&entityHeaders = _request.getEntityHeaders();
-	if (entityHeaders.contains("content-length"))
-		contentLength = std::stoul(entityHeaders.at("content-length"));
+	::size_t		contentLength	= _request.getContentLength();
 
 	if (entityLength > contentLength) {
 		LOG(Error, "Bad Request: Entity Body Exceeds Content Length: "
-			+ std::to_string(entityLength) + "/" + std::to_string(contentLength));
-		throw HttpError(400);
-	}
-
-	if (contentLength > r_config.clientMaxBodySize) {
-		LOG(Error, "Bad Request: Content Length Exceeds ClientMaxBodySize"
-			+ std::to_string(contentLength) + "/" + std::to_string(r_config.clientMaxBodySize));
+			+ std::to_string(entityLength) + " > " + std::to_string(contentLength));
 		throw HttpError(400);
 	}
 
 	_request.setEntityBody(_requestBuffer);
-	LOG(Debug, std::to_string(entityLength) + "/" + std::to_string(contentLength) + " Characters Set");
+	LOG(Debug, std::to_string(entityLength) + "/" + std::to_string(contentLength) + " EntityBody Characters Set");
 	if (entityLength < contentLength)
 		return;
 
@@ -140,9 +130,22 @@ const {
 	if (URI.length() > 1 && URI.back() == '/')
 		URI.pop_back();
 
-	LOG(Info, "URI: " + URI);
+	LOG(Info, "URI: " + URI + " (" + rawURI + ")");
 
 	return (URI);
+}
+
+void
+ClientEvent::_redirect()
+{
+	Config::Listener::Location const	&location = r_config.locations.at(_target.location);
+
+	std::string	redirect	= location.redirect;
+	if (!redirect.empty()) {
+		LOG(Info, "Redirect: " + _target.location + " -> " + redirect + " (" + std::to_string(location.redirectStatus) + " " + Http::Statuses.at(location.redirectStatus) + ")");
+		_target.location = location.redirect;
+		_response.setStatus(location.redirectStatus);
+	}
 }
 
 int
@@ -154,7 +157,6 @@ ClientEvent::_URIdentification()
 
 	if (locations.contains(URI)) {
 		_target.location	= URI;
-		_target.root		= locations.at(URI).root;
 		_target.file		= "/";
 	} else {
 		::size_t const		lastSlash = URI.find_last_of('/');
@@ -167,7 +169,6 @@ ClientEvent::_URIdentification()
 			return (-1);
 
 		_target.location	= URIParent;
-		_target.root		= locations.at(URIParent).root;
 		_target.file		= URI.substr(lastSlash);
 
 		::size_t const	dot	= _target.file.find('.');
@@ -176,6 +177,13 @@ ClientEvent::_URIdentification()
 	}
 	LOG(Debug, "Target Root: " + _target.root);
 	LOG(Debug, "Target File: " + _target.file);
+	LOG(Debug, "Target Absolute URI: " + _target.absURI);
+
+	_redirect();
+
+	LOG(Debug, "Target Root: " + _target.root);
+	LOG(Debug, "Target File: " + _target.file);
+	LOG(Debug, "Target Absolute URI: " + _target.absURI);
 
 	return (0);
 }
@@ -193,8 +201,21 @@ ClientEvent::_processRequest()
 
 	Config::Listener::Location const	&location = r_config.locations.at(_target.location);
 
+	_target.root		= location.root;
+	_target.absURI		= "http://localhost:" + std::to_string(r_config.port)
+						+ ((_target.location == "/") ? "" : _target.location) + _target.file;
+	_response.setResponseHeaderValue("location", _target.absURI);
+
 	if (!location.allowedMethods.contains(method))
 		throw HttpError(403);
+
+	::size_t	contentLength	= _request.getContentLength();
+
+	if (contentLength > location.clientMaxBodySize) {
+		LOG(Error, "Bad Request: Content Length Exceeds ClientMaxBodySize: "
+			+ std::to_string(contentLength) + " > " + std::to_string(location.clientMaxBodySize));
+		throw HttpError(400);
+	}
 
 	Methods.at(method)(location);
 }

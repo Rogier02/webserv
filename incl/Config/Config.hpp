@@ -21,7 +21,7 @@ struct	Config
 			std::string				uploadDir;
 			::size_t				clientMaxBodySize = 0;
 			u_int16_t				redirectStatus = 0;
-			std::string				returnURL;
+			std::string				redirect;
 			std::string				cgiEXT;
 			std::string				cgiPath;
 			bool					autoindex = false;

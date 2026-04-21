@@ -31,6 +31,7 @@ class ClientEvent : public Event
 			std::string	root;
 			std::string	file;
 			std::string	extension;
+			std::string	absURI;
 		};
 
 		const std::map<std::string, std::string>	SupportedCGIExtensions = {
@@ -90,8 +91,9 @@ class ClientEvent : public Event
 		void	_processRequest();
 		void	_finalise();
 
-		int			_URIdentification();
 		std::string	_collapseSlashes(std::string const &rawURI) const;
+		int			_URIdentification();
+		void		_redirect();
 
 		char	**setupEnvironment(std::string const &scriptPath) const;
 		void	parseMailHeaders(std::string const &headerStream);

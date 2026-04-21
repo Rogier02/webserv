@@ -52,7 +52,7 @@ Server::run()
 		}
 		_timeOutClients();
 #ifdef DEBUG
-		sleep(1);
+		// sleep(1);
 #endif
 	}
 	LOG(Info, "Controlled Server Shutdown\n");
