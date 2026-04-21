@@ -1,5 +1,4 @@
 Rogier:
-
 Simon:
 	trace all Http Headers
 	ListenEvent:
@@ -7,6 +6,7 @@ Simon:
 		move socket::create() into ListenEvent Constructor;
 			remove wrapper
 	Auto-Index
+	Default Error Pages SED
 
 Laura:
 	config parser checken of alles werkt (eind project)
