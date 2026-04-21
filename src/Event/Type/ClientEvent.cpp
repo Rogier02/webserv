@@ -1,13 +1,13 @@
 #include "ClientEvent.hpp"
 
 const std::string	ClientEvent::HeaderEnd = Http::CRLF + Http::CRLF;
-const time_t		ClientEvent::ClientTimeOut = 30;
 const time_t		ClientEvent::CGImOut = 5;
 
 ClientEvent::ClientEvent(int socketFd, Epoll &epoll, Config::Listener const &config)
 	:	Event(socketFd, Epoll::Events::In, epoll, config)
 	,	_receivedHead(false)
 {
+	_cgild.lastActive	= std::time(nullptr);
 	LOG(Memory, "  ClientEvent Constructed: " + std::to_string(data.fd));
 }
 
@@ -27,8 +27,6 @@ ClientEvent::~ClientEvent()
 void
 ClientEvent::_in()
 {
-	_lastActive = std::time(nullptr);
-
 	try	{
 		if (Socket::recv(data.fd, _requestBuffer) == 0)
 			return (EventHandlers::erase(data.fd));
@@ -44,8 +42,6 @@ ClientEvent::_in()
 void
 ClientEvent::_out()
 {
-	_lastActive = std::time(nullptr);
-
 	::ssize_t	sent = Socket::send(data.fd, _responseBuffer);
 
 	if (sent == 0)
@@ -92,6 +88,7 @@ ClientEvent::_receiveBody() {
 			+ std::to_string(entityLength) + "/" + std::to_string(contentLength));
 		throw HttpError(400);
 	}
+
 	if (contentLength > r_config.clientMaxBodySize) {
 		LOG(Error, "Bad Request: Content Length Exceeds ClientMaxBodySize"
 			+ std::to_string(contentLength) + "/" + std::to_string(r_config.clientMaxBodySize));
@@ -483,10 +480,6 @@ ClientEvent::timeOut()
 		LOG(Info, "Killed CGI child: " + std::to_string(_cgild.pid) + " (Timed Out)");
 		_cgild.pid = -1;
 		_err(HttpError(504));
-	}
-	if (std::difftime(std::time(nullptr), _lastActive) >= ClientTimeOut) {
-		LOG(Info, "Client " + std::to_string(data.fd) + " Timed Out");
-		_err(HttpError(408));
 	}
 }
 

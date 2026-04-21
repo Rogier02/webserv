@@ -7,6 +7,7 @@
 # include <netinet/in.h>
 // webserv
 # include "EasyThrow.hpp"
+# include "Logger.hpp"
 
 # include "WrapIn.hpp"
 

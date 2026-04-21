@@ -33,11 +33,12 @@ namespace	Socket
 	{
 		char	buffer[bufferSize];
 
-		::ssize_t	received = EasyThrow(::recv(fd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT));
+		::ssize_t	received = EasyThrow(::recv(fd, buffer, sizeof(buffer), MSG_DONTWAIT));
 
 		if (received > 0)
 			dest.append(buffer, received);
 
+		LOG(Debug, "Received " + std::to_string(received) + " bytes from client " + std::to_string(fd));
 		return (received);
 	}
 

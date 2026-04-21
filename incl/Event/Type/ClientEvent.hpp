@@ -69,7 +69,6 @@ class ClientEvent : public Event
 			int		inbox	= -1;
 			time_t	lastActive;
 		}				_cgild;
-		time_t			_lastActive;
 
 	public:
 		void	youHaveGotMail(std::string &CGIoutput);

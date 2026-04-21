@@ -8,6 +8,9 @@ Simon:
 		maximum clients (fds) simply don't allow high fds? maybe let client close itself and err()
 		move socket::create() into ListenEvent Constructor;
 			remove wrapper
+	Redirects
+	Auto-Index
+	Default Error Pages SED
 
 Laura:
 	config parser checken of alles werkt (eind project)
