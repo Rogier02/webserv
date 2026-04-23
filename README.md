@@ -15,6 +15,13 @@ The aim of this project was to create an HTTP server using c++ in a non-blocking
 The primary functions are to store, process and deliver web pages to clients.
 
 
+## About HTTP
+
+HTTP is...
+
+##
+
+
 ## Requirements
 
 - The HTTP server is not allowed to crash under any circumstances
