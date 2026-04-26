@@ -10,6 +10,7 @@
 # include <filesystem>
 // webserv
 # include "Config.hpp"
+# include "Server.hpp"
 # include "EventHandlers.hpp"
 # include "HttpRequest.hpp"
 # include "HttpResponse.hpp"
@@ -50,7 +51,7 @@ class ClientEvent : public Event
 		// ClientEvent() = default;
 		ClientEvent(ClientEvent const &) = delete;
 		ClientEvent(ClientEvent &&) = delete;
-		ClientEvent(int socketFd, Epoll &epoll, Config::Listener const &config);
+		ClientEvent(int clientFd, Epoll &epoll, Config::Listener const &config);
 		~ClientEvent();
 
 	private:
@@ -68,7 +69,7 @@ class ClientEvent : public Event
 			pid_t	pid		= -1;
 			int		outbox	= -1;
 			int		inbox	= -1;
-			time_t	lastActive;
+			time_t	start;
 		}				_cgild;
 
 	public:

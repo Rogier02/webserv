@@ -1,8 +1,7 @@
 Rogier:
+
 Simon:
 	trace all Http Headers
-	ListenEvent:
-		maximum clients (fds) simply don't allow high fds? maybe let client close itself and err()
 	Auto-Index
 	Default Error Pages SED
 
@@ -10,8 +9,8 @@ Laura:
 	config parser checken of alles werkt (eind project)
 	trace all Config keys
 
-search TODO: 2 hits atm
+search TODO: 1 hit atm (http headers)
 
-mock eval:
+mock eval feedback:
 -	autoindex
 -	blijf checken met siege

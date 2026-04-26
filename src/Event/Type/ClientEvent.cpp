@@ -3,11 +3,12 @@
 const std::string	ClientEvent::HeaderEnd = Http::CRLF + Http::CRLF;
 const time_t		ClientEvent::CGImOut = 5;
 
-ClientEvent::ClientEvent(int socketFd, Epoll &epoll, Config::Listener const &config)
-	:	Event(socketFd, Epoll::Events::In, epoll, config)
+ClientEvent::ClientEvent(int clientFd, Epoll &epoll, Config::Listener const &config)
+	:	Event(clientFd, Epoll::Events::In, epoll, config)
 	,	_receivedHead(false)
 {
-	_cgild.lastActive	= std::time(nullptr);
+	if (clientFd >= Server::MaxClientFd)
+		_err(HttpError(503));
 	LOG(Memory, "  ClientEvent Constructed: " + std::to_string(data.fd));
 }
 
@@ -401,7 +402,7 @@ ClientEvent::_cgi(
 		::close(serverToCgi[Rd]);
 		_cgild.inbox		= cgiToServer[Rd];
 		_cgild.outbox		= serverToCgi[Wr];
-		_cgild.lastActive	= std::time(nullptr);
+		_cgild.start		= std::time(nullptr);
 
 		EventHandlers::create<CGInboxEvent>(
 			_cgild.inbox, r_epoll, r_config, *this);
@@ -488,7 +489,7 @@ ClientEvent::timeOut()
 {
 	LOG(Debug, "Checking timeout for client " + std::to_string(data.fd));
 	if (_cgild.pid != -1
-	&&	std::difftime(std::time(nullptr), _cgild.lastActive) >= CGImOut) {
+	&&	std::difftime(std::time(nullptr), _cgild.start) >= CGImOut) {
 		if (_cgild.inbox != -1) {
 			EventHandlers::erase(_cgild.inbox);
 			_cgild.inbox = -1;
