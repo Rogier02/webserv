@@ -3,8 +3,6 @@ Simon:
 	trace all Http Headers
 	ListenEvent:
 		maximum clients (fds) simply don't allow high fds? maybe let client close itself and err()
-		move socket::create() into ListenEvent Constructor;
-			remove wrapper
 	Auto-Index
 	Default Error Pages SED
 

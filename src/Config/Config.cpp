@@ -51,6 +51,7 @@ const {
 					stream << ", ";
 				stream << *it;
 			}
+			stream << "\n";
 		}
 
 		stream << "\n";

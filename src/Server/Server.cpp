@@ -6,10 +6,9 @@ Server::Server(Config &config)
 
 	for (Config::Listener &listener : config.listeners)
 	{
-		int	socketFd = Socket::create(listener.port);
+		int	socketFd = Socket::create(listener.host, listener.port);
 
-		LOG(Info, "Socket Fd: " + std::to_string(socketFd));
-		LOG(Info, "Listener Port: " + std::to_string(listener.port));
+		LOG(Info, "Listener " + std::to_string(socketFd) + ": " + listener.host + ":" + std::to_string(listener.port));
 
 		EventHandlers::create<ListenEvent>(
 			socketFd, _epoll, listener);
