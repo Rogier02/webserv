@@ -95,6 +95,7 @@ class ClientEvent : public Event
 		std::string	_collapseSlashes(std::string const &rawURI) const;
 		int			_URIdentification();
 		void		_redirect();
+		void		_autoIndex();
 
 		char	**setupEnvironment(std::string const &scriptPath) const;
 		void	parseMailHeaders(std::string const &headerStream);
