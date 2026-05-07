@@ -3,11 +3,12 @@
 const std::string	ClientEvent::HeaderEnd = Http::CRLF + Http::CRLF;
 const time_t		ClientEvent::CGImOut = 5;
 
-ClientEvent::ClientEvent(int socketFd, Epoll &epoll, Config::Listener const &config)
-	:	Event(socketFd, Epoll::Events::In, epoll, config)
+ClientEvent::ClientEvent(int clientFd, Epoll &epoll, Config::Listener const &config)
+	:	Event(clientFd, Epoll::Events::In, epoll, config)
 	,	_receivedHead(false)
 {
-	_cgild.lastActive	= std::time(nullptr);
+	if (clientFd >= Server::MaxClientFd)
+		_err(HttpError(503));
 	LOG(Memory, "  ClientEvent Constructed: " + std::to_string(data.fd));
 }
 
@@ -95,7 +96,6 @@ ClientEvent::_receiveBody() {
 
 	_processRequest();
 
-	LOG(Debug, "CGI child pid: " + std::to_string(_cgild.pid));
 	(_cgild.pid == -1)
 	?	_finalise()
 	:	_mod(0)
@@ -175,15 +175,8 @@ ClientEvent::_URIdentification()
 		if (dot != std::string::npos)
 			_target.extension	= _target.file.substr(dot);
 	}
-	LOG(Debug, "Target Root: " + _target.root);
-	LOG(Debug, "Target File: " + _target.file);
-	LOG(Debug, "Target Absolute URI: " + _target.absURI);
 
 	_redirect();
-
-	LOG(Debug, "Target Root: " + _target.root);
-	LOG(Debug, "Target File: " + _target.file);
-	LOG(Debug, "Target Absolute URI: " + _target.absURI);
 
 	return (0);
 }
@@ -202,9 +195,13 @@ ClientEvent::_processRequest()
 	Config::Listener::Location const	&location = r_config.locations.at(_target.location);
 
 	_target.root		= location.root;
-	_target.absURI		= "http://localhost:" + std::to_string(r_config.port)
+	_target.absURI		= "http://" + r_config.host + ":" + std::to_string(r_config.port)
 						+ ((_target.location == "/") ? "" : _target.location) + _target.file;
 	_response.setResponseHeaderValue("location", _target.absURI);
+
+	LOG(Debug, "Target Root: " + _target.root);
+	LOG(Debug, "Target File: " + _target.file);
+	LOG(Debug, "Target Absolute URI: " + _target.absURI);
 
 	if (!location.allowedMethods.contains(method))
 		throw HttpError(403);
@@ -221,11 +218,34 @@ ClientEvent::_processRequest()
 }
 
 void
+ClientEvent::_autoIndex()
+{
+	std::string	path = "." + _target.root;
+
+	LOG(Info, "AUTOINDEX: " + path);
+
+	std::filesystem::path	listedDir(path);
+	std::string				directoryList = "<h1>directory: " + path + "</h1>\r\n";
+
+	for (const auto& entry : std::filesystem::directory_iterator(listedDir))
+	{
+		std::string relPath = entry.path().string().substr(path.length());
+		directoryList += "<a href=\"" + _target.location + relPath + "\"><h2>" + relPath + "</h2></a>\r\n";
+	}
+	_response.setEntityBody(directoryList);
+}
+
+void
 ClientEvent::_get(
 	Config::Listener::Location const &location)
 {
 	if (_target.file == "/")
 		_target.file = location.index;
+
+	if (_target.file.empty() &&	location.autoindex == true) {
+		_autoIndex();
+		return;
+	}
 
 	if (SupportedCGIExtensions.contains(_target.extension)) {
 		_cgi(location);
@@ -401,7 +421,7 @@ ClientEvent::_cgi(
 		::close(serverToCgi[Rd]);
 		_cgild.inbox		= cgiToServer[Rd];
 		_cgild.outbox		= serverToCgi[Wr];
-		_cgild.lastActive	= std::time(nullptr);
+		_cgild.start		= std::time(nullptr);
 
 		EventHandlers::create<CGInboxEvent>(
 			_cgild.inbox, r_epoll, r_config, *this);
@@ -488,7 +508,7 @@ ClientEvent::timeOut()
 {
 	LOG(Debug, "Checking timeout for client " + std::to_string(data.fd));
 	if (_cgild.pid != -1
-	&&	std::difftime(std::time(nullptr), _cgild.lastActive) >= CGImOut) {
+	&&	std::difftime(std::time(nullptr), _cgild.start) >= CGImOut) {
 		if (_cgild.inbox != -1) {
 			EventHandlers::erase(_cgild.inbox);
 			_cgild.inbox = -1;

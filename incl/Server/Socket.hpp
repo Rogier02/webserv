@@ -3,27 +3,28 @@
 
 // C
 # include <unistd.h>
+# include <netdb.h>
 # include <sys/socket.h>
-# include <netinet/in.h>
 // webserv
 # include "EasyThrow.hpp"
 # include "Logger.hpp"
 
-# include "WrapIn.hpp"
-
-using SocketType			= WrapIn::SocketType;
-using SocketOptionLevel		= WrapIn::SocketOptionLevel;
-using SocketOption			= WrapIn::SocketOption;
-using SocketAddress			= WrapIn::SocketAddress;
-using InternetAddress		= WrapIn::InternetAddress;
-using AddressFamily			= WrapIn::AddressFamily;
-using InternetSocketAddress	= WrapIn::InternetSocketAddress;
-
 namespace	Socket
 {
+	struct	InternetSocketAddress : private sockaddr_in {
+		private:
+			using	Family	= sa_family_t;
+			using	Port	= in_port_t;
+			using	Address	= in_addr_t;
+		public:
+			Family	&family	= sockaddr_in::sin_family;
+			Port	&port	= sockaddr_in::sin_port;
+			Address	&address= sockaddr_in::sin_addr.s_addr;
+	};
+
 	constexpr ::size_t	bufferSize = 1024;
 
-	int			create(int port);
+	int			create(std::string host,int port);
 	int			accept(int fd);
 	::ssize_t	recv(int fd, std::string &dest);
 	::ssize_t	send(int fd, std::string const &data);
