@@ -1,12 +1,8 @@
 <!DOCTYPE html>
-
-<html>
-
+<html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<!-- <link rel="stylesheet" href="../style.css"> -->
-	<title>501</title>
+	<title>500 Internal Server Error — webserv</title>
 	<style>
 		* { box-sizing: border-box; margin: 0; padding: 0; }
 		body {
@@ -19,28 +15,39 @@
 			min-height: 100vh;
 			padding: 24px;
 		}
-		.box { text-align: center; }
-		.code { font-size: 80px; font-weight: 600; color: #1e1e1e; line-height: 1; }
-		.msg  { font-size: 14px; color: #555; margin-top: 12px; }
+		.box {
+			text-align: center;
+		}
+		.code {
+			font-size: 80px;
+			font-weight: 600;
+			color: #1e1e1e;
+			line-height: 1;
+		}
+		.msg {
+			font-size: 14px;
+			color: #555;
+			margin-top: 12px;
+		}
 		a {
 			display: inline-block;
 			margin-top: 24px;
 			font-size: 13px;
-			color: #ff4545;
+			color: #c8f135;
 			text-decoration: none;
-			border: 1px solid #6b2020;
+			border: 1px solid #7a9420;
 			padding: 8px 18px;
 			border-radius: 4px;
 		}
-		a:hover { background: #ff4545; color: #fff; }
+		a:hover { background: #c8f135; color: #000; }
 	</style>
 </head>
-
 <body>
-	<div>
-		<h1>501</h1>
-		<h1>Not implemented</h1>
+	<div class="box">
+		<div class="code">500</div>
+		<p class="msg">Internal Server Error</p>
+		<a href="/">← back to test suite</a>
 	</div>
 </body>
-
 </html>
+ 

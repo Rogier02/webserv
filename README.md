@@ -17,10 +17,13 @@ The primary functions are to store, process and deliver web pages to clients.
 
 ## About HTTP
 
-HTTP is...
-
-##
-
+HTTP (Hypertext Transfer Protocol) is an application-layer protocol that defines 
+how messages are formatted and transmitted between clients and servers on the web. 
+It operates on a request-response model: clients send HTTP requests to servers 
+specifying a method (GET, POST, etc.), path, and optional data, and servers respond 
+with status codes and content. HTTP is stateless, meaning each request is 
+independent, and it typically runs over TCP on port 80 (or 443 for HTTPS, the 
+secure variant). It forms the foundation of data communication for the World Wide Web.
 
 ## Requirements
 
