@@ -1,16 +1,21 @@
 Rogier:
-
-	README.md
+	Error Pages:
+		include link to previous page instead of home
+		make POST and DELETE buttons show error pages
 
 Simon:
 	trace all Http Headers
-	ListenEvent:
-		maximum clients (fds) simply don't allow high fds? maybe let client close itself and err()
-		move socket::create() into ListenEvent Constructor;
-			remove wrapper
 
 Laura:
-	config parser checken of alles werkt (eind project)
 	trace all Config keys
+	config parser checken of alles werkt (eind project)
 
-search TODO: 2 hits atm
+General:
+	should we fix URI parsing to find nested files (like uploads/tmp/file1)?
+		/this would make autoindexing uploaded files a lot easier
+	should we then also let the config define locations within locations?
+		/this makes it easier to write the config files
+
+mock eval feedback:
+-	autoindex
+-	blijf checken met siege

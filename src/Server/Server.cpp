@@ -6,10 +6,9 @@ Server::Server(Config &config)
 
 	for (Config::Listener &listener : config.listeners)
 	{
-		int	socketFd = Socket::create(listener.port);
+		int	socketFd = Socket::create(listener.host, listener.port);
 
-		LOG(Info, "Socket Fd: " + std::to_string(socketFd));
-		LOG(Info, "Listener Port: " + std::to_string(listener.port));
+		LOG(Info, "Listener " + std::to_string(socketFd) + ": " + listener.host + ":" + std::to_string(listener.port));
 
 		EventHandlers::create<ListenEvent>(
 			socketFd, _epoll, listener);
@@ -43,11 +42,11 @@ Server::run()
 			LOG(Error, std::string("Runtime Error (continuing server loop): ") + exception.what());
 		}
 		catch (std::logic_error &exception) {
-			LOG(Error, std::string("Logic Error: (breaking server loop): ") + exception.what());
+			LOG(Error, std::string("Logic Error (breaking server loop): ") + exception.what());
 			break;
 		}
 		catch (std::exception &exception) {
-			LOG(Error, std::string("!? Unexpected exception: (breaking loose all hell): ") + exception.what());
+			LOG(Error, std::string("!? Unexpected exception (breaking loose all hell): ") + exception.what());
 			throw exception;
 		}
 		_timeOutClients();

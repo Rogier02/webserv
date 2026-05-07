@@ -1,13 +1,14 @@
 #include "ClientEvent.hpp"
 
 const std::string	ClientEvent::HeaderEnd = Http::CRLF + Http::CRLF;
-const time_t		ClientEvent::ClientTimeOut = 30;
 const time_t		ClientEvent::CGImOut = 5;
 
-ClientEvent::ClientEvent(int socketFd, Epoll &epoll, Config::Listener const &config)
-	:	Event(socketFd, Epoll::Events::In, epoll, config)
+ClientEvent::ClientEvent(int clientFd, Epoll &epoll, Config::Listener const &config)
+	:	Event(clientFd, Epoll::Events::In, epoll, config)
 	,	_receivedHead(false)
 {
+	if (clientFd >= Server::MaxClientFd)
+		_err(HttpError(503));
 	LOG(Memory, "  ClientEvent Constructed: " + std::to_string(data.fd));
 }
 
@@ -27,8 +28,6 @@ ClientEvent::~ClientEvent()
 void
 ClientEvent::_in()
 {
-	_lastActive = std::time(nullptr);
-
 	try	{
 		if (Socket::recv(data.fd, _requestBuffer) == 0)
 			return (EventHandlers::erase(data.fd));
@@ -44,8 +43,6 @@ ClientEvent::_in()
 void
 ClientEvent::_out()
 {
-	_lastActive = std::time(nullptr);
-
 	::ssize_t	sent = Socket::send(data.fd, _responseBuffer);
 
 	if (sent == 0)
@@ -81,25 +78,16 @@ ClientEvent::_receiveHead() {
 void
 ClientEvent::_receiveBody() {
 	const ::size_t	entityLength	= _requestBuffer.length();
-	::size_t		contentLength	= 0;
-
-	Http::HeaderMap const	&entityHeaders = _request.getEntityHeaders();
-	if (entityHeaders.contains("content-length"))
-		contentLength = std::stoul(entityHeaders.at("content-length"));
+	::size_t		contentLength	= _request.getContentLength();
 
 	if (entityLength > contentLength) {
 		LOG(Error, "Bad Request: Entity Body Exceeds Content Length: "
-			+ std::to_string(entityLength) + "/" + std::to_string(contentLength));
-		throw HttpError(400);
-	}
-	if (contentLength > r_config.clientMaxBodySize) {
-		LOG(Error, "Bad Request: Content Length Exceeds ClientMaxBodySize"
-			+ std::to_string(contentLength) + "/" + std::to_string(r_config.clientMaxBodySize));
+			+ std::to_string(entityLength) + " > " + std::to_string(contentLength));
 		throw HttpError(400);
 	}
 
 	_request.setEntityBody(_requestBuffer);
-	LOG(Debug, std::to_string(entityLength) + "/" + std::to_string(contentLength) + " Characters Set");
+	LOG(Debug, std::to_string(entityLength) + "/" + std::to_string(contentLength) + " EntityBody Characters Set");
 	if (entityLength < contentLength)
 		return;
 
@@ -108,7 +96,6 @@ ClientEvent::_receiveBody() {
 
 	_processRequest();
 
-	LOG(Debug, "CGI child pid: " + std::to_string(_cgild.pid));
 	(_cgild.pid == -1)
 	?	_finalise()
 	:	_mod(0)
@@ -143,9 +130,22 @@ const {
 	if (URI.length() > 1 && URI.back() == '/')
 		URI.pop_back();
 
-	LOG(Info, "URI: " + URI);
+	LOG(Info, "URI: " + URI + " (" + rawURI + ")");
 
 	return (URI);
+}
+
+void
+ClientEvent::_redirect()
+{
+	Config::Listener::Location const	&location = r_config.locations.at(_target.location);
+
+	std::string	redirect	= location.redirect;
+	if (!redirect.empty()) {
+		LOG(Info, "Redirect: " + _target.location + " -> " + redirect + " (" + std::to_string(location.redirectStatus) + " " + Http::Statuses.at(location.redirectStatus) + ")");
+		_target.location = location.redirect;
+		_response.setStatus(location.redirectStatus);
+	}
 }
 
 int
@@ -157,7 +157,6 @@ ClientEvent::_URIdentification()
 
 	if (locations.contains(URI)) {
 		_target.location	= URI;
-		_target.root		= locations.at(URI).root;
 		_target.file		= "/";
 	} else {
 		::size_t const		lastSlash = URI.find_last_of('/');
@@ -170,15 +169,14 @@ ClientEvent::_URIdentification()
 			return (-1);
 
 		_target.location	= URIParent;
-		_target.root		= locations.at(URIParent).root;
 		_target.file		= URI.substr(lastSlash);
 
 		::size_t const	dot	= _target.file.find('.');
 		if (dot != std::string::npos)
 			_target.extension	= _target.file.substr(dot);
 	}
-	LOG(Debug, "Target Root: " + _target.root);
-	LOG(Debug, "Target File: " + _target.file);
+
+	_redirect();
 
 	return (0);
 }
@@ -196,10 +194,45 @@ ClientEvent::_processRequest()
 
 	Config::Listener::Location const	&location = r_config.locations.at(_target.location);
 
+	_target.root		= location.root;
+	_target.absURI		= "http://" + r_config.host + ":" + std::to_string(r_config.port)
+						+ ((_target.location == "/") ? "" : _target.location) + _target.file;
+	_response.setResponseHeaderValue("location", _target.absURI);
+
+	LOG(Debug, "Target Root: " + _target.root);
+	LOG(Debug, "Target File: " + _target.file);
+	LOG(Debug, "Target Absolute URI: " + _target.absURI);
+
 	if (!location.allowedMethods.contains(method))
 		throw HttpError(403);
 
+	::size_t	contentLength	= _request.getContentLength();
+
+	if (contentLength > location.clientMaxBodySize) {
+		LOG(Error, "Bad Request: Content Length Exceeds ClientMaxBodySize: "
+			+ std::to_string(contentLength) + " > " + std::to_string(location.clientMaxBodySize));
+		throw HttpError(400);
+	}
+
 	Methods.at(method)(location);
+}
+
+void
+ClientEvent::_autoIndex()
+{
+	std::string	path = "." + _target.root;
+
+	LOG(Info, "AUTOINDEX: " + path);
+
+	std::filesystem::path	listedDir(path);
+	std::string				directoryList = "<h1>directory: " + path + "</h1>\r\n";
+
+	for (const auto& entry : std::filesystem::directory_iterator(listedDir))
+	{
+		std::string relPath = entry.path().string().substr(path.length());
+		directoryList += "<a href=\"" + _target.location + relPath + "\"><h2>" + relPath + "</h2></a>\r\n";
+	}
+	_response.setEntityBody(directoryList);
 }
 
 void
@@ -208,6 +241,11 @@ ClientEvent::_get(
 {
 	if (_target.file == "/")
 		_target.file = location.index;
+
+	if (_target.file.empty() &&	location.autoindex == true) {
+		_autoIndex();
+		return;
+	}
 
 	if (SupportedCGIExtensions.contains(_target.extension)) {
 		_cgi(location);
@@ -383,7 +421,7 @@ ClientEvent::_cgi(
 		::close(serverToCgi[Rd]);
 		_cgild.inbox		= cgiToServer[Rd];
 		_cgild.outbox		= serverToCgi[Wr];
-		_cgild.lastActive	= std::time(nullptr);
+		_cgild.start		= std::time(nullptr);
 
 		EventHandlers::create<CGInboxEvent>(
 			_cgild.inbox, r_epoll, r_config, *this);
@@ -470,7 +508,7 @@ ClientEvent::timeOut()
 {
 	LOG(Debug, "Checking timeout for client " + std::to_string(data.fd));
 	if (_cgild.pid != -1
-	&&	std::difftime(std::time(nullptr), _cgild.lastActive) >= CGImOut) {
+	&&	std::difftime(std::time(nullptr), _cgild.start) >= CGImOut) {
 		if (_cgild.inbox != -1) {
 			EventHandlers::erase(_cgild.inbox);
 			_cgild.inbox = -1;
@@ -483,10 +521,6 @@ ClientEvent::timeOut()
 		LOG(Info, "Killed CGI child: " + std::to_string(_cgild.pid) + " (Timed Out)");
 		_cgild.pid = -1;
 		_err(HttpError(504));
-	}
-	if (std::difftime(std::time(nullptr), _lastActive) >= ClientTimeOut) {
-		LOG(Info, "Client " + std::to_string(data.fd) + " Timed Out");
-		_err(HttpError(408));
 	}
 }
 

@@ -10,6 +10,7 @@
 # include <filesystem>
 // webserv
 # include "Config.hpp"
+# include "Server.hpp"
 # include "EventHandlers.hpp"
 # include "HttpRequest.hpp"
 # include "HttpResponse.hpp"
@@ -31,6 +32,7 @@ class ClientEvent : public Event
 			std::string	root;
 			std::string	file;
 			std::string	extension;
+			std::string	absURI;
 		};
 
 		const std::map<std::string, std::string>	SupportedCGIExtensions = {
@@ -49,7 +51,7 @@ class ClientEvent : public Event
 		// ClientEvent() = default;
 		ClientEvent(ClientEvent const &) = delete;
 		ClientEvent(ClientEvent &&) = delete;
-		ClientEvent(int socketFd, Epoll &epoll, Config::Listener const &config);
+		ClientEvent(int clientFd, Epoll &epoll, Config::Listener const &config);
 		~ClientEvent();
 
 	private:
@@ -67,9 +69,8 @@ class ClientEvent : public Event
 			pid_t	pid		= -1;
 			int		outbox	= -1;
 			int		inbox	= -1;
-			time_t	lastActive;
+			time_t	start;
 		}				_cgild;
-		time_t			_lastActive;
 
 	public:
 		void	youHaveGotMail(std::string &CGIoutput);
@@ -91,8 +92,10 @@ class ClientEvent : public Event
 		void	_processRequest();
 		void	_finalise();
 
-		int			_URIdentification();
 		std::string	_collapseSlashes(std::string const &rawURI) const;
+		int			_URIdentification();
+		void		_redirect();
+		void		_autoIndex();
 
 		char	**setupEnvironment(std::string const &scriptPath) const;
 		void	parseMailHeaders(std::string const &headerStream);

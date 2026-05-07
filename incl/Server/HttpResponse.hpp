@@ -13,7 +13,8 @@
 namespace Http {
 	class	Response : public Message {
 		private:
-			static const std::map<std::string, std::string> FileTypes;
+			static const std::string						DefaultErrorPage;
+			static const std::map<std::string, std::string>	FileTypes;
 
 		public:
 			Response();

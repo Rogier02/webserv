@@ -2,6 +2,8 @@
 
 namespace Http {
 
+	const std::string	Response::DefaultErrorPage = "www/errorPages/defaultErrorPage.html";
+
 	const std::map<std::string, std::string> Response::FileTypes = {
 		{".css", "text/css"},
 		{".html", "text/html"},
@@ -42,24 +44,21 @@ namespace Http {
 	{
 		setStatus(statusCode);
 
-		std::string errorMessage = Statuses.at(statusCode); 
-		std::string entityBody = IO::getFileContent("../www/errorPages/defaultError.html");
-		
-		// Find and replace errorCode
-		std::string placeholderCode = "errorCode";
-		size_t pos = entityBody.find(placeholderCode);
+		std::string entityBody = IO::getFileContent(DefaultErrorPage);
+
+		std::string placeholder1 = "statusCode";
+		size_t pos = entityBody.find(placeholder1);
 
 		if (pos != std::string::npos) {
-			entityBody.replace(pos, placeholderCode.size(), std::to_string(statusCode));
-		}			
-		
+			entityBody.replace(pos, placeholder1.size(), std::to_string(statusCode));
+		}
 
-		std::string placeholderMessage = "errorMessage";
-		pos = entityBody.find(placeholderMessage);
+		std::string placeholder2 = "reasonPhrase";
+		pos = entityBody.find(placeholder2);
 
 		if (pos != std::string::npos) {
-			entityBody.replace(pos, placeholderMessage.size(), errorMessage);
-		}	
+			entityBody.replace(pos, placeholder2.size(), _reasonPhrase);
+		}
 
 		setEntityBody(entityBody);
 	}

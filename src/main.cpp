@@ -1,7 +1,7 @@
 #include <errno.h>
 #include <stdio.h>
-#include <stdexcept>
 #include <signal.h>
+#include <stdexcept>
 
 #include "Server.hpp"
 #include "Config.hpp"
@@ -44,7 +44,7 @@ int	main(int argc, char *argv[])
 		Server	server(config);
 		server.run();
 	} catch (std::exception &exception) {
-		std::cerr << "Fatal Error: " << exception.what() << std::endl;
+		LOG(Error, exception.what());
 	}
 	return (0);
 }

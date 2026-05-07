@@ -95,7 +95,7 @@ void
 Validate::validateLocation(const Config::Listener::Location &location, const std::string &name)
 {
 	ensureDirectory(location.root);
-	ensureDirectory(location.returnURL);
+	ensureDirectory(location.redirect);
 	if (!location.uploadDir.empty())
 		ensureDirectory(location.root + location.uploadDir);
 	ensureDirectory(location.cgiPath);

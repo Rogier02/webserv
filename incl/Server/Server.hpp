@@ -24,6 +24,9 @@ extern	std::atomic<bool>	_pleaseShutDown;
 class	Server
 {
 	public:
+		static const int MaxClientFd = 1024;
+
+	public:
 		Server() = delete;
 		Server(Server const &) = delete;
 		Server(Server &&) = delete;
