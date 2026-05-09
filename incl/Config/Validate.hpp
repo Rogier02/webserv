@@ -38,5 +38,4 @@ private:
 	void	report();
 };
 
-
 #endif
