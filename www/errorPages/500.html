@@ -15,27 +15,38 @@
 			min-height: 100vh;
 			padding: 24px;
 		}
-		.box { text-align: center; }
-		.code { font-size: 80px; font-weight: 600; color: #1e1e1e; line-height: 1; }
-		.msg  { font-size: 14px; color: #555; margin-top: 12px; }
+		.box {
+			text-align: center;
+		}
+		.code {
+			font-size: 80px;
+			font-weight: 600;
+			color: #1e1e1e;
+			line-height: 1;
+		}
+		.msg {
+			font-size: 14px;
+			color: #555;
+			margin-top: 12px;
+		}
 		a {
 			display: inline-block;
 			margin-top: 24px;
 			font-size: 13px;
-			color: #ff4545;
+			color: #25c9ea;
 			text-decoration: none;
-			border: 1px solid #6b2020;
+			border: 1px solid #25c9ea;
 			padding: 8px 18px;
 			border-radius: 4px;
 		}
-		a:hover { background: #ff4545; color: #fff; }
+		a:hover { background: #25c9ea; color: #000; }
 	</style>
 </head>
 <body>
 	<div class="box">
 		<div class="code">500</div>
 		<p class="msg">Internal Server Error</p>
-		<a href="/">← back to test suite</a>
+		<a onclick="history.go(-0)">← back to previous page</a>
 	</div>
 </body>
 </html>
