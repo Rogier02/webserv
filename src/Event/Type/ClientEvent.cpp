@@ -284,6 +284,9 @@ ClientEvent::_post(
 		}
 	}
 
+	if (_target.extension == ".html")
+		throw HttpError(403);
+
 	std::ofstream	outfile(path);
 
 	if (!outfile.is_open())
@@ -303,7 +306,8 @@ ClientEvent::_delete(
 	std::string		path = "." + _target.root + _target.file;
 	LOG(Info, "DELETE Path: " + path);
 
-	if (_target.file == "/")
+	if (_target.file == "/"
+	||	_target.extension == ".html")
 		throw HttpError(403);
 
 	if (!IO::exists(path))
