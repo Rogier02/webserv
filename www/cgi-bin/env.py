@@ -35,7 +35,7 @@ body = f"""<!DOCTYPE html>
 </head>
 <body>
   <h1>CGI environment</h1>
-  <p style="margin-bottom:16px"><a href="/">← back</a></p>
+  <p style="margin-bottom:16px"><a href="/cgi">← back</a></p>
   <table>
     <tbody>{rows}</tbody>
   </table>

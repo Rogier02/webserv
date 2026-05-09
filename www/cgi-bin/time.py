@@ -53,7 +53,7 @@ html = f"""<!DOCTYPE html>
 	<div class="box">
 		<div class="code">Timestamp.py</div>
 	</div>
-	<p style="margin-bottom:16px; color: whitesmoke ;"><a href="/">← back</a></p>
+	<p style="margin-bottom:16px; color: whitesmoke ;"><a href="/cgi">← back to previous page</a></p>
 	<div class="box">
 		<div class=timestamp>{timestamp}</div>
 	</div>
