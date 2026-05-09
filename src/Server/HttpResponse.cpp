@@ -46,8 +46,15 @@ namespace Http {
 
 		std::string entityBody = IO::getFileContent(DefaultErrorPage);
 
+		std::string placeholder0 = "Error";
+		size_t pos = entityBody.find(placeholder0);
+
+		if (pos != std::string::npos) {
+			entityBody.replace(pos, placeholder0.size(), std::to_string(statusCode) + " " + _reasonPhrase + " — webserv");
+		}
+
 		std::string placeholder1 = "statusCode";
-		size_t pos = entityBody.find(placeholder1);
+		pos = entityBody.find(placeholder1);
 
 		if (pos != std::string::npos) {
 			entityBody.replace(pos, placeholder1.size(), std::to_string(statusCode));
