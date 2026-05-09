@@ -33,8 +33,6 @@ public:
 	void	validateLocation(const Config::Listener::Location &location, const std::string &name);
 	void	ensureDirectory(const std::string& path);
 
-	std::string	getCGIExtensions();
-
 private:
 	void	log(std::string const &message);
 	void	report();
