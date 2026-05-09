@@ -62,20 +62,32 @@
 <script>
 	async function sendPost(URI, content) {
 		const endpoint = "http://localhost:8080/uploads/" + URI;
-		fetch(endpoint, {
+		const response = await fetch(endpoint, {
 				method: "POST",
 				headers: {
 					"Content-Type": "text/plain"
 				},
 				body: content
 			});
+
+			// Handle response.
+			const htmlContent = await response.text();
+
+			if (!response.ok)
+				document.body.innerHTML = htmlContent;
 	}
 
 	async function sendDelete(URI) {
 		const endpoint = "http://localhost:8080/uploads/" + URI;
-		fetch(endpoint, {
+		const response = await fetch(endpoint, {
 			method: "DELETE"
 		});
+
+		// Handle response.
+		const htmlContent = await response.text();
+
+		if (!response.ok)
+			document.body.innerHTML = htmlContent;
 	}
 </script>
 
