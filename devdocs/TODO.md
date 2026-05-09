@@ -2,8 +2,6 @@ Rogier:
 
 Simon:
 	check if alllllll headers included are in the correct spot and necessary
-	Make debug
-
 Laura:
 
 General:
