@@ -53,8 +53,6 @@ secure variant). It forms the foundation of data communication for the World Wid
 
 - Upload and delete files
 
-- Timestamps
-
 - Custom error pages
 
 - NGINX-like webserver configuration
@@ -90,38 +88,11 @@ localhost:8080
 *The port may be different depending on the configuration used. But by default it should be 8080.
 
 
-### Clean up
-
-Remove objects:
-
-```sh
-make clean
-```
-
-Remove all artifacts created by building:
-
-```sh
-make fclean
-```
-
-Cleanup and rebuild
-
-```sh
-make re
-```
-
-
 ## Resources
 
 [Subject Pdf](https://github.com/Rogier02/webserv/blob/main/devdocs/webserv.pdf)
 
-[Beej's Guide to network Programming ](https://beej.us/guide/bgnet/)
-
-[MDN web docs on HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP)
-
 [RFC 1945 - HTTP/1.0](https://datatracker.ietf.org/doc/html/rfc1945)
-
-[RFC 6455 - Websockets](https://datatracker.ietf.org/doc/html/rfc6455)
 
 [RFC 3875 - CGI](https://datatracker.ietf.org/doc/html/rfc3875)
 
