@@ -1,7 +1,4 @@
 #include "Validate.hpp"
-#include <algorithm>
-#include <filesystem>
-#include <unordered_set>
 
 Validate::Validate(const Config &config) : _config(config) {
 	validateConfig();
