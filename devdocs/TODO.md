@@ -5,6 +5,7 @@ Rogier:
 
 Simon:
 	trace all Http Headers
+	no .html post or delet
 
 Laura:
 	trace all Config keys

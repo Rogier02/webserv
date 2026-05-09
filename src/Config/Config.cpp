@@ -56,7 +56,7 @@ const {
 
 		stream << "\n";
 	}
-	stream << "==== END CONFIG ====\n";
+	stream << "==== END CONFIG ====";
 
 	return (stream.str());
 }
