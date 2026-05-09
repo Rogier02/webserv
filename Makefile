@@ -11,8 +11,6 @@ BUILD			?=	production
 ifeq ($(BUILD),debug)
 	CXXFLAGS	+=	-DDEBUG -g
 	NAME		:=	$(NAME)_debug
-else
-	CXXFLAGS	+=	-DNBONUS
 endif
 
 SRC_DIR			=	src
