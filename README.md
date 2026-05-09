@@ -17,19 +17,20 @@ The primary functions are to store, process and deliver web pages to clients.
 
 ## About HTTP
 
-HTTP (Hypertext Transfer Protocol) is an application-layer protocol that defines 
-how messages are formatted and transmitted between clients and servers on the web. 
-It operates on a request-response model: clients send HTTP requests to servers 
-specifying a method (GET, POST, etc.), path, and optional data, and servers respond 
-with status codes and content. HTTP is stateless, meaning each request is 
-independent, and it typically runs over TCP on port 80 (or 443 for HTTPS, the 
+HTTP (Hypertext Transfer Protocol) is an application-layer protocol that defines
+how messages are formatted and transmitted between clients and servers on the web.
+It operates on a request-response model: clients send HTTP requests to servers
+specifying a method (GET, POST, etc.), path, and optional data, and servers respond
+with status codes and content. HTTP is stateless, meaning each request is
+independent, and it typically runs over TCP on port 80 (or 443 for HTTPS, the
 secure variant). It forms the foundation of data communication for the World Wide Web.
+
 
 ## Requirements
 
 - The HTTP server is not allowed to crash under any circumstances
 
-- Must use a configuration file 
+- Must use a configuration file
 
 - Must remain non-blocking at all times and handle client connects and disconnects
 
@@ -50,7 +51,7 @@ secure variant). It forms the foundation of data communication for the World Wid
 
 - CGI (Common gateway interface)
 
-- Upload and delete files 
+- Upload and delete files
 
 - Timestamps
 
@@ -61,9 +62,9 @@ secure variant). It forms the foundation of data communication for the World Wid
 
 ## Install & Setup
 
-Note: this setup is specifically for Ubuntu linux. Compiling and running this software on other distro's or operating systems can result in error. 
+Note: this setup is specifically for Ubuntu linux. Compiling and running this software on other distro's or operating systems can result in error.
 
-We did not include any docker-compose file or containers as it was not a requirement for this project. 
+We did not include any docker-compose file or containers as it was not a requirement for this project.
 
 
 ### Building and running
@@ -89,7 +90,7 @@ localhost:8080
 *The port may be different depending on the configuration used. But by default it should be 8080.
 
 
-### Clean up 
+### Clean up
 
 Remove objects:
 
@@ -109,6 +110,7 @@ Cleanup and rebuild
 make re
 ```
 
+
 ## Resources
 
 [Subject Pdf](https://github.com/Rogier02/webserv/blob/main/devdocs/webserv.pdf)
@@ -116,7 +118,7 @@ make re
 [Beej's Guide to network Programming ](https://beej.us/guide/bgnet/)
 
 [MDN web docs on HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP)
-	
+
 [RFC 1945 - HTTP/1.0](https://datatracker.ietf.org/doc/html/rfc1945)
 
 [RFC 6455 - Websockets](https://datatracker.ietf.org/doc/html/rfc6455)

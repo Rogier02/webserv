@@ -11,7 +11,8 @@
 # include <ctime>
 # include <iomanip>
 
-namespace IO {
+namespace IO
+{
 	std::string	getFileContent(std::string const &path);
 	::ssize_t	read(int fd, std::string &dest);
 	::ssize_t 	write(int fd, std::string &src);

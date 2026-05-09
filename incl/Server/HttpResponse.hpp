@@ -47,9 +47,6 @@ namespace Http {
 
 		private:
 			static std::string const	&_getContentType(std::string const &filename);
-
-	// TODO: should these do something?
-			// void	setEntityHeaderValue(std::string const &key, std::string const &value);
 	};
 }
 

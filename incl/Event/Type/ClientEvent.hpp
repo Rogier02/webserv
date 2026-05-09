@@ -27,7 +27,7 @@ class ClientEvent : public Event
 		using LocationMap	= std::map<std::string, Config::Listener::Location>;
 		using PageMap		= std::map<u_int16_t, std::string>;
 
-		struct	Target	{
+		struct	Target {
 			std::string	location;
 			std::string	root;
 			std::string	file;
@@ -60,7 +60,7 @@ class ClientEvent : public Event
 
 		Target			_target;
 
-		struct CGI{
+		struct	CGI {
 			pid_t	pid		= -1;
 			int		outbox	= -1;
 			int		inbox	= -1;
