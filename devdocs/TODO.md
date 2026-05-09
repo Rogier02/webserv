@@ -4,12 +4,8 @@ Rogier:
 		make POST and DELETE buttons show error pages
 
 Simon:
-	trace all Http Headers
-	no .html post or delet
 
 Laura:
-	trace all Config keys
-	config parser checken of alles werkt (eind project)
 
 General:
 	should we fix URI parsing to find nested files (like uploads/tmp/file1)?

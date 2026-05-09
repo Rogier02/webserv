@@ -110,4 +110,8 @@ namespace Http {
 	void Response::setResponseHeaderValue(std::string const &key, std::string const &value)	{
 		_responseHeaders[key] = value;
 	}
+
+	void Response::setGeneralHeaderValue(std::string const &key, std::string const &value)	{
+		_generalHeaders[key] = value;
+	}
 }

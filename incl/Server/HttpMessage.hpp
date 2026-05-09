@@ -8,8 +8,9 @@
 # include "Logger.hpp"
 
 namespace Http {
-	constexpr std::string	SP = " ";
-	constexpr std::string	CRLF = "\r\n";
+	constexpr std::string	EMPTY	= "";
+	constexpr std::string	SP		= " ";
+	constexpr std::string	CRLF	= "\r\n";
 
 	using	HeaderMap = std::map<std::string, std::string>;
 
@@ -47,7 +48,6 @@ namespace Http {
 		public:
 			virtual std::string	toString() const = 0;
 
-			HeaderMap const		&getGeneralHeaders() const;
 			HeaderMap const		&getEntityHeaders() const;
 
 		protected:

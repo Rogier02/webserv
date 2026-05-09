@@ -8,7 +8,7 @@
 # include <ctime>
 # include <iomanip>
 
-# define DEBUG
+// # define DEBUG
 
 class	Logger
 {
@@ -41,8 +41,6 @@ class	Logger
 	private:
 		void	put(std::string const &str, char c = 0);
 		void	putendl(std::string const &str = "");
-
-		void	header();
 };
 
 # define LOG(level, message) Logger::get().log(Logger::Level::level, message, __FILE__, __LINE__)

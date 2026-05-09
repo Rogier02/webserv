@@ -10,6 +10,7 @@
 // webserv
 # include "HttpMessage.hpp"
 # include "Logger.hpp"
+# include "IO.hpp"
 
 namespace Http {
 	class	Request : public Message {

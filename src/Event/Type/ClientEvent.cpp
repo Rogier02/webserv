@@ -198,6 +198,7 @@ ClientEvent::_processRequest()
 	_target.absURI		= "http://" + r_config.host + ":" + std::to_string(r_config.port)
 						+ ((_target.location == "/") ? "" : _target.location) + _target.file;
 	_response.setResponseHeaderValue("location", _target.absURI);
+	_response.setResponseHeaderValue("server", r_config.name);
 
 	LOG(Debug, "Target Root: " + _target.root);
 	LOG(Debug, "Target File: " + _target.file);
@@ -272,13 +273,17 @@ ClientEvent::_post(
 		return ;
 	}
 
-	std::string	path = "." + _target.root + location.uploadDir + _target.file;
+	std::string	uploadDir = (location.uploadDir == "/")
+							? ""
+							: location.uploadDir;
+
+	std::string	path = "." + _target.root + uploadDir + _target.file;
 	LOG(Info, "POST Path: " + path);
 
 	if (_target.file == "/") {
 		for (::size_t i = 0; i < 100; ++i)
 		{
-			path = "." + _target.root + location.uploadDir + "/temp_file_" + std::to_string(i);
+			path = "." + _target.root + uploadDir + "/temp_file_" + std::to_string(i);
 			if (!IO::exists(path))
 				break;
 		}
@@ -292,6 +297,8 @@ ClientEvent::_post(
 	if (!outfile.is_open())
 		throw HttpError(500);
 	_response.setStatus(201);
+
+	_response.setResponseHeaderValue("date", IO::strctime());
 
 	outfile << _request.getEntityBody();
 	outfile.close();

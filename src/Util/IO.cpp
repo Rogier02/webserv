@@ -37,4 +37,11 @@ namespace IO {
 		struct stat	buffer;
 		return (stat(file.c_str(), &buffer) == 0);
 	}
+
+	std::string
+	strctime()
+	{
+		std::time_t	timer = time(nullptr);
+		return (std::asctime(std::localtime(&timer)));
+	}
 }

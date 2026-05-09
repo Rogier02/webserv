@@ -43,12 +43,12 @@ namespace Http {
 			void	setEntityBody(std::string const &content, std::string const &file = "");
 
 			void	setResponseHeaderValue(std::string const &key, std::string const &value);
+			void	setGeneralHeaderValue(std::string const &key, std::string const &value);
 
 		private:
 			static std::string const	&_getContentType(std::string const &filename);
 
 	// TODO: should these do something?
-			// void	setGeneralHeaderValue(std::string const &key, std::string const &value);
 			// void	setEntityHeaderValue(std::string const &key, std::string const &value);
 	};
 }

@@ -23,12 +23,6 @@ namespace Http {
 	}
 
 	Http::HeaderMap const &
-	Message::getGeneralHeaders()
-	const {
-		return (_generalHeaders);
-	}
-
-	Http::HeaderMap const &
 	Message::getEntityHeaders()
 	const {
 		return (_entityHeaders);

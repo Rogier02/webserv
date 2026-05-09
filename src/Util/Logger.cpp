@@ -12,7 +12,9 @@ Logger::Logger()
 {
 	if (!_logFile.is_open())
 		throw std::ios_base::failure("Logger failed to create Log file");
-	header();
+
+	std::time_t	timer = time(nullptr);
+	_logFile << "Webserv Log\n" << std::asctime(std::localtime(&timer)) << "\n\n";
 }
 
 Logger::~Logger() {
@@ -41,9 +43,10 @@ Logger::log(Level level, std::string const &message, const char *file, int line)
 	if (!message.empty())
 		construct << '\t' << message;
 	if (level == Error || level == Debug)
-		construct << "\n\t(" << file << ":" << std::to_string(line) << ")";
+		construct << "\n(" << file << ":" << std::to_string(line) << ")";
 
-	std::cout << "\e[3" << std::to_string(level + 1) << "m" << construct.str() << "\e[0m\n";
+	std::time_t	timer = time(nullptr);
+	std::cout << std::put_time(std::localtime(&timer), "%H:%M:%S ") << "\e[3" << std::to_string(level + 1) << "m" << construct.str() << "\e[0m\n";
 
 	putendl(construct.str());
 }
@@ -54,14 +57,4 @@ void Logger::put(std::string const &str, char c) {
 
 void Logger::putendl(std::string const &str) {
 	_logFile << str << "\n";
-}
-
-void
-Logger::header()
-{
-	time_t	timer = time(NULL);
-
-	_logFile
-		<< "Webserv Log\n"
-		<< std::put_time(std::localtime(&timer), "%F %R %Z (UTC%z)\n\n");
 }

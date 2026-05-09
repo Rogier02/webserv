@@ -113,6 +113,8 @@ namespace Http {
 			return (-1);
 		if (!validateURI())
 			return (-1);
+		if (!_generalHeaders.contains("date"))
+			HeaderHandlers.at("date")(IO::strctime());
 		return (0);
 	}
 
@@ -268,7 +270,7 @@ namespace Http {
 		if (it != _requestHeaders.end())
 			return (it->second);
 		else
-			return (SP);
+			return (EMPTY);
 	}
 
 	std::string const	&
@@ -278,7 +280,7 @@ namespace Http {
 		if (it != _generalHeaders.end())
 			return (it->second);
 		else
-			return (SP);
+			return (EMPTY);
 	}
 
 	std::string const	&
@@ -288,7 +290,7 @@ namespace Http {
 		if (it != _entityHeaders.end())
 			return (it->second);
 		else
-			return (SP);
+			return (EMPTY);
 	}
 
 	Http::HeaderMap const &
