@@ -5,12 +5,19 @@ MAKEFLAGS		=	-r -R
 CXX				=	c++
 CXXFLAGS		=	-MMD -MP -std=c++20
 CXXFLAGS		+=	-Wall -Werror -Wextra
-# CXXFLAGS		+=	-fsanitize=address
-# CXXFLAGS		+=	-g
+
+BUILD			?=	production
+
+ifeq ($(BUILD),debug)
+	CXXFLAGS	+=	-DDEBUG -g
+	NAME		:=	$(NAME)_debug
+else
+	CXXFLAGS	+=	-DNBONUS
+endif
 
 SRC_DIR			=	src
 INC_DIR			=	incl
-OBJ_DIR			=	obj
+OBJ_DIR			:=	obj/$(BUILD)
 
 MAIN_FILES		=	main.cpp
 
@@ -60,7 +67,6 @@ ALL_FILES		:=	$(MAIN_FILES)											\
 					$(addprefix $(UTILS_MODULE)/, $(UTILS_FILES))			\
 
 INCLUDE_DIRS	:=	$(INC_DIR)									\
-					$(INC_DIR)/Wrapper							\
 					$(addprefix $(INC_DIR)/, $(ALL_MODULES))	\
 
 INCLUDE_FLAGS	:=	$(addprefix -I , $(INCLUDE_DIRS))
@@ -83,16 +89,12 @@ $(OBJ_DIR)/%.o:$(SRC_DIR)/%.cpp
 -include $(DEP)
 
 clean :
-	@if [ -n "$(OBJ_DIR)" ] && [ "$(OBJ_DIR)" != "/" ]; \
-	then \
-		rm -rf $(OBJ_DIR); echo 'rm -rf $(OBJ_DIR)'; \
-	else \
-		echo "Warning: OBJ_DIR is undefined"; \
-	fi
+	rm -rf obj
 	@ echo "${BLUE}Object folder removed.${RESET}"
 
 fclean : clean
 	rm -f $(NAME)
+	rm -f $(NAME)_debug
 	@ echo "${YELLOW}$(NAME) fcleaned!${RESET}"
 
 re : clean all
