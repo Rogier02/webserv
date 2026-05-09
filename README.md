@@ -10,9 +10,9 @@ Building a C++ HTTP server
 
 ## Introduction
 
-The aim of this project was to create an HTTP server using c++ in a non-blocking manner.
+The aim of this project was to create a simple HTTP server using c++ in a non-blocking manner.
 
-The primary functions are to store, process and deliver web pages to clients.
+It has to serve static pages and allow for uploading and deleting files.
 
 
 ## About HTTP
@@ -47,9 +47,9 @@ secure variant). It forms the foundation of data communication for the World Wid
 
 ## Features
 
-- Complies with HTTP/1.0 According to the [RFC 1945](https://datatracker.ietf.org/doc/html/rfc1945)
+- Complies with HTTP/1.0 according to the [RFC 1945](https://datatracker.ietf.org/doc/html/rfc1945)
 
-- CGI (Common gateway interface)
+- CGI (Common Gateway Interface)
 
 - Upload and delete files
 
