@@ -99,6 +99,8 @@ Validate::validateLocation(const Config::Listener::Location &location, const std
 	if (!location.uploadDir.empty())
 		ensureDirectory(location.root + location.uploadDir);
 	ensureDirectory(location.cgiPath);
+	if (!location.cgiEXT.empty() && !ClientEvent::SupportedCGIExtensions.contains(location.cgiEXT))
+		log("cgi_ext " + location.cgiEXT + " contains unsupported file extension(s), please remove! Supported cgi_ext: " + getCGIExtensions());
 	if ((location.clientMaxBodySize > 104857600 || location.clientMaxBodySize < 1) && location.clientMaxBodySize != 0)
 		log("client_max_body_size of " + std::to_string(location.clientMaxBodySize) + " is too big. Max: 100m");
 	if (!IO::exists("." + location.root + location.index))
@@ -138,11 +140,17 @@ Validate::report()
 	throw std::runtime_error(std::string("Config File Errors detected, see \"") + Logger::FileName + "\" for detailed error messages");
 }
 
-
-void	iAmHere(std::string string)
+std::string
+Validate::getCGIExtensions()
 {
-	std::cout << "==========================================\n";
-	std::cout << "=========== This is where I am ===========\n";
-	std::cout << "==========================================\n";
-	std::cout << "I am in: " << string << std::endl;
+	std::string result;
+
+	for (std::map<std::string, std::string>::const_iterator it = ClientEvent::SupportedCGIExtensions.begin();
+		it != ClientEvent::SupportedCGIExtensions.end();
+		++it)
+	{
+		result += it->first + " ";
+	}
+
+	return (result);
 }

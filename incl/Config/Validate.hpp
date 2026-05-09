@@ -4,10 +4,11 @@
 // C++
 # include <unordered_set>
 // webserv
+# include "ClientEvent.hpp"
 # include "Config.hpp"
-# include "Logger.hpp"
-# include "IO.hpp"
 # include "HttpMessage.hpp"
+# include "IO.hpp"
+# include "Logger.hpp"
 
 class Validate
 {
@@ -30,6 +31,8 @@ public:
 	bool	isValidMethod(std::string method);
 	void	validateLocation(const Config::Listener::Location &location, const std::string &name);
 	void	ensureDirectory(const std::string& path);
+
+	std::string	getCGIExtensions();
 
 private:
 	void	log(std::string const &message);

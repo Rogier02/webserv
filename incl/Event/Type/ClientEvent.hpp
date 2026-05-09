@@ -35,12 +35,7 @@ class ClientEvent : public Event
 			std::string	absURI;
 		};
 
-		const std::map<std::string, std::string>	SupportedCGIExtensions = {
-			{".py", "/usr/bin/python3"},
-			{".php", "/usr/bin/php-cgi"},
-			// {".pl", "/usr/bin/perl"},
-			// {".sh", "/bin/bash"},
-		};
+		static const std::map<std::string, std::string>	SupportedCGIExtensions;
 
 	private:
 		static const std::string	HeaderEnd;

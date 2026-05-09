@@ -3,6 +3,14 @@
 const std::string	ClientEvent::HeaderEnd = Http::CRLF + Http::CRLF;
 const time_t		ClientEvent::CGImOut = 5;
 
+
+const std::map<std::string, std::string>	ClientEvent::SupportedCGIExtensions = {
+			{".py", "/usr/bin/python3"},
+			{".php", "/usr/bin/php-cgi"},
+			// {".pl", "/usr/bin/perl"},
+			// {".sh", "/bin/bash"},
+		};
+
 ClientEvent::ClientEvent(int clientFd, Epoll &epoll, Config::Listener const &config)
 	:	Event(clientFd, Epoll::Events::In, epoll, config)
 	,	_receivedHead(false)
