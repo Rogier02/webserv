@@ -1,6 +1,6 @@
 NAME			=	webserv
 
-MAKEFLAGS		=	-r -R
+MAKEFLAGS		+=	-rRj
 
 CXX				=	c++
 CXXFLAGS		=	-MMD -MP -std=c++20
